@@ -40,7 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Store a newly created customer in storage
     Route::post('customers', [CustomerController::class, 'store'])->name('customers.store');
 
-    /* // Display the specified customer
+    // Display the specified customer
     Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
 
     // Show the form for editing the specified customer
@@ -50,7 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
 
     // Remove the specified customer from storage
-    Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy'); */
+    Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
 });
 
 Route::middleware('auth')->group(function () {

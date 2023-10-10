@@ -14,25 +14,25 @@ class CustomerController extends Controller
     return Inertia::render('Customers/CreateCustomer');
 }
 
-
-
-    public function store(Request $request) {
+    /* public function store(Request $request) {
     $customer = new Customer($request->all());
     $customer->user_id = auth()->id();
     $customer->save();
     
     return Inertia::render('Dashboard', ['message' => 'Customer created!']);
-    }
-
-    /* public function index()
-    {
-    $customers = auth()->user()->customers;
-
-    return Inertia::render('Customers/CreateCustomer', ['customers' => $customers]);
     } */
 
-    public function index()
-{
+    public function store(Request $request) {
+        $customer = new Customer([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'phone_number' => $request->input('phone_number'),
+        ]);
+        $customer->user_id = auth()->id();
+        $customer->save();
+    }
+
+    public function index() {
     $user = auth()->user();
 
     // Fetch customers that belong to the authenticated user
@@ -45,5 +45,50 @@ class CustomerController extends Controller
         ]
     ]);
 }
+
+    // Show the form for editing the specified customer
+    public function edit($id)
+    {
+        $customer = Customer::findOrFail($id);
+        return Inertia::render('Customers/EditCustomer', ['customer' => $customer]);
+    }
+
+    // Update the specified customer in storage
+    public function update(Request $request, $id) {
+        $customer = Customer::find($id);
+    
+        // Check if customer exists and belongs to the authenticated user
+        if (!$customer || $customer->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Customer not found or not authorized'], 403);
+        }
+    
+        // Update the customer
+        //$customer->name = $request->input('name');
+        //or user update function
+        $customer->update([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'phone_number' => $request->input('phone_number'),
+            // ... add other fields as needed
+        ]);
+        $customer->save();
+    
+        return response()->json(['message' => 'Customer updated successfully']);
+    }
+
+    // Remove the specified customer from storage
+    public function destroy($id)
+    {
+        $customer = Customer::findOrFail($id);
+
+        // Ensure the user owns this customer
+        if ($customer->user_id !== auth()->id()) {
+            return redirect()->back()->withErrors(['error' => 'Not authorized']);
+        }
+
+        $customer->delete();
+
+        return redirect()->route('customers.index')->with('message', 'Customer deleted!');
+    }
 
 }
