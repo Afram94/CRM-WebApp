@@ -8,6 +8,9 @@ export interface User {
 export interface Customer {
     id: number;
     name: string;
+    email: string;
+    phone_number: string;
+    /* afram: string; */
     // ... any other fields for Customer
 }
 

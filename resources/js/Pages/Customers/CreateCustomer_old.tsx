@@ -1,20 +1,23 @@
+// CustomerForm.tsx
+
 import React, { useState } from 'react';
 import axios from 'axios';
 
 type FormData = {
     name: string;
     email: string;
-    phone_number?: string;
+    phone?: string;
 };
 
 const CustomerForm: React.FC = () => {
     const [formData, setFormData] = useState<FormData>({
         name: '',
         email: '',
-        phone_number: '' 
+        phone: '' 
     });
 
-    const handleSave = async () => {
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         try {
             const response = await axios.post('/customers', formData);
             if (response.data.message) {
@@ -29,28 +32,15 @@ const CustomerForm: React.FC = () => {
     };
 
     return (
-        <div>
+        <form onSubmit={handleSubmit}>
             <input
                 type="text"
-                placeholder="Name"
+                placeholder="First Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
-            <input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-            <input
-                type="number"
-                placeholder="Phone"
-                value={formData.phone_number}
-                onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-            />
-            {/* ... other input fields ... */}
-            <button onClick={handleSave}>Create Customer</button>
-        </div>
+            <button type="submit">Create Customer</button>
+        </form>
     );
 };
 
