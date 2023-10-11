@@ -3,16 +3,16 @@
 import React from 'react';
 
 type HeaderProps = {
-  isOpen: boolean;
-  toggleSidebar: () => void;
+  /* isOpen: boolean; */
+  /* toggleSidebar: () => void; */
 };
 
-const Header: React.FC<HeaderProps> = ({ isOpen, toggleSidebar }) => {
+const Header = () => {
   return (
     <div className="bg-gray-500 p-4 text-white flex justify-between items-center">
-      <button onClick={toggleSidebar}>
+      {/* <button onClick={toggleSidebar}>
         {isOpen ? "Hide Sidebar" : "Show Sidebar"}
-      </button>
+      </button> */}
       <h1>Logo</h1>
     </div>
   );

@@ -1,33 +1,47 @@
-// src/layouts/MainLayout.tsx
-
-import React, { useState } from 'react';
+// Necessary imports for the MainLayout component
+import React, { useEffect, useState } from 'react';
 import Sidebar from '@/Components/Sidebar';
 import Header from '@/Components/Header';
 
+// Type definition for the MainLayout props
 type MainLayoutProps = {
-  children: React.ReactNode;
+  children: React.ReactNode;  // This represents any child components that will be wrapped by MainLayout
 };
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(true);
+    // Try to get the sidebar's state (open or closed) from localStorage
+    const initialIsOpen = localStorage.getItem('sidebarIsOpen') === 'true';
+    // Set the sidebar's initial state based on the value retrieved from localStorage
+    const [isOpen, setIsOpen] = useState(initialIsOpen);
   
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
+    // A function to toggle the sidebar's state between open and closed
+    const toggleSidebar = () => {
+        setIsOpen((prev) => !prev);  // It flips the value of isOpen
+    };
 
-  return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar isOpen={isOpen} />
+    // A React effect that will run every time the value of 'isOpen' changes
+    useEffect(() => {
+        // Save the current state of the sidebar (isOpen) to the localStorage
+        localStorage.setItem('sidebarIsOpen', String(isOpen));
+    }, [isOpen]);  // The effect will re-run if and only if 'isOpen' changes
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header isOpen={isOpen} toggleSidebar={toggleSidebar} />
-        
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+    return (
+        <div className="flex h-screen bg-gray-100">
+            {/* // Render the Sidebar component and pass down its state and the toggle function as props */}
+            <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} />
+
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* // Render the Header component */}
+                <Header />
+                
+                {/* // This is where child components (passed to MainLayout) will be rendered */}
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
+                    {children}
+                </main>
+            </div>
+        </div>
+    );
 };
 
+// Export the MainLayout component for use in other files
 export default MainLayout;
