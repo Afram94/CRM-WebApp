@@ -1,4 +1,3 @@
-// Necessary imports for the Sidebar component
 import { Link } from '@inertiajs/react';
 import React from 'react';
 import { FaHome, FaUser, FaCog } from 'react-icons/fa';
@@ -41,7 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <Link key={page.name} href={page.path}>
             <div className={`mb-4 flex items-center w-full ${page.path === currentPath ? 'bg-gray-200 text-gray-800 rounded-lg p-2' : 'text-white'}`}> 
               {/* Render the appropriate icon for the page */}
-              <page.icon className={` ${page.path === currentPath ? ' text-gray-800 ' : 'text-white'}`} size={24}/>
+              <page.icon className={`${page.path === currentPath ? ' text-gray-800 ' : 'text-white'}`} size={24}/>
               {/* If the sidebar is open, also display the name of the page */}
               {isOpen && <p className="ml-4 ">{page.name}</p>}
             </div>
@@ -52,5 +51,4 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   );
 };
 
-// Export the Sidebar component for use in other files
 export default Sidebar;

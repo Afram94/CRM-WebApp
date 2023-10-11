@@ -30,6 +30,8 @@ class CustomerController extends Controller
         ]);
         $customer->user_id = auth()->id();
         $customer->save();
+
+        return response()->json($customer);
     }
 
     public function index() {
@@ -38,7 +40,7 @@ class CustomerController extends Controller
     // Fetch customers that belong to the authenticated user
     $customers = Customer::where('user_id', $user->id)->get();
 
-    return inertia('Customers/CustomersList', [
+    return inertia('Customers/Show', [
         'auth' => [
             'user' => $user,
             'customers' => $customers
@@ -50,7 +52,7 @@ class CustomerController extends Controller
     public function edit($id)
     {
         $customer = Customer::findOrFail($id);
-        return Inertia::render('Customers/EditCustomer', ['customer' => $customer]);
+        return Inertia::render('Customers/Edit', ['customer' => $customer]);
     }
 
     // Update the specified customer in storage

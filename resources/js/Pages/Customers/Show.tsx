@@ -3,13 +3,18 @@
 import { PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
+import CreateModal from '@/Pages/Customers/Components/CreateModal';
+import { useState } from 'react';
 
-const CustomersList = ({ auth }: PageProps) => {
+const Show = ({ auth }: PageProps) => {
     return (
         <MainLayout>
             {auth.customers && auth.customers.length > 0 ? (
                 <div className="bg-white h-full p-4">
                     <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3>
+                    <div className="w-full flex justify-end my-2">
+                        <CreateModal />
+                    </div>
                     
                     <table className="min-w-full table-auto">
                         <thead>
@@ -44,4 +49,4 @@ const CustomersList = ({ auth }: PageProps) => {
     );
 };
 
-export default CustomersList;
+export default Show;

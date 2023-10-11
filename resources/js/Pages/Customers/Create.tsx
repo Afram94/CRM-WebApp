@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import TextInput from '@/Components/TextInput';
+import PrimaryButton from '@/Components/PrimaryButton';
+import { Inertia } from '@inertiajs/inertia';
 
 type FormData = {
     name: string;
@@ -7,51 +10,64 @@ type FormData = {
     phone_number?: string;
 };
 
-const CustomerForm: React.FC = () => {
+type CreateCustomerProps = {
+    closeModal: () => void;
+}
+
+const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
+
     const [formData, setFormData] = useState<FormData>({
         name: '',
         email: '',
         phone_number: '' 
     });
 
+    
+
     const handleSave = async () => {
         try {
             const response = await axios.post('/customers', formData);
-            if (response.data.message) {
-                // Display the message or do something with the response
-                console.log(response.data.message);
+            if (response.data) {
+                console.log(response.data);
+                closeModal();  // Close the modal regardless of success or error
+                Inertia.reload({ only: ['Show'] });
             }
-            // Handle success. Maybe reset the form or navigate to another page.
         } catch (error) {
             console.error(error);
-            // Handle error. Display error messages or handle validation errors.
+        } finally {
+            // This exeuted no matter what happens
         }
     };
 
+
     return (
-        <div>
-            <input
+        <>
+        <div className='grid grid-cols-2 gap-2'>
+            <TextInput
                 type="text"
                 placeholder="Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
-            <input
+            <TextInput
                 type="email"
                 placeholder="Email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
-            <input
+            <TextInput
                 type="number"
                 placeholder="Phone"
                 value={formData.phone_number}
                 onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
             />
             {/* ... other input fields ... */}
-            <button onClick={handleSave}>Create Customer</button>
         </div>
+            <div className='mt-3'>
+                <PrimaryButton onClick={handleSave}>Create Customer</PrimaryButton>
+            </div>
+        </>
     );
 };
 
-export default CustomerForm;
+export default Create;
