@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Modal from '@/Components/Modal';
-import CreateCustomer from '@/Pages/Customers/Create';
+import Create from '@/Pages/Customers/Create';
 import PrimaryButton from '@/Components/PrimaryButton';
 
 const CreateModal: React.FC = () => {
@@ -13,7 +13,7 @@ const CreateModal: React.FC = () => {
             <Modal show={isModalOpen} onClose={() => setModalOpen(false)}>
                 <div className="p-4">
                     <h2 className="text-lg font-medium mb-4 flex justify-center">Create New Customer</h2>
-                    <CreateCustomer closeModal={() => setModalOpen(false)} />
+                    <Create closeModal={() => setModalOpen(false)} />
                 </div>
             </Modal>
         </div>

@@ -1,13 +1,18 @@
+import TextInput from '@/Components/TextInput';
 import { Customer } from '@/types';
 import axios from 'axios';
 import React, { useState } from 'react';
+import { Inertia } from '@inertiajs/inertia';
+import PrimaryButton from '@/Components/PrimaryButton';
 
-/* interface CustomerProps {
-    id: number;
-    name: string;
-} */
+import { toast } from 'react-toastify';
 
-const EditCustomer: React.FC<{ customer: Customer }> = ({ customer }) => {
+interface EditCustomerProps {
+    customer: Customer;
+    closeModal: () => void; // new prop for handling success
+}
+
+const EditCustomer: React.FC<EditCustomerProps> = ({ customer, closeModal }) => {
 
     const [data, setData] = useState<Partial<Customer>>({
         name: customer.name,
@@ -15,42 +20,45 @@ const EditCustomer: React.FC<{ customer: Customer }> = ({ customer }) => {
         phone_number: customer.phone_number
     });
 
-    /* const [name, setName] = useState(customer.name);
-    const [email, setEmail] = useState(customer.email);
-    const [phone_number, setPhone_number] = useState(customer.phone_number); */
-
-    const handleSubmit = () => {
-        axios.put(`/customers/${customer.id}`, data )
-             .then(response => {
-                 // Here, you can handle the success of the update operation.
-                 // Maybe provide some user feedback, like a success message.
-                 console.log('Customer updated successfully!');
-             })
-             .catch(error => {
-                 // Handle any errors during the update operation.
-                 console.error('There was an error updating the customer:', error);
-             });
+    const handleSubmit = async () => {
+        try {
+            const response = await axios.put(`/customers/${customer.id}`, data);
+            // Maybe provide some user feedback, like a success message.
+            closeModal();
+            Inertia.visit(`/customers`);
+            
+            /* toast.success('Customer updated successfully!'); */
+    
+        } catch (error) {
+            // Handle any errors during the update operation.
+            console.error('There was an error updating the customer:', error);
+        }
     }
+    
 
     return (
-        <div>
-            <input
+        <>
+        <div className='grid grid-cols-2 gap-2'>
+            <TextInput
                 type="text"
                 value={data.name}
                 onChange={e => setData(prevData => ({ ...prevData, name: e.target.value }))}
             />
-            <input
+            <TextInput
                 type="text"
                 value={data.email}
                 onChange={e => setData(prevData => ({ ...prevData, email: e.target.value }))}
             />
-            <input
+            <TextInput
                 type="text"
                 value={data.phone_number}
                 onChange={e => setData(prevData => ({ ...prevData, phone_number: e.target.value }))}
             />
-            <button onClick={handleSubmit}>Update</button>
         </div>
+            <div className='mt-3'>
+                <PrimaryButton onClick={handleSubmit}>Update</PrimaryButton>
+            </div>
+        </>
     );
 }
 

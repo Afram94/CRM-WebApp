@@ -1,10 +1,9 @@
 // CustomersList.tsx
 
 import { PageProps } from '@/types';
-import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateModal from '@/Pages/Customers/Components/CreateModal';
-import { useState } from 'react';
+import EditModal from './Components/EditModal';
 
 const Show = ({ auth }: PageProps) => {
     return (
@@ -32,9 +31,10 @@ const Show = ({ auth }: PageProps) => {
                                     <td className="py-2 px-6">{customer.email}</td>
                                     <td className="py-2 px-6">{customer.phone_number}</td>
                                     <td className="py-2 px-6">
-                                        <Link href={`/customers/${customer.id}/edit`} className="text-blue-500 hover:text-blue-700">
+                                        {/* <Link href={`/customers/${customer.id}/edit`} className="text-blue-500 hover:text-blue-700">
                                             Edit
-                                        </Link>
+                                        </Link> */}
+                                        <EditModal customer={customer} onClose={() => {/* I can delete this, but maybe i can put toast or a message after the modal is closed */}}/>
                                     </td>
                                 </tr>
                             ))}
