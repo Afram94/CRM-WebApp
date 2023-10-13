@@ -38,7 +38,7 @@ class CustomerController extends Controller
     $user = auth()->user();
 
     // Fetch customers that belong to the authenticated user
-    $customers = Customer::where('user_id', $user->id)->get();
+    $customers = Customer::where('user_id', $user->id)->latest()->paginate(10);
 
     return inertia('Customers/Show', [
         'auth' => [
@@ -80,17 +80,18 @@ class CustomerController extends Controller
 
     // Remove the specified customer from storage
     public function destroy($id)
-    {
-        $customer = Customer::findOrFail($id);
+{
+    $customer = Customer::findOrFail($id);
 
-        // Ensure the user owns this customer
-        if ($customer->user_id !== auth()->id()) {
-            return redirect()->back()->withErrors(['error' => 'Not authorized']);
-        }
-
-        $customer->delete();
-
-        return redirect()->route('customers.index')->with('message', 'Customer deleted!');
+    // Ensure the user owns this customer
+    if ($customer->user_id !== auth()->id()) {
+        return response()->json(['error' => 'Not authorized'], 403);
     }
+
+    $customer->delete();
+
+    return response()->json(['message' => 'Customer deleted!'], 200);
+}
+
 
 }

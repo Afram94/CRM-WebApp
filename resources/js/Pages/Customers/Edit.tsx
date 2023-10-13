@@ -6,6 +6,8 @@ import { Inertia } from '@inertiajs/inertia';
 import PrimaryButton from '@/Components/PrimaryButton';
 
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
+import { successToast } from '@/Components/toastUtils';
 
 interface EditCustomerProps {
     customer: Customer;
@@ -25,7 +27,10 @@ const EditCustomer: React.FC<EditCustomerProps> = ({ customer, closeModal }) => 
             const response = await axios.put(`/customers/${customer.id}`, data);
             // Maybe provide some user feedback, like a success message.
             closeModal();
-            Inertia.visit(`/customers`);
+            successToast('Customer details have been updated');
+            setTimeout(() => {
+                Inertia.reload({only: ['Show']}); // Delayed reload
+            }, 1300); // Delay for 2 seconds. Adjust as needed
             
             /* toast.success('Customer updated successfully!'); */
     

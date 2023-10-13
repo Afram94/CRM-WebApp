@@ -4,6 +4,8 @@ import Modal from '@/Components/Modal';
 import Edit from '@/Pages/Customers/Edit'; // <-- Import EditCustomer
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Customer } from '@/types';
+import { FaEdit } from 'react-icons/fa';
+
 
 interface EditModalProps {
     customer: Customer;
@@ -15,7 +17,7 @@ const EditModal: React.FC<EditModalProps> = ({ customer, onClose }) => {
 
     return (
         <div>
-            <PrimaryButton onClick={() => setModalOpen(true)}>Edit</PrimaryButton>
+            <PrimaryButton onClick={() => setModalOpen(true)}><FaEdit /></PrimaryButton>
 
             <Modal show={isModalOpen} onClose={() => setModalOpen(false)}>
                 <div className="p-4">

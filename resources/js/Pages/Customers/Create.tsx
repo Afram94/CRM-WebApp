@@ -3,6 +3,7 @@ import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Inertia } from '@inertiajs/inertia';
+import { successToast } from '@/Components/toastUtils';
 
 type FormData = {
     name: string;
@@ -30,7 +31,11 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
             if (response.data) {
                 console.log(response.data);
                 closeModal();  // Close the modal regardless of success or error
-                Inertia.reload({ only: ['Show'] });
+
+                successToast('The Customer has been deleted');
+                setTimeout(() => {
+                    Inertia.reload({only: ['Show']}); // Delayed reload
+                }, 1300); // Delay for 2 seconds. Adjust as needed
             }
         } catch (error) {
             console.error(error);
