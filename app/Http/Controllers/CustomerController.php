@@ -34,19 +34,44 @@ class CustomerController extends Controller
         return response()->json($customer);
     }
 
-    public function index() {
-    $user = auth()->user();
+    
 
-    // Fetch customers that belong to the authenticated user
-    $customers = Customer::where('user_id', $user->id)->latest()->paginate(10);
+        public function index(Request $request) {
+            $user = auth()->user();
+            $search = $request->input('search');
 
-    return inertia('Customers/Show', [
-        'auth' => [
-            'user' => $user,
-            'customers' => $customers
-        ]
-    ]);
-}
+            // Start the query
+            $query = Customer::where('user_id', $user->id);
+
+            // If there's a search term, filter the customers by it. 
+            if ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                        ->orWhere('email', 'LIKE', '%' . $search . '%')
+                        ->orWhere('phone_number', 'LIKE', '%' . $search . '%');
+            }
+
+            // Fetch customers that belong to the authenticated user
+            $customers = $query->latest()->paginate(10);
+
+            // If the request is an AJAX call, return the customers as JSON.
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'auth' => [
+                        'user' => $user,
+                        'customers' => $customers
+                    ]
+                ]);
+            }
+
+            // If it's a regular page request, return the Inertia view.
+            return inertia('Customers/Show', [
+                'auth' => [
+                    'user' => $user,
+                    'customers' => $customers
+                ]
+            ]);
+        }
+
 
     // Show the form for editing the specified customer
     public function edit($id)

@@ -12,6 +12,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { successToast } from '@/Components/toastUtils';
 import Swal from 'sweetalert2';
 import PaginationComponent from '@/Components/Pagination';
+import { useEffect, useState } from 'react';
+import TextInput from '@/Components/TextInput';
+import DangerButton from '@/Components/DangerButton';
 
 const Show = ({ auth }: PageProps) => {
 
@@ -47,13 +50,59 @@ const Show = ({ auth }: PageProps) => {
         /* } */
         // .data (beacuse the pagination i use in the backedn)
       }
+
+      const [filteredCustomers, setFilteredCustomers] = useState(auth.customers.data);
+      const [searchTerm, setSearchTerm] = useState('');
+
+      useEffect(() => {
+        if (searchTerm === '') {
+            setFilteredCustomers(auth.customers.data);
+            return;
+        }
+    
+        // Only search if searchTerm length is 3 or more
+        if (searchTerm.length >= 3) {
+            
+            const fetchFilteredCustomers = async () => {
+                try {
+                    const response = await axios.get(`/customers?search=${searchTerm}`);
+                    if (response.data && response.data.auth && response.data.auth.customers) {
+                        setFilteredCustomers(response.data.auth.customers.data);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch filtered customers:', error);
+                }
+            };
+    
+            fetchFilteredCustomers();
+    
+        } else {
+            // If searchTerm is between 1 and 2 characters, reset to the original list
+            setFilteredCustomers(auth.customers.data);
+        }
+    }, [searchTerm, auth.customers.data]);
+
+
+    const handleReset = () => {
+        setSearchTerm('');
+    };
       
     return (
         <MainLayout>
             {auth.customers?.data && auth.customers.data.length > 0 ? (
                 <div className="bg-white h-full p-4">
                     <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3>
-                    <div className="w-full flex justify-end my-2">
+                    <div className="w-full flex justify-between my-2">
+                        <div className="flex gap-2">
+                            <TextInput 
+                                type="text"
+                                placeholder="Search..."
+                                className='h-9'
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                            <DangerButton onClick={handleReset}>Reset</DangerButton>
+                        </div>
                         <CreateModal />
                     </div>
                     
@@ -68,7 +117,7 @@ const Show = ({ auth }: PageProps) => {
                             </tr>
                         </thead>
                         <tbody className="text-gray-600 text-sm font-light">
-                            {auth.customers.data.map((customer) => (
+                            {filteredCustomers.map((customer) => (
                                 <tr className="border-b border-gray-200 hover:bg-gray-100" key={customer.id}>
                                     <td className="py-2 px-6">{customer.name}</td>
                                     <td className="py-2 px-6">{customer.email}</td>
