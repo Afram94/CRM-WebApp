@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ExportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Remove the specified customer from storage
     Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
+
+    Route::get('/export-csv', [ExportController::class, 'exportCsv']);
+    Route::get('/export-single-customer-csv/{customerId}', [ExportController::class, 'exportSingleCustomerCsv']);
+
 });
 
 Route::middleware('auth')->group(function () {

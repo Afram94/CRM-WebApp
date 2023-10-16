@@ -3,7 +3,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { PageProps } from '@/types';
-import CustomersList from '@/Pages/Customers/CustomersList';  // Import the component
 import MainLayout from '@/Layouts/MainLayout';
 
 export default function Dashboard({ auth }: PageProps) {

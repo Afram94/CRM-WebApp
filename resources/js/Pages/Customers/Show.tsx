@@ -15,6 +15,8 @@ import PaginationComponent from '@/Components/Pagination';
 import { useEffect, useState } from 'react';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
+import Dropdown from '@/Components/Dropdown';
+import SecondaryButton from '@/Components/SecondaryButton';
 
 const Show = ({ auth }: PageProps) => {
 
@@ -86,6 +88,47 @@ const Show = ({ auth }: PageProps) => {
     const handleReset = () => {
         setSearchTerm('');
     };
+
+    const downloadCsv = async () => {
+        try {
+            const response = await axios.get('/export-csv', {
+                responseType: 'blob' // This is essential because the response is a Blob object representing binary data
+            });
+            
+            // Create a Blob and download it
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'customers.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.log('Download Error:', error);
+        }
+    };
+
+    const downloadSingleCustomerCsv = async (customerId: string | number) => {
+        try {
+          const response = await axios.get(`/export-single-customer-csv/${customerId}`, {
+            responseType: 'blob'  // Important to set this
+          });
+      
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `single_customer_${customerId}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.log('Download Error:', error);
+        }
+      };
+        
+    
       
     return (
         <MainLayout>
@@ -104,6 +147,9 @@ const Show = ({ auth }: PageProps) => {
                             <DangerButton onClick={handleReset}>Reset</DangerButton>
                         </div>
                         <CreateModal />
+                        <PrimaryButton onClick={downloadCsv} className="btn btn-primary">
+                            Download Customers as CSV
+                        </PrimaryButton>
                     </div>
                     
                     <table className="min-w-full table-auto">
@@ -114,6 +160,7 @@ const Show = ({ auth }: PageProps) => {
                                 <th className="py-2 px-6 text-left">Phone Number</th>
                                 <th className="py-2 px-6 text-left">Edit</th>
                                 <th className="py-2 px-6 text-left">Delete</th>
+                                <th className="py-2 px-6 text-left">Other</th>
                             </tr>
                         </thead>
                         <tbody className="text-gray-600 text-sm font-light">
@@ -129,6 +176,18 @@ const Show = ({ auth }: PageProps) => {
                                         <PrimaryButton onClick={() => Delete(customer.id)}>
                                             <FaTrash />
                                         </PrimaryButton>
+                                    </td>
+                                    <td className="py-2 px-6">
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <PrimaryButton>...</PrimaryButton>
+                                        </Dropdown.Trigger>
+                                        <Dropdown.Content>
+                                            <PrimaryButton onClick={()=> downloadSingleCustomerCsv(customer.id)} className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
+                                                Download CSV
+                                            </PrimaryButton>
+                                        </Dropdown.Content>
+                                    </Dropdown>
                                     </td>
                                 </tr>
                             ))}
