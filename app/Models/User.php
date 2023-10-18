@@ -19,6 +19,16 @@ class User extends Authenticatable
         return $this->hasMany(Customer::class);
     }
 
+    public function inviter()
+    {
+        return $this->belongsTo(User::class, 'inviter_id', 'id');
+    }
+
+    public function invitees()
+    {
+        return $this->hasMany(User::class, 'inviter_id', 'id');
+    }
+
     /**
      * The attributes that are mass assignable.
      *

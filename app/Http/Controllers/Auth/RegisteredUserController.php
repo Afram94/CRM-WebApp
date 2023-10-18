@@ -33,20 +33,32 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:'.User::class,
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'token' => 'required|exists:invitations,token',  // Validates the invitation token
         ]);
 
+        // Fetch the invitation model that matches the token
+        $invitation = Invitation::where('token', $request->token)->firstOrFail();
+
+        // Create the user with the inviter_id
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'inviter_id' => $invitation->inviter_id,  // Link the user to the inviter
         ]);
 
+        // Delete the invitation so the token can't be used again
+        $invitation->delete();
+
+        // Fire the Registered event
         event(new Registered($user));
 
+        // Log the user in
         Auth::login($user);
 
         return redirect(RouteServiceProvider::HOME);
     }
+
 }

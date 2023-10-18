@@ -19,11 +19,11 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <>
-              <ToastContainer />
-              <App {...props} />
-            </>
-          );
+          <>
+            <ToastContainer />
+            <App {...props} />
+          </>
+        );
     },
     progress: {
         color: '#4B5563',

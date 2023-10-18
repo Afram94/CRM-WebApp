@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\InviteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +58,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/export-single-customer-csv/{customerId}', [ExportController::class, 'exportSingleCustomerCsv']);
 
 });
+
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/generate-invite', [InviteController::class, 'invite'])->name('invite');
+    Route::post('/invite', [InviteController::class, 'processInvite'])->name('process.invite');
+});
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
