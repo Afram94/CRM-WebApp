@@ -12,6 +12,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        token: '',  // Add this line
     });
 
     useEffect(() => {
@@ -25,6 +26,17 @@ export default function Register() {
 
         post(route('register'));
     };
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("URL Parameters are: ", urlParams.toString());
+        const token = urlParams.get('token');
+        
+        if (token !== null) {
+            setData('token', token);
+        }
+        // ...rest of your code
+    }, []);
 
     return (
         <GuestLayout>
@@ -95,6 +107,9 @@ export default function Register() {
                         onChange={(e) => setData('password_confirmation', e.target.value)}
                         required
                     />
+
+                    <input type="hidden" name="token" value={data.token} />
+
 
                     <InputError message={errors.password_confirmation} className="mt-2" />
                 </div>

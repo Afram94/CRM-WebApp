@@ -25,7 +25,7 @@ class InviteController extends Controller
         $token = Str::random(32);
 
         Invitation::create([
-            'inviter_id' => Auth::id(),
+            'user_id' => Auth::id(),
             'email' => $request->email,
             'token' => $token,
         ]);

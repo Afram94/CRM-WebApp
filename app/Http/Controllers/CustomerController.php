@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Customer;
+use App\Models\User;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
@@ -37,11 +38,37 @@ class CustomerController extends Controller
     
 
         public function index(Request $request) {
-            $user = auth()->user();
+           /*  $user = auth()->user();
             $search = $request->input('search');
 
             // Start the query
-            $query = Customer::where('user_id', $user->id);
+            $query = Customer::where('user_id', $user->id); */
+
+
+            $user = auth()->user();
+            $search = $request->input('search');
+
+            // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+            $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+            // Fetch all users that have the same parent_user_id (including the parent)
+            $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                            ->orWhere('id', $parentUserId)
+                                            ->pluck('id')->toArray();
+
+            // Start the query
+            $query = Customer::whereIn('user_id', $allUserIdsUnderSameParent);
+
+            // If there's a search term, filter the customers by it.
+            if ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'LIKE', '%' . $search . '%')
+                        ->orWhere('email', 'LIKE', '%' . $search . '%')
+                        ->orWhere('phone_number', 'LIKE', '%' . $search . '%');
+                });
+            }
+
+
 
             // If there's a search term, filter the customers by it. 
             if ($search) {

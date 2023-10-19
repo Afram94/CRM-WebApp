@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Invitation;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -12,50 +13,51 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
-    public function create(): Response
+    public function create(): InertiaResponse
     {
         return Inertia::render('Auth/Register');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'token' => 'required|exists:invitations,token',  // Validates the invitation token
+            'token' => 'nullable|string', // Add this to handle the optional token
         ]);
 
-        // Fetch the invitation model that matches the token
-        $invitation = Invitation::where('token', $request->token)->firstOrFail();
+        $user_id = null; // Initialize to null
 
-        // Create the user with the inviter_id
+        // Check if a token is present in the request
+        if ($request->filled('token')) {
+            $token = $request->input('token');
+            $invitation = Invitation::where('token', $token)->first();
+            
+            
+            if (!$invitation) {
+                return redirect('/register')->withErrors(['token' => 'Invalid token']);
+            }
+
+            $user_id = $invitation->user_id; // Set user_id if the token is valid
+            /* dd($user_id); */
+            // Delete the invitation so the token can't be used again
+            $invitation->delete();
+        }
+
+        // Create the user
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'inviter_id' => $invitation->inviter_id,  // Link the user to the inviter
+            'user_id' => $user_id, // Will be null if no valid token is found
         ]);
 
-        // Delete the invitation so the token can't be used again
-        $invitation->delete();
-
-        // Fire the Registered event
         event(new Registered($user));
-
-        // Log the user in
         Auth::login($user);
 
         return redirect(RouteServiceProvider::HOME);

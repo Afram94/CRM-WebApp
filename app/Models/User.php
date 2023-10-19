@@ -21,12 +21,12 @@ class User extends Authenticatable
 
     public function inviter()
     {
-        return $this->belongsTo(User::class, 'inviter_id', 'id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
-    public function invitees()
+    public function children()
     {
-        return $this->hasMany(User::class, 'inviter_id', 'id');
+        return $this->hasMany(User::class, 'user_id', 'id');
     }
 
     /**
@@ -38,6 +38,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'user_id',
     ];
 
     /**

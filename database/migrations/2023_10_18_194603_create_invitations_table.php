@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('invitations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('inviter_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('email');
             $table->string('token');
             $table->timestamps();
 
-            $table->foreign('inviter_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

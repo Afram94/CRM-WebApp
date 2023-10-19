@@ -13,9 +13,8 @@ use App\Mail\InviteMail;
 
 
 class InviteMail extends Mailable
+
 {
-
-
     use Queueable, SerializesModels;
 
     public $token;
@@ -27,30 +26,32 @@ class InviteMail extends Mailable
 
     public function build()
     {
-        return $this->view('emails.invitation')
-                    ->with(['url' => url('/register?token=' . $this->token)]);
+        return $this->view('invitation')
+                    ->with(['url' => url('/register?token=' . $this->token)])
+                    ->subject('Invite Mail'); // Moved the subject here for simplicity
     }
+
 
 
     /**
      * Get the message envelope.
      */
-    public function envelope(): Envelope
+    /* public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Invite Mail',
         );
-    }
+    } */
 
     /**
      * Get the message content definition.
      */
-    public function content(): Content
+    /* public function content(): Content
     {
         return new Content(
             view: 'invite',
         );
-    }
+    } */
 
     /**
      * Get the attachments for the message.
