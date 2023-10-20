@@ -36,6 +36,7 @@ type PaginatedResponse<T> = {
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
+        allUserIdsUnderSameParent: User[];
         user: User;
         customers: PaginatedResponse<Customer>;
     };

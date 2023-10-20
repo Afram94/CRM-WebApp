@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,27 +36,30 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Display a listing of the customers
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
-
+    
     // Show the form for creating a new customer
     Route::get('customers/create', [CustomerController::class, 'create'])->name('customers.create');
-
+    
     // Store a newly created customer in storage
     Route::post('customers', [CustomerController::class, 'store'])->name('customers.store');
-
+    
     // Display the specified customer
     Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
-
+    
     // Show the form for editing the specified customer
     Route::get('customers/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
-
+    
     // Update the specified customer in storage
     Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
-
+    
     // Remove the specified customer from storage
     Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
-
+    
     Route::get('/export-csv', [ExportController::class, 'exportCsv']);
     Route::get('/export-single-customer-csv/{customerId}', [ExportController::class, 'exportSingleCustomerCsv']);
+
+
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
 
 });
 
