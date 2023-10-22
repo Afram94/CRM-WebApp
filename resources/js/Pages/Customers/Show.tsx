@@ -17,6 +17,7 @@ import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
 import Dropdown from '@/Components/Dropdown';
 import SecondaryButton from '@/Components/SecondaryButton';
+import CreateModalNotes from '../Notes/Components/CreateModalNotes';
 
 const Show = ({ auth }: PageProps) => {
 
@@ -150,6 +151,7 @@ const Show = ({ auth }: PageProps) => {
                         <PrimaryButton onClick={downloadCsv} className="btn btn-primary">
                             Download Customers as CSV
                         </PrimaryButton>
+                        {/* <CreateModalNotes customer={} /> */}
                     </div>
                     
                     <table className="min-w-full table-auto">
@@ -178,17 +180,32 @@ const Show = ({ auth }: PageProps) => {
                                         </PrimaryButton>
                                     </td>
                                     <td className="py-2 px-6">
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <PrimaryButton>...</PrimaryButton>
-                                        </Dropdown.Trigger>
-                                        <Dropdown.Content>
-                                            <PrimaryButton onClick={()=> downloadSingleCustomerCsv(customer.id)} className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
-                                                Download CSV
-                                            </PrimaryButton>
-                                        </Dropdown.Content>
-                                    </Dropdown>
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <PrimaryButton>...</PrimaryButton>
+                                            </Dropdown.Trigger>
+                                            <Dropdown.Content>
+
+                                                {/* Button to download CSV */}
+                                                <PrimaryButton 
+                                                    onClick={() => downloadSingleCustomerCsv(customer.id)} 
+                                                    className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
+                                                >
+                                                    Download CSV
+                                                </PrimaryButton>
+
+                                                {/* Divider or some spacing between the buttons */}
+                                                <div className="my-2 border-t border-gray-200"></div>
+
+                                                {/* Button to create a new note */}
+                                                <div className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
+                                                    <CreateModalNotes customerId={customer.id} />
+                                                </div>
+
+                                            </Dropdown.Content>
+                                        </Dropdown>
                                     </td>
+
                                 </tr>
                             ))}
                         </tbody>

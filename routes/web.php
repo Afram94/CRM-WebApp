@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\NoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +61,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
+
+
+    
+    
+    
+    Route::get('/notes/{id}', [NoteController::class, 'index'])->name('notes.index');
+    Route::get('/notes/create', [NoteController::class, 'create'])->name('notes.create');
+    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
 
 });
 
