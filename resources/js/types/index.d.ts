@@ -14,6 +14,14 @@ export interface Customer {
     // ... any other fields for Customer
 }
 
+export interface Note {
+    id: number;
+    customer_name: string;
+    user_name: string;
+    title: string;
+    content: string;
+}
+
 type PaginatedResponse<T> = {
     current_page: number;
     data: T[];
@@ -39,5 +47,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         allUserIdsUnderSameParent: User[];
         user: User;
         customers: PaginatedResponse<Customer>;
+        notes: Note[];
     };
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 
-import { FaHome, FaUser, FaCog, FaBars, FaUsers, FaUserTie } from 'react-icons/fa';
+import { FaHome, FaUser, FaCog, FaBars, FaUsers, FaUserTie, FaStickyNote } from 'react-icons/fa';
 
 // Type definition for the Sidebar props
 type SidebarProps = {
@@ -18,6 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const pages = [
     { name: 'Home', path: '/dashboard', icon: FaHome },
     { name: 'Customers', path: '/customers', icon: FaUserTie },
+    { name: 'Notes', path: '/notes', icon: FaStickyNote },
     { name: 'Users', path: '/users', icon: FaUsers },
     { name: 'Settings', path: '/settings', icon: FaCog }
     // Add more pages as needed

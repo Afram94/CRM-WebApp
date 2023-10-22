@@ -9,10 +9,15 @@ class Note extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['customer_id', 'title', 'content'];
+    protected $fillable = ['user_id', 'customer_id', 'title', 'content'];
 
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

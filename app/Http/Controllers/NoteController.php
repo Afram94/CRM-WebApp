@@ -10,17 +10,37 @@ class NoteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index($id)
+    public function index()
     {
-        /* $note = Note::find($id);
+        // Retrieve notes and their associated customers, but only fetch 'id' and 'name' fields for customers.
+        $notes = Note::with('customer:id,name')->get();
 
-        if (!$note) {
-            return redirect()->route('dashboard')->with('error', 'Note not found');
-        }
+        // Loop through each note to transform its structure.
+        $notes = $notes->transform(function ($note, $key) {
+        // Attach the customer's name as a new property 'customer_name' to each note.
+        $note->customer_name = $note->customer->name;
+        $note->user_name = $note->user->name;
 
-        return Inertia::render('Notes/Show', [
-            'note' => $note,
-        ]); */
+        // Remove the 'customer' object from each note if you don't want to send the entire customer object.
+        // After this line, $note->customer will not be accessible.
+        unset($note->customer);
+        unset($note->user);
+
+        return $note;
+    });
+
+
+    /* dd('After unset', $notes); */
+
+    return inertia('Notes/Show', [
+        'auth' => [
+            'notes' => $notes,
+        ]
+    ]);
+    }
+
+    public function getSigleNote($id) {
+
     }
 
     /**
@@ -28,8 +48,8 @@ class NoteController extends Controller
      */
     public function create()
     {
-        dd('Reached the create method');
-        return Inertia::render('Notes/Create');
+        //dd('Reached the create method');
+        return inertia('Notes/Create');
     }
 
     /**
@@ -42,9 +62,12 @@ class NoteController extends Controller
             'title' => 'required|string',
             'content' => 'required|string',
         ]);
-    
+
+        // Add the user_id to the $data array
+        $data['user_id'] = auth()->id();
+
         $note = Note::create($data);
-    
+
         /* return redirect()->route('dashboard')->with('success', 'Note created successfully'); */
         return response()->json($data);
     }
