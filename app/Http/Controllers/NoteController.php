@@ -11,7 +11,7 @@ class NoteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
             /* // Retrieve notes and their associated customers, but only fetch 'id' and 'name' fields for customers.
             $notes = Note::with('customer:id,name')->get();
@@ -37,6 +37,7 @@ class NoteController extends Controller
         ]); */
 
         $user = auth()->user();
+        $search = $request->input('search');
 
         // Why I have this: $parendUserId = $user->user_id ? $user->user_id : $user->id;
         // To ensure that when I log in as a child user, I have the 'user_id' available.
@@ -53,9 +54,19 @@ class NoteController extends Controller
 
         // Retrieve notes and their associated customers, but only fetch 'id' and 'name' fields for customers.
         // Only retrieve notes for users who share the same parent_user_id.
-        $notes = Note::with('customer:id,name')
-        ->whereIn('user_id', $allUserIdsUnderSameParent)
-        ->get();
+        $query = Note::with('customer:id,name')
+        ->whereIn('user_id', $allUserIdsUnderSameParent);
+
+        // If there's a search term, filter the notes by title or content
+        $search = $request->input('search');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'LIKE', '%' . $search . '%')
+                ->orWhere('content', 'LIKE', '%' . $search . '%');
+            });
+        }
+
+        $notes = $query->get();
 
         
 
@@ -68,6 +79,14 @@ class NoteController extends Controller
         
             return $note;
         });
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'auth' => [
+                        'notes' => $notes,
+                    ]
+                ]);
+            }
 
             return inertia('Notes/Show', [
                 'auth' => [
