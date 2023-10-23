@@ -1,21 +1,21 @@
+import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { PageProps } from '@/types';
-import React, { useState } from 'react';
 
-const Show: React.FC<PageProps> = ({ auth }) => {
-  const [expandedNoteId, setExpandedNoteId] = useState<number | null>(null);
+const CustomerNotes: React.FC<PageProps> = ({ auth }) => {
+    const [expandedNoteId, setExpandedNoteId] = useState<number | null>(null);
 
-  const toggleNote = (noteId: number) => {
-    setExpandedNoteId(expandedNoteId === noteId ? null : noteId);
-  };
-
+    const toggleNote = (noteId: number) => {
+        setExpandedNoteId(expandedNoteId === noteId ? null : noteId);
+    };
   return (
     <MainLayout>
+        {auth && auth.customer_notes.length > 0 ? (
       <div className="flex flex-wrap justify-around">
-        {auth.notes.map((note) => (
+        {auth.customer_notes.map((note) => (
           <div key={note.id} className="m-4 relative">
             <div
-              className="w-full h-auto p-5 rounded-lg shadow-lg border border-yellow-300 cursor-pointer"
+              className=" h-auto p-5 rounded-lg shadow-lg border border-yellow-300 cursor-pointer"
               style={{
                 background: 'linear-gradient(45deg, #FEF3C7, #FEE2B3)',
                 boxShadow: '0px 4px 6px rgba(0,0,0,0.1)'
@@ -55,8 +55,13 @@ const Show: React.FC<PageProps> = ({ auth }) => {
           </div>
         ))}
       </div>
+      ) : (
+            <div className='flex flex-col justify-center items-center h-full text-[30px] font-semibold'>    
+                <p className=''>This customer does not have any note...</p>
+            </div> 
+      )}
     </MainLayout>
   );
 };
 
-export default Show;
+export default CustomerNotes;

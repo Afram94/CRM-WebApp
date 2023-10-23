@@ -18,6 +18,7 @@ import DangerButton from '@/Components/DangerButton';
 import Dropdown from '@/Components/Dropdown';
 import SecondaryButton from '@/Components/SecondaryButton';
 import CreateModalNotes from '../Notes/Components/CreateModalNotes';
+import { Link } from '@inertiajs/react';
 
 const Show = ({ auth }: PageProps) => {
 
@@ -192,6 +193,15 @@ const Show = ({ auth }: PageProps) => {
                                                     className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
                                                 >
                                                     Download CSV
+                                                </PrimaryButton>
+
+
+                                                <PrimaryButton 
+                                                    className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
+                                                >
+                                                    <Link href={`/notes/${customer.id}`}>
+                                                        <a>Show Notes</a>
+                                                    </Link>
                                                 </PrimaryButton>
 
                                                 {/* Divider or some spacing between the buttons */}

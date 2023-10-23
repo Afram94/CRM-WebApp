@@ -48,5 +48,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         user: User;
         customers: PaginatedResponse<Customer>;
         notes: Note[];
+        customer_notes:Note[];
     };
 };

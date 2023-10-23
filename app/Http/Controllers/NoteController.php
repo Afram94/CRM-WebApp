@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Note;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class NoteController extends Controller
@@ -12,36 +13,102 @@ class NoteController extends Controller
      */
     public function index()
     {
-        // Retrieve notes and their associated customers, but only fetch 'id' and 'name' fields for customers.
-        $notes = Note::with('customer:id,name')->get();
+            /* // Retrieve notes and their associated customers, but only fetch 'id' and 'name' fields for customers.
+            $notes = Note::with('customer:id,name')->get();
 
-        // Loop through each note to transform its structure.
+            // Loop through each note to transform its structure.
+            $notes = $notes->transform(function ($note, $key) {
+            // Attach the customer's name as a new property 'customer_name' to each note.
+            $note->customer_name = $note->customer->name;
+            $note->user_name = $note->user->name;
+
+            // Remove the 'customer' object from each note if you don't want to send the entire customer object.
+            // After this line, $note->customer will not be accessible.
+            unset($note->customer);
+            unset($note->user);
+
+            return $note;
+        });
+
+        return inertia('Notes/Show', [
+            'auth' => [
+                'notes' => $notes,
+            ]
+        ]); */
+
+        $user = auth()->user();
+
+        // Why I have this: $parendUserId = $user->user_id ? $user->user_id : $user->id;
+        // To ensure that when I log in as a child user, I have the 'user_id' available.
+        // Having 'user_id' allows me to compare both 'id' and 'user_id' to find all related users under the same parent.
+        // If I only used '$parentId = $user->id;', it would not correctly identify the parent-child relationship.
+        // By using '$parentId = $user->user_id ? $user->user_id : $user->id;', I capture the parent's ID, regardless of whether I'm logged in as a parent or a child.
+        // This unified 'parentId' value ensures that the query fetches all users under the same parent, be it other children or the parent itself.
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+        ->orWhere('id', $parentUserId)
+        ->pluck('id')->toArray();
+
+        // Retrieve notes and their associated customers, but only fetch 'id' and 'name' fields for customers.
+        // Only retrieve notes for users who share the same parent_user_id.
+        $notes = Note::with('customer:id,name')
+        ->whereIn('user_id', $allUserIdsUnderSameParent)
+        ->get();
+
+        
+
+        // Transform the notes, similar to your existing code.
         $notes = $notes->transform(function ($note, $key) {
-        // Attach the customer's name as a new property 'customer_name' to each note.
         $note->customer_name = $note->customer->name;
         $note->user_name = $note->user->name;
-
-        // Remove the 'customer' object from each note if you don't want to send the entire customer object.
-        // After this line, $note->customer will not be accessible.
         unset($note->customer);
         unset($note->user);
+        
+            return $note;
+        });
 
-        return $note;
-    });
-
-
-    /* dd('After unset', $notes); */
-
-    return inertia('Notes/Show', [
-        'auth' => [
-            'notes' => $notes,
-        ]
-    ]);
+            return inertia('Notes/Show', [
+                'auth' => [
+                    'notes' => $notes,
+                ]
+            ]);
     }
 
-    public function getSigleNote($id) {
+    public function getNotesByCustomer($customer_id)
+    {
+        $user = auth()->user();
 
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+        // Retrieve notes by customer ID and also filter by user IDs who share the same parent_user_id
+        $notes = Note::where('customer_id', $customer_id)
+                    ->whereIn('user_id', $allUserIdsUnderSameParent)
+                    ->with('customer:id,name')
+                    ->get();
+
+        $notes = $notes->transform(function ($note, $key) {
+            $note->customer_name = $note->customer->name;
+            $note->user_name = $note->user->name;
+            unset($note->customer);
+            unset($note->user);
+            return $note;
+        });
+
+        return inertia('Notes/CustomerNotes', [
+            'auth' => [
+                'customer_notes' => $notes,
+            ]
+        ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
