@@ -62,6 +62,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
 
+    Route::get('users/{id}/permissions', [UserController::class, 'getPermissions']);
+    Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
+
+
 
     
     

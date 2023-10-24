@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';  // Adjust this import to your actual file structure
 import { PageProps } from '@/types';
+import PermissionModal from './PermissionModal';
+import PrimaryButton from '@/Components/PrimaryButton';
 
 const Show: React.FC<PageProps> = ({ auth }) => {
+
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [userPermissions, setUserPermissions] = useState<string[]>([]); // Added new state
+
+  const openPermissionModal = (userId: number) => {
+    setSelectedUserId(userId);
+    setShowPermissionModal(true);
+  };
+
+  const closePermissionModal = () => {
+    setShowPermissionModal(false);
+  };
+
+  // New function to update user permissions
+  const handlePermissionsUpdate = (updatedPermissions: string[]) => {
+    setUserPermissions(updatedPermissions);
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto p-4">
@@ -21,11 +42,20 @@ const Show: React.FC<PageProps> = ({ auth }) => {
                 <td className="py-2 px-4 border">{user.id}</td>
                 <td className="py-2 px-4 border">{user.name}</td>
                 <td className="py-2 px-4 border">{user.email}</td>
+                 <td className='py-2 px-4 border'>
+                  <PrimaryButton onClick={() => openPermissionModal(user.id)}>Set Permissions</PrimaryButton>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <PermissionModal
+        show={showPermissionModal}
+        onClose={closePermissionModal}
+        selectedUserId={selectedUserId}
+        onPermissionsUpdate={handlePermissionsUpdate} // Pass the new prop
+      />
     </MainLayout>
   );
 }

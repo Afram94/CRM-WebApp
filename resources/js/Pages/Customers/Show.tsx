@@ -20,6 +20,11 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import CreateModalNotes from '../Notes/Components/CreateModalNotes';
 import { Link } from '@inertiajs/react';
 
+interface Permission {
+    name: string;
+    hasPermission: boolean;
+  }
+
 const Show = ({ auth }: PageProps) => {
 
     const Delete = (customerId: number) => {
@@ -130,7 +135,16 @@ const Show = ({ auth }: PageProps) => {
         }
       };
         
-    
+      const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
+      const [userId, setUserId] = useState(auth.user.id);
+      
+      useEffect(() => {
+          axios.get(`users/${userId}/permissions`) // Replace userId with the actual user ID
+          .then(response => {
+              setUserPermissions(response.data);
+              console.log(response.data);
+          });
+      }, []);
       
     return (
         <MainLayout>
@@ -148,7 +162,9 @@ const Show = ({ auth }: PageProps) => {
                             />
                             <DangerButton onClick={handleReset}>Reset</DangerButton>
                         </div>
-                        <CreateModal />
+                        {userPermissions.find(perm => perm.name === 'create customer' && perm.hasPermission) && (
+                            <CreateModal />
+                         )} 
                         <PrimaryButton onClick={downloadCsv} className="btn btn-primary">
                             Download Customers as CSV
                         </PrimaryButton>

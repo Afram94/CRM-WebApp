@@ -15,6 +15,9 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
 class RegisteredUserController extends Controller
 {
     public function create(): InertiaResponse
@@ -56,6 +59,15 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'user_id' => $user_id, // Will be null if no valid token is found
         ]);
+
+        // Assign the role based on the user type
+        if ($user_id === null) {
+            // This is a main user, assign 'admin' role
+            $user->assignRole('admin');
+        } else {
+            // This is a child user, assign 'user' role
+            $user->assignRole('user');
+        }
 
         event(new Registered($user));
         Auth::login($user);
