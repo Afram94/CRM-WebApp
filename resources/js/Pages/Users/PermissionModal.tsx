@@ -23,7 +23,7 @@ const PermissionModal: React.FC<{ show: boolean, onClose: () => void, selectedUs
   }, [selectedUserId]);
 
   // New function to update permissions
-  const updatePermissions = async (userId: number, updatedPermissionIds: number[]) => {
+  /* const updatePermissions = async (userId: number, updatedPermissionIds: number[]) => {
     try {
       const response = await axios.post(`users/${userId}/permissions`, {
         permissions: updatedPermissionIds
@@ -32,7 +32,7 @@ const PermissionModal: React.FC<{ show: boolean, onClose: () => void, selectedUs
     } catch (error) {
       console.error("Failed to update permissions", error);
     }
-  };
+  }; */
 
   // Updated togglePermission function
   const togglePermission = (permissionId: number) => {
