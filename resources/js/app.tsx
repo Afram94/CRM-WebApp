@@ -3,6 +3,7 @@ import '../css/app.css';
 
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import { PermissionsProvider } from '../providers/permissionsContext';
 
 
 
@@ -19,10 +20,9 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-          <>
-            <ToastContainer />
+          <PermissionsProvider>
             <App {...props} />
-          </>
+          </PermissionsProvider>
         );
     },
     progress: {

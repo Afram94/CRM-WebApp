@@ -20,6 +20,8 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import CreateModalNotes from '../Notes/Components/CreateModalNotes';
 import { Link } from '@inertiajs/react';
 
+import { usePermissions } from '../../../providers/permissionsContext';
+
 interface Permission {
     name: string;
     hasPermission: boolean;
@@ -135,7 +137,7 @@ const Show = ({ auth }: PageProps) => {
         }
       };
         
-      const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
+      /* const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
       const [userId, setUserId] = useState(auth.user.id);
       
       useEffect(() => {
@@ -144,7 +146,8 @@ const Show = ({ auth }: PageProps) => {
               setUserPermissions(response.data);
               console.log(response.data);
           });
-      }, []);
+      }, []); */
+      const { userPermissions } = usePermissions();
       
     return (
         <MainLayout>
@@ -245,8 +248,12 @@ const Show = ({ auth }: PageProps) => {
                 </div>
             ) : (
                 <div className='flex flex-col justify-center items-center h-full text-[30px] font-semibold'>
-                    Add a new Customer
-                    <span className='animate-pulse'><CreateModal /></span>
+                    {userPermissions.find(perm => perm.name === 'create customer' && perm.hasPermission) && (
+                        <div>
+                            <p>Add a new Customer</p>
+                            <span className='animate-pulse flex justify-center'><CreateModal /></span>
+                        </div>        
+                    )} 
                 </div>   
             )}
         </MainLayout>

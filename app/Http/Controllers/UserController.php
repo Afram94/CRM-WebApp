@@ -28,6 +28,25 @@ class UserController extends Controller
         ]);
     }
 
+    public function getTheCurrentUser()
+{
+    $user = auth()->user();
+
+    if (!$user) {
+        return response()->json(['error' => 'Unauthenticated'], 401);
+    }
+
+    return response()->json($user, 200);
+}
+
+    public function getRoles()
+    {
+        $user = auth()->user();
+        $roles = $user->getRoleNames();  // Returns a collection
+
+        return response()->json(['roles' => $roles]);
+    }
+
 
     public function getPermissions($id)
     {
