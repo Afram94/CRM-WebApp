@@ -6,12 +6,20 @@ export interface User {
     email_verified_at: string;
 }
 
+export interface CustomFieldValue {
+    id: number;
+    customer_id: number;
+    field_id: number;
+    value: string;
+    // ... any other fields for CustomFieldValue
+}
+
 export interface Customer {
     id: number;
     name: string;
     email: string;
     phone_number: string;
-    /* afram: string; */
+    custom_fields_values: CustomFieldValue[];  // <-- Add this line
     // ... any other fields for Customer
 }
 

@@ -26,4 +26,10 @@ class Customer extends Model
     {
         return $this->hasMany(Note::class);
     }
+
+    public function customFieldsValues()
+    {
+        return $this->hasMany(CustomerCustomFieldValue::class, 'customer_id', 'id');
+    }
+
 }

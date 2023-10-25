@@ -21,6 +21,7 @@ import CreateModalNotes from '../Notes/Components/CreateModalNotes';
 import { Link } from '@inertiajs/react';
 
 import { usePermissions } from '../../../providers/permissionsContext';
+import AddCustomField from '../CustomFieldForm';
 
 interface Permission {
     name: string;
@@ -78,6 +79,7 @@ const Show = ({ auth }: PageProps) => {
                 try {
                     const response = await axios.get(`/customers?search=${searchTerm}`);
                     if (response.data && response.data.auth && response.data.auth.customers) {
+                        console.log("Debug: ", response.data.auth.customers.data);
                         setFilteredCustomers(response.data.auth.customers.data);
                     }
                 } catch (error) {
@@ -93,7 +95,7 @@ const Show = ({ auth }: PageProps) => {
         }
     }, [searchTerm, auth.customers.data]);
 
-
+    /* console.log(filteredCustomers); */
     const handleReset = () => {
         setSearchTerm('');
     };
@@ -173,6 +175,8 @@ const Show = ({ auth }: PageProps) => {
                         </PrimaryButton>
                         {/* <CreateModalNotes customer={} /> */}
                     </div>
+
+                    <AddCustomField />
                     
                     <table className="min-w-full table-auto">
                         <thead>
@@ -180,6 +184,7 @@ const Show = ({ auth }: PageProps) => {
                                 <th className="py-2 px-6 text-left">Name</th>
                                 <th className="py-2 px-6 text-left">Email</th>
                                 <th className="py-2 px-6 text-left">Phone Number</th>
+                                <th className="py-2 px-6 text-left">Last Name</th>
                                 <th className="py-2 px-6 text-left">Edit</th>
                                 <th className="py-2 px-6 text-left">Delete</th>
                                 <th className="py-2 px-6 text-left">Other</th>
@@ -191,6 +196,16 @@ const Show = ({ auth }: PageProps) => {
                                     <td className="py-2 px-6">{customer.name}</td>
                                     <td className="py-2 px-6">{customer.email}</td>
                                     <td className="py-2 px-6">{customer.phone_number}</td>
+                                    <td className="py-2 px-6">
+                                    {/* Loop through customFieldsValues to display custom field data */}
+                                    
+                                    {customer.custom_fields_values?.map((fieldValue, index) => (
+                                        <td className="py-2 px-6" key={index}>
+                                            {fieldValue.value}
+                                        </td>
+                                    ))}
+                                        
+                                    </td>
                                     <td className="py-2 px-6">
                                         <EditModal customer={customer} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
                                     </td>

@@ -23,7 +23,7 @@ class CustomerController extends Controller
     return Inertia::render('Dashboard', ['message' => 'Customer created!']);
     } */
 
-    public function store(Request $request) {
+    /* public function store(Request $request) {
         $customer = new Customer([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
@@ -33,7 +33,33 @@ class CustomerController extends Controller
         $customer->save();
 
         return response()->json($customer);
+    } */
+
+    public function store(Request $request)
+    {
+        $customer = new Customer([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'phone_number' => $request->input('phone_number'),
+        ]);
+        $customer->user_id = auth()->id();
+        $customer->save();
+        
+        // Handle custom field values
+        $customFieldValues = $request->input('custom_field_values', []);
+        foreach ($customFieldValues as $fieldId => $value) {
+            $fieldValue = new CustomerCustomFieldValue([
+                'customer_id' => $customer->id,
+                'field_id' => $fieldId,
+                'value' => $value,
+            ]);
+    
+            $fieldValue->save();
+        }
+    
+        return response()->json($customer);
     }
+    
 
     
 
@@ -57,7 +83,7 @@ class CustomerController extends Controller
                                             ->pluck('id')->toArray();
 
             // Start the query
-            $query = Customer::whereIn('user_id', $allUserIdsUnderSameParent);
+            $query = Customer::with('customFieldsValues')->whereIn('user_id', $allUserIdsUnderSameParent);
 
             // If there's a search term, filter the customers by it. 
             if ($search) {
@@ -68,6 +94,10 @@ class CustomerController extends Controller
 
             // Fetch customers that belong to the authenticated user
             $customers = $query->latest()->paginate(10);
+
+            /* dd($customers->toArray()['data']); */
+
+
 
             // If the request is an AJAX call, return the customers as JSON.
             if ($request->wantsJson()) {

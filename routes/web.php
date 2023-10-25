@@ -10,6 +10,10 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
 
+use App\Http\Controllers\CustomFieldController;
+use App\Http\Controllers\CustomerCustomFieldController;
+use App\Http\Controllers\CustomerCustomFieldValueController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -69,6 +73,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
 
 
+    Route::post('/add-custom-field', [CustomerCustomFieldController::class, 'store']);
+    Route::post('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'store']);
+    Route::get('/custom-fields', [CustomerCustomFieldController::class, 'index']);
 
     
     
