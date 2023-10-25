@@ -150,6 +150,9 @@ const Show = ({ auth }: PageProps) => {
           });
       }, []); */
       const { userPermissions } = usePermissions();
+
+      const maxFields = Math.max(...filteredCustomers.map(c => c.custom_fields_values?.length || 0));
+
       
     return (
         <MainLayout>
@@ -185,6 +188,7 @@ const Show = ({ auth }: PageProps) => {
                                 <th className="py-2 px-6 text-left">Email</th>
                                 <th className="py-2 px-6 text-left">Phone Number</th>
                                 <th className="py-2 px-6 text-left">Last Name</th>
+                                <th className="py-2 px-6 text-left">Org Number</th>
                                 <th className="py-2 px-6 text-left">Edit</th>
                                 <th className="py-2 px-6 text-left">Delete</th>
                                 <th className="py-2 px-6 text-left">Other</th>
@@ -192,20 +196,27 @@ const Show = ({ auth }: PageProps) => {
                         </thead>
                         <tbody className="text-gray-600 text-sm font-light">
                             {filteredCustomers.map((customer) => (
+                                
                                 <tr className="border-b border-gray-200 hover:bg-gray-100" key={customer.id}>
                                     <td className="py-2 px-6">{customer.name}</td>
                                     <td className="py-2 px-6">{customer.email}</td>
                                     <td className="py-2 px-6">{customer.phone_number}</td>
-                                    <td className="py-2 px-6">
+                                    
                                     {/* Loop through customFieldsValues to display custom field data */}
                                     
-                                    {customer.custom_fields_values?.map((fieldValue, index) => (
-                                        <td className="py-2 px-6" key={index}>
-                                            {fieldValue.value}
-                                        </td>
-                                    ))}
+                                    {Array.from({ length: maxFields }).map((_, index) => {
+                                        if (customer.custom_fields_values && index < customer.custom_fields_values.length) {
+                                            return (
+                                                <td className="py-2 px-6" key={index}>
+                                                    {customer.custom_fields_values[index].value}
+                                                </td>
+                                            );
+                                        } else {
+                                            return <td className="py-2 px-6" key={index}></td>; // Empty cell
+                                        }
+                                    })}
                                         
-                                    </td>
+                                    
                                     <td className="py-2 px-6">
                                         <EditModal customer={customer} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
                                     </td>
