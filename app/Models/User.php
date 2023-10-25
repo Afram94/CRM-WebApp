@@ -35,6 +35,16 @@ class User extends Authenticatable
         return $this->hasMany(Note::class);
     }
 
+    public function customFields()
+    {
+        return $this->hasMany(CustomField::class);
+    }
+
+    public function getMainUserId()
+    {
+        return $this->user_id ?? $this->id;
+    }
+
     /**
      * The attributes that are mass assignable.
      *
