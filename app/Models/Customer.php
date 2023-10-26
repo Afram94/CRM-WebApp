@@ -32,4 +32,16 @@ class Customer extends Model
         return $this->hasMany(CustomerCustomFieldValue::class, 'customer_id', 'id');
     }
 
+    /* public function customFields()
+    {
+        return $this->belongsToMany(
+            CustomerCustomField::class,
+            'customer_custom_field_values', // Pivot table name
+            'customer_id',                  // Foreign key on pivot table for Customer model
+            'field_id'                      // Foreign key on pivot table for CustomerCustomField model
+        )
+        ->withPivot('value');               // Get the value from the pivot table if needed
+    } */
+
+
 }

@@ -90,6 +90,7 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
             {/* Dynamic custom fields */}
             {customFields.map(field => (
                 <TextInput
+                    className='p-2 px-4 border border-1'
                     key={field.id}
                     type={field.field_type}
                     placeholder={field.field_name}
@@ -98,7 +99,7 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
                 />
             ))}
         </div>
-        <div className='mt-3'>
+        <div className='mt-3 flex justify-end'>
             <PrimaryButton onClick={handleSave}>Create Customer</PrimaryButton>
         </div>
         </>

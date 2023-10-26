@@ -15,4 +15,9 @@ class CustomerCustomFieldValue extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
+
+    public function customField()
+    {
+        return $this->belongsTo(CustomerCustomField::class, 'field_id', 'id');
+    }
 }
