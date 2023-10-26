@@ -83,7 +83,8 @@ class CustomerController extends Controller
                                             ->pluck('id')->toArray();
 
             // Start the query
-            $query = Customer::with('customFieldsValues')->whereIn('user_id', $allUserIdsUnderSameParent);
+            $query = Customer::with(['customFieldsValues', 'customFieldsValues.customField'])
+                ->whereIn('user_id', $allUserIdsUnderSameParent);
 
             // If there's a search term, filter the customers by it. 
             if ($search) {

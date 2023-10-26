@@ -11,6 +11,15 @@ export interface CustomFieldValue {
     customer_id: number;
     field_id: number;
     value: string;
+    custom_field: CustomField;
+    // ... any other fields for CustomFieldValue
+}
+
+export interface CustomField {
+    id: number;
+    user_id: number;
+    field_name: string;
+    field_type: string;
     // ... any other fields for CustomFieldValue
 }
 

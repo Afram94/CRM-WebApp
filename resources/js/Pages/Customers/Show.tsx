@@ -95,7 +95,7 @@ const Show = ({ auth }: PageProps) => {
         }
     }, [searchTerm, auth.customers.data]);
 
-    /* console.log(filteredCustomers); */
+    console.log(filteredCustomers);
     const handleReset = () => {
         setSearchTerm('');
     };
@@ -153,6 +153,15 @@ const Show = ({ auth }: PageProps) => {
 
       const maxFields = Math.max(...filteredCustomers.map(c => c.custom_fields_values?.length || 0));
 
+      const distinctCustomFieldNames = [
+        ...new Set(
+            filteredCustomers
+                .flatMap(c => c.custom_fields_values || [])
+                .filter(field => field.custom_field) // Filter out any undefined custom_field
+                .map(field => field.custom_field.field_name)
+        )
+    ];
+
       
     return (
         <MainLayout>
@@ -187,8 +196,11 @@ const Show = ({ auth }: PageProps) => {
                                 <th className="py-2 px-6 text-left">Name</th>
                                 <th className="py-2 px-6 text-left">Email</th>
                                 <th className="py-2 px-6 text-left">Phone Number</th>
-                                <th className="py-2 px-6 text-left">Last Name</th>
-                                <th className="py-2 px-6 text-left">Org Number</th>
+                                {distinctCustomFieldNames.map(name => (
+                                    <th className="py-2 px-6 text-left" key={name}>{name}</th>
+                                ))}
+                                {/* <th className="py-2 px-6 text-left">Last Name</th>
+                                <th className="py-2 px-6 text-left">Org Number</th> */}
                                 <th className="py-2 px-6 text-left">Edit</th>
                                 <th className="py-2 px-6 text-left">Delete</th>
                                 <th className="py-2 px-6 text-left">Other</th>
