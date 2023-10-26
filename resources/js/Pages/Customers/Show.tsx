@@ -21,7 +21,7 @@ import CreateModalNotes from '../Notes/Components/CreateModalNotes';
 import { Link } from '@inertiajs/react';
 
 import { usePermissions } from '../../../providers/permissionsContext';
-import AddCustomField from '../CustomFieldForm';
+import CustomerCustomFieldForm from './CustomerCustomFieldForm';
 
 interface Permission {
     name: string;
@@ -179,7 +179,7 @@ const Show = ({ auth }: PageProps) => {
                         {/* <CreateModalNotes customer={} /> */}
                     </div>
 
-                    <AddCustomField />
+                    <CustomerCustomFieldForm />
                     
                     <table className="min-w-full table-auto">
                         <thead>
