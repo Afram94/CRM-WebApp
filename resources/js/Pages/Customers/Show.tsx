@@ -20,6 +20,9 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import CreateModalNotes from '../Notes/Components/CreateModalNotes';
 import { Link } from '@inertiajs/react';
 
+import { usePermissions } from '../../../providers/permissionsContext';
+import CustomerCustomFieldForm from './CustomerCustomFieldForm';
+
 interface Permission {
     name: string;
     hasPermission: boolean;
@@ -76,6 +79,7 @@ const Show = ({ auth }: PageProps) => {
                 try {
                     const response = await axios.get(`/customers?search=${searchTerm}`);
                     if (response.data && response.data.auth && response.data.auth.customers) {
+                        console.log("Debug: ", response.data.auth.customers.data);
                         setFilteredCustomers(response.data.auth.customers.data);
                     }
                 } catch (error) {
@@ -91,7 +95,7 @@ const Show = ({ auth }: PageProps) => {
         }
     }, [searchTerm, auth.customers.data]);
 
-
+    console.log(filteredCustomers);
     const handleReset = () => {
         setSearchTerm('');
     };
@@ -135,7 +139,7 @@ const Show = ({ auth }: PageProps) => {
         }
       };
         
-      const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
+      /* const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
       const [userId, setUserId] = useState(auth.user.id);
       
       useEffect(() => {
@@ -144,7 +148,20 @@ const Show = ({ auth }: PageProps) => {
               setUserPermissions(response.data);
               console.log(response.data);
           });
-      }, []);
+      }, []); */
+      const { userPermissions } = usePermissions();
+
+      const maxFields = Math.max(...filteredCustomers.map(c => c.custom_fields_values?.length || 0));
+
+      const distinctCustomFieldNames = [
+        ...new Set(
+            filteredCustomers
+                .flatMap(c => c.custom_fields_values || [])
+                .filter(field => field.custom_field) // Filter out any undefined custom_field
+                .map(field => field.custom_field.field_name)
+        )
+    ];
+
       
     return (
         <MainLayout>
@@ -170,6 +187,8 @@ const Show = ({ auth }: PageProps) => {
                         </PrimaryButton>
                         {/* <CreateModalNotes customer={} /> */}
                     </div>
+
+                    <CustomerCustomFieldForm />
                     
                     <table className="min-w-full table-auto">
                         <thead>
@@ -177,6 +196,11 @@ const Show = ({ auth }: PageProps) => {
                                 <th className="py-2 px-6 text-left">Name</th>
                                 <th className="py-2 px-6 text-left">Email</th>
                                 <th className="py-2 px-6 text-left">Phone Number</th>
+                                {distinctCustomFieldNames.map(name => (
+                                    <th className="py-2 px-6 text-left" key={name}>{name}</th>
+                                ))}
+                                {/* <th className="py-2 px-6 text-left">Last Name</th>
+                                <th className="py-2 px-6 text-left">Org Number</th> */}
                                 <th className="py-2 px-6 text-left">Edit</th>
                                 <th className="py-2 px-6 text-left">Delete</th>
                                 <th className="py-2 px-6 text-left">Other</th>
@@ -184,10 +208,27 @@ const Show = ({ auth }: PageProps) => {
                         </thead>
                         <tbody className="text-gray-600 text-sm font-light">
                             {filteredCustomers.map((customer) => (
+                                
                                 <tr className="border-b border-gray-200 hover:bg-gray-100" key={customer.id}>
                                     <td className="py-2 px-6">{customer.name}</td>
                                     <td className="py-2 px-6">{customer.email}</td>
                                     <td className="py-2 px-6">{customer.phone_number}</td>
+                                    
+                                    {/* Loop through customFieldsValues to display custom field data */}
+                                    
+                                    {Array.from({ length: maxFields }).map((_, index) => {
+                                        if (customer.custom_fields_values && index < customer.custom_fields_values.length) {
+                                            return (
+                                                <td className="py-2 px-6" key={index}>
+                                                    {customer.custom_fields_values[index].value}
+                                                </td>
+                                            );
+                                        } else {
+                                            return <td className="py-2 px-6" key={index}></td>; // Empty cell
+                                        }
+                                    })}
+                                        
+                                    
                                     <td className="py-2 px-6">
                                         <EditModal customer={customer} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
                                     </td>
@@ -245,8 +286,12 @@ const Show = ({ auth }: PageProps) => {
                 </div>
             ) : (
                 <div className='flex flex-col justify-center items-center h-full text-[30px] font-semibold'>
-                    Add a new Customer
-                    <span className='animate-pulse'><CreateModal /></span>
+                    {userPermissions.find(perm => perm.name === 'create customer' && perm.hasPermission) && (
+                        <div>
+                            <p>Add a new Customer</p>
+                            <span className='animate-pulse flex justify-center'><CreateModal /></span>
+                        </div>        
+                    )} 
                 </div>   
             )}
         </MainLayout>

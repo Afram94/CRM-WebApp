@@ -6,12 +6,29 @@ export interface User {
     email_verified_at: string;
 }
 
+export interface CustomFieldValue {
+    id?: number;  // Making it optional
+    customer_id?: number;  // Making it optional
+    custom_field?: any;  // Making it optional
+    field_id: number;
+    value: any;
+    // ... any other fields for CustomFieldValue
+}
+
+export interface CustomField {
+    id: number;
+    user_id: number;
+    field_name: string;
+    field_type: string;
+    // ... any other fields for CustomFieldValue
+}
+
 export interface Customer {
     id: number;
     name: string;
     email: string;
     phone_number: string;
-    /* afram: string; */
+    custom_fields_values: CustomFieldValue[];  // <-- Add this line
     // ... any other fields for Customer
 }
 
