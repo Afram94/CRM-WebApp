@@ -33,37 +33,56 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
         });
     }, []);
 
+    console.log("customFields", customFields)
+
+    // Define an asynchronous function named handleSave
     const handleSave = async () => {
         try {
-            // First, create the customer
+            // Attempt to create a new customer using the form data
+            // Make an HTTP POST request to the '/customers' endpoint
             const response = await axios.post('/customers', formData);
+
+            // Check if the server responds with data
             if (response.data) {
+                // Log the server's response data to the console
                 console.log(response.data);
-                const customerId = response.data.id; // Assuming the server returns the customer object with an id
-    
-                // Then, save the custom fields for the customer
+
+                // Extract the customer ID from the server's response
+                // (Assuming the server returns a customer object with an 'id' property)
+                const customerId = response.data.id;
+
+                // Prepare the payload for custom fields
                 const customFieldPayload = {
+                    // Using reduce to transform the customFields array into an object
                     custom_fields: customFields.reduce(
                         (acc, field) => ({
-                            ...acc,
-                            [field.id]: formData[field.field_name]
+                            ...acc, // Keep the existing key-value pairs
+                            [field.id]: formData[field.field_name] // Add new key-value pairs
                         }),
-                        {}
+                        {} // Initial value for the accumulator is an empty object
                     )
                 };
+
+                // Make an HTTP POST request to save the custom fields for the created customer
                 await axios.post(`/customers/${customerId}/custom-fields`, customFieldPayload);
-    
-                // Close the modal and show toast
+                console.log("customFieldPayload", customFieldPayload)
+                // Close the modal after successful customer creation
                 closeModal();
+
+                // Display a toast message indicating successful customer creation
                 successToast('Customer successfully created');
+
+                // Reload a specific component (assumed to be named 'Show') after a slight delay
                 setTimeout(() => {
                     Inertia.reload({only: ['Show']});
                 }, 1300);
             }
         } catch (error) {
+            // Log any errors to the console
             console.error(error);
         }
     };
+
 
     return (
         <>

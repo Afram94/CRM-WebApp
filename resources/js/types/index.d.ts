@@ -7,11 +7,11 @@ export interface User {
 }
 
 export interface CustomFieldValue {
-    id: number;
-    customer_id: number;
+    id?: number;  // Making it optional
+    customer_id?: number;  // Making it optional
+    custom_field?: any;  // Making it optional
     field_id: number;
-    value: string;
-    custom_field: CustomField;
+    value: any;
     // ... any other fields for CustomFieldValue
 }
 

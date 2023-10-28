@@ -46,7 +46,7 @@ class CustomerController extends Controller
         $customer->save();
         
         // Handle custom field values
-        $customFieldValues = $request->input('custom_field_values', []);
+        /* $customFieldValues = $request->input('custom_field_values', []);
         foreach ($customFieldValues as $fieldId => $value) {
             $fieldValue = new CustomerCustomFieldValue([
                 'customer_id' => $customer->id,
@@ -55,7 +55,7 @@ class CustomerController extends Controller
             ]);
     
             $fieldValue->save();
-        }
+        } */
     
         return response()->json($customer);
     }
