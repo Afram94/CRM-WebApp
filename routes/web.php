@@ -73,9 +73,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
 
 
-    Route::post('/add-custom-field', [CustomerCustomFieldController::class, 'store']);
     Route::post('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'store']);
+    Route::put('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'update']);
     Route::get('/custom-fields', [CustomerCustomFieldController::class, 'index']);
+    Route::post('/add-custom-field', [CustomerCustomFieldController::class, 'store']);
 
     
     
