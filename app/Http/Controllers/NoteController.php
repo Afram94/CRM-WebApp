@@ -6,6 +6,10 @@ use App\Models\Note;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Broadcast;
+use App\Events\NoteCreated;
+
+
 class NoteController extends Controller
 {
     /**
@@ -153,6 +157,9 @@ class NoteController extends Controller
         $data['user_id'] = auth()->id();
 
         $note = Note::create($data);
+
+        Broadcast::event(new NoteCreated($note)); // This line is correctly placed here.
+
 
         /* return redirect()->route('dashboard')->with('success', 'Note created successfully'); */
         return response()->json($data);

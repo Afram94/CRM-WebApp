@@ -1,44 +1,69 @@
 import DangerButton from '@/Components/DangerButton';
 import TextInput from '@/Components/TextInput';
 import MainLayout from '@/Layouts/MainLayout';
-import { PageProps } from '@/types';
+import { Note, PageProps } from '@/types';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { useEcho } from '../../../providers/WebSocketContext';
+
+interface NewNoteEventPayload {
+  note: Note;
+}
 
 const Show: React.FC<PageProps> = ({ auth }) => {
   const [expandedNoteId, setExpandedNoteId] = useState<number | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredNotes, setFilteredNotes] = useState(auth.notes); // State for filtered notes
+  const [filteredNotes, setFilteredNotes] = useState(auth.notes);
 
   const toggleNote = (noteId: number) => {
     setExpandedNoteId(expandedNoteId === noteId ? null : noteId);
   };
 
+  const echo = useEcho(); // <-- Correct place to call useWebSocket
 
   useEffect(() => {
+    const handleNewNote = (newNote: Note) => {
+      setFilteredNotes((prevNotes) => [...prevNotes, newNote]);
+    };
+
+    if (echo) {
+      echo.channel('new-note').listen('NewNoteEvent', (e: NewNoteEventPayload) => {
+        handleNewNote(e.note);
+      });
+    }
+  
+    // Search logic
     if (searchTerm === '') {
-        setFilteredNotes(auth.notes);
-        return;
+      setFilteredNotes(auth.notes);
+      return;
     }
-
+  
     if (searchTerm.length >= 3) {
-        const fetchFilteredNotes = async () => {
-            try {
-                const response = await axios.get(`/notes?search=${searchTerm}`);
-                if (response.data && response.data.auth && response.data.auth.notes) {
-                    setFilteredNotes(response.data.auth.notes);
-                }
-            } catch (error) {
-                console.error('Failed to fetch filtered notes:', error);
-            }
-        };
-
-        fetchFilteredNotes();
+      const fetchFilteredNotes = async () => {
+        try {
+          const response = await axios.get(`/notes?search=${searchTerm}`);
+          if (response.data && response.data.auth && response.data.auth.notes) {
+            setFilteredNotes(response.data.auth.notes);
+          }
+        } catch (error) {
+          console.error('Failed to fetch filtered notes:', error);
+        }
+      };
+  
+      fetchFilteredNotes();
     } else {
-        setFilteredNotes(auth.notes);
+      setFilteredNotes(auth.notes);
     }
-  }, [searchTerm, auth.notes]);
+    
+    // Cleanup
+    // Cleanup: Leave the channel
+  return () => {
+    if (echo) {
+      echo.leave('new-note');
+    }
+  };
+}, [searchTerm, auth.notes, echo]);
 
   const handleReset = () => {
     setSearchTerm('');

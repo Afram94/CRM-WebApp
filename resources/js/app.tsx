@@ -1,15 +1,25 @@
+// First, import necessary packages
 import './bootstrap';
 import '../css/app.css';
-
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
-import { PermissionsProvider } from '../providers/permissionsContext';
-
-
 
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+
+import { PermissionsProvider } from '../providers/permissionsContext';
+import { EchoProvider } from '../providers/WebSocketContext';
+
+declare global {
+  interface Window {
+    Echo: any;
+    Pusher: any;
+  }
+}
+
+
+
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -20,9 +30,11 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-          <PermissionsProvider>
-            <App {...props} />
-          </PermissionsProvider>
+          <EchoProvider>
+            <PermissionsProvider>
+              <App {...props} />
+            </PermissionsProvider>
+          </EchoProvider>
         );
     },
     progress: {
