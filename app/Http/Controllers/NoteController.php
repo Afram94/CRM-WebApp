@@ -118,10 +118,11 @@ class NoteController extends Controller
                     ->get();
 
         $notes = $notes->transform(function ($note, $key) {
-            $note->customer_name = $note->customer->name;
-            $note->user_name = $note->user->name;
+            $note->customer_name = $note->customer['name'];
+            $note->user_name = $note->user['name'];
             unset($note->customer);
             unset($note->user);
+
             return $note;
         });
 
@@ -158,7 +159,10 @@ class NoteController extends Controller
 
         $note = Note::create($data);
 
-        Broadcast::event(new NoteCreated($note)); // This line is correctly placed here.
+        /* Broadcast::event(new NoteCreated($note)); // This line is correctly placed here. */
+        /* event(new NoteCreated($note)); */
+        broadcast(new NoteCreated($note))->toOthers();
+
 
 
         /* return redirect()->route('dashboard')->with('success', 'Note created successfully'); */

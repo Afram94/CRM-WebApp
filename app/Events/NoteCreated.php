@@ -4,8 +4,6 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -20,12 +18,11 @@ class NoteCreated implements ShouldBroadcast  // Notice the ShouldBroadcast
     /**
      * Create a new event instance.
      *
-     * @param  array  $note  The note information.
+     * @param  Note  $note  The note information.
      */
-
     public function __construct(Note $note)
     {
-        $this->note = $note->toArray();
+        $this->note = $note;
     }
 
     /**
@@ -35,10 +32,29 @@ class NoteCreated implements ShouldBroadcast  // Notice the ShouldBroadcast
      */
     public function broadcastWith()
     {
+        // Eager load user and customer data
+        $this->note->load(['user:id,name', 'customer:id,name']);
+        
+        // Set the customer_name and user_name from the loaded relationships
+        $this->note->customer_name = $this->note->customer->name;
+        $this->note->user_name = $this->note->user->name;
+
+        // Return the flattened note structure
         return [
-            'note' => $this->note,
+            'note' => [
+                'id' => $this->note->id,
+                'customer_id' => $this->note->customer_id,
+                'user_id' => $this->note->user_id,
+                'title' => $this->note->title,
+                'content' => $this->note->content,
+                'created_at' => $this->note->created_at,
+                'updated_at' => $this->note->updated_at,
+                'customer_name' => $this->note->customer_name,
+                'user_name' => $this->note->user_name,
+            ],
         ];
     }
+
 
     /**
      * Get the channels the event should broadcast on.
@@ -47,7 +63,6 @@ class NoteCreated implements ShouldBroadcast  // Notice the ShouldBroadcast
      */
     public function broadcastOn()
     {
-        // Update this to be a meaningful channel, maybe based on the user ID or note ID.
-        return new PrivateChannel('note-channel-' . $this->note['id']);
+        return new Channel('new-note');
     }
 }

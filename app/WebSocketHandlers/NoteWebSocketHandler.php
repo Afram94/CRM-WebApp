@@ -26,9 +26,13 @@ class NoteWebSocketHandler extends WebSocketHandler
             
             // Your logic to save or manipulate the note, for example:
             // $newNote = Note::create($data['note']);
+
+            $newNote = Note::create($data['note']); // Ensure this is saving the note.
             
             // Then broadcast event
-            broadcast(new NoteCreatedEvent($data['note']));
+            /* broadcast(new NoteCreatedEvent($data['note'])); */
+            broadcast(new NoteCreatedEvent($newNote));
+
         }
     }
 

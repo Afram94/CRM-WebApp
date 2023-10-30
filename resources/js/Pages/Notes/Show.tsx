@@ -24,12 +24,24 @@ const Show: React.FC<PageProps> = ({ auth }) => {
 
   useEffect(() => {
     const handleNewNote = (newNote: Note) => {
-      setFilteredNotes((prevNotes) => [...prevNotes, newNote]);
+      setFilteredNotes((prevNotes) => {
+        if (newNote.user_name) {  // Ensure the new note has a user name
+          return [...prevNotes, newNote];
+        } else {
+          // Handle this case, e.g., provide a default name or fetch additional data
+          console.error('New note does not have a user_name:', newNote);
+          return prevNotes;  // For now, keep the old notes as they were
+        }
+      });
     };
 
     if (echo) {
-      echo.channel('new-note').listen('NewNoteEvent', (e: NewNoteEventPayload) => {
-        handleNewNote(e.note);
+      echo.channel('new-note').listen('NoteCreated', (e: NewNoteEventPayload) => {
+        if (e.note && e.note.user_name) {
+          handleNewNote(e.note);
+        } else {
+          console.error('Received incomplete note:', e.note);
+        }
       });
     }
   
@@ -113,7 +125,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
             </div>
             <div className="absolute top-0 right-0 mt-2 mr-2 group select-none">
               <div className="w-6 h-6 bg-blue-500 text-white text-[17px] rounded-full flex items-center justify-center">
-                {note.user_name.charAt(0).toUpperCase()}
+              {note.user_name ? note.user_name.charAt(0).toUpperCase() : ''}
               </div>
               <div
                 className="absolute left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-gray-900 text-white rounded px-2 py-1 text-xs select-none"
