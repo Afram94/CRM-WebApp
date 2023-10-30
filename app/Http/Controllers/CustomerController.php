@@ -37,11 +37,20 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
+        // Validate incoming request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:customers,email',
+            'phone_number' => 'required|numeric',
+        ]);
+
+        // If validation passes, create new customer
         $customer = new Customer([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'phone_number' => $request->input('phone_number'),
         ]);
+
         $customer->user_id = auth()->id();
         $customer->save();
         
