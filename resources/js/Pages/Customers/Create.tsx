@@ -28,26 +28,39 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
     const [customFields, setCustomFields] = useState<any[]>([]);  // Add this line
 
     // Fetch custom fields when component mounts
-    useEffect(() => {
-        axios.get('/custom-fields').then(response => {
+    // Initialize default values for custom fields
+    const initializeDefaultCustomFields = (fields: any[]): { [key: string]: string | boolean } => {
+        const defaultValues: { [key: string]: string | boolean } = {};
+        fields.forEach(field => {
+            if (field.field_type === 'boolean') {
+                defaultValues[field.field_name] = true;
+            } else {
+                defaultValues[field.field_name] = '';
+            }
+        })
+        return defaultValues;
+    };
+
+    const fetchCustomFields = async () => {
+        try {
+            const response = await axios.get('/custom-fields');
             setCustomFields(response.data);
 
             // Initialize default values for custom fields
-            const defaultCustomFields: { [key: string]: string | boolean } = {};
-            response.data.forEach((field: any) => {
-                if (field.field_type === 'boolean') {
-                    defaultCustomFields[field.field_name] = true;
-                } else {
-                    defaultCustomFields[field.field_name] = '';
-                }
-            });
+            const defaultValues = initializeDefaultCustomFields(response.data);
 
             // Merge default custom field values into formData
             setFormData({
                 ...formData,
-                ...defaultCustomFields
+                ...defaultValues
             });
-        });
+        } catch (error) {
+            console.error("Error fetching custom fields:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchCustomFields();
     }, []);
 
 
