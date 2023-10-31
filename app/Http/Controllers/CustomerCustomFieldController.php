@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CustomerCustomField;
+use App\Models\User;
+
 
 class CustomerCustomFieldController extends Controller
 {
@@ -22,7 +24,47 @@ class CustomerCustomFieldController extends Controller
 
     public function index()
     {
-        $fields = CustomerCustomField::where('user_id', auth()->id())->get();
+        // Get the ID of the authenticated user
+        $authId = auth()->id();
+
+        // Check if this user is a main user by looking for an entry with the same 'id' 
+        // and where 'user_id' is null. If found, this user is considered a "main" user.
+        $isMainUser = User::where('id', $authId)->whereNull('user_id')->exists();
+        // If the user is not a main user, then it's assumed to be a child user.
+        $isChildUser = ! $isMainUser;
+
+        // Initialize an empty array to hold user IDs that will be used for querying the custom fields.
+        $userIdsForQuery = [];
+
+        // Logic for handling main users
+        if ($isMainUser) {
+            // Fetch IDs of all child users whose 'user_id' matches the main user's 'id'.
+            // The pluck method retrieves all values for the given column ('id' in this case) and 
+            // converts them into an array.
+            $childUserIds = User::where('user_id', $authId)->pluck('id')->toArray();
+
+            // Combine the main user's ID with the child user IDs.
+            // array_merge is used to merge the IDs into a single array.
+            $userIdsForQuery = array_merge([$authId], $childUserIds);
+        }
+
+        // Logic for handling child users
+        if ($isChildUser) {
+            // Fetch the ID of the main user by finding the value in 'user_id' column
+            // for the authenticated user.
+            $mainUserId = User::where('id', $authId)->value('user_id');
+
+            // Set the IDs for query to include both the child user and its main user.
+            $userIdsForQuery = [$authId, $mainUserId];
+        }
+
+        // Finally, fetch custom fields from CustomerCustomField that match any of the user IDs.
+        // The whereIn method filters the query by the 'user_id' column based on the array of IDs.
+        $fields = CustomerCustomField::whereIn('user_id', $userIdsForQuery)->get();
+
+        // Return the custom fields as a JSON response.
         return response()->json($fields);
     }
+
+
 }

@@ -190,6 +190,7 @@ const Show = ({ auth }: PageProps) => {
 
                     <CustomerCustomFieldForm />
                     
+                    <div className='overflow-x-auto'>
                     <table className="min-w-full table-auto">
                         <thead>
                             <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
@@ -217,15 +218,24 @@ const Show = ({ auth }: PageProps) => {
                                     {/* Loop through customFieldsValues to display custom field data */}
                                     
                                     {Array.from({ length: maxFields }).map((_, index) => {
-                                        if (customer.custom_fields_values && index < customer.custom_fields_values.length) {
-                                            return (
-                                                <td className="py-2 px-6" key={index}>
-                                                    {customer.custom_fields_values[index].value}
-                                                </td>
-                                            );
-                                        } else {
-                                            return <td className="py-2 px-6" key={index}></td>; // Empty cell
+                                    if (customer.custom_fields_values && index < customer.custom_fields_values.length) {
+                                        const customFieldValue = customer.custom_fields_values[index].custom_field;
+                                        let displayValue = customer.custom_fields_values[index].value;
+
+                                        if (customFieldValue.field_type === 'boolean') {
+                                        displayValue = parseInt(displayValue) === 1 ? <div className='w-4 h-4 bg-green-400 rounded-full animate-pulse'></div>
+                                         :
+                                        <div className='w-4 h-4 bg-red-400 rounded-full animate-pulse'></div>;
                                         }
+
+                                        return (
+                                        <td className="py-2 px-6" key={index}>
+                                            {displayValue}
+                                        </td>
+                                        );
+                                    } else {
+                                        return <td className="py-2 px-6" key={index}></td>; // Empty cell
+                                    }
                                     })}
                                         
                                     
@@ -277,7 +287,7 @@ const Show = ({ auth }: PageProps) => {
                             ))}
                         </tbody>
                     </table>
-
+                    </div>
                     {auth.customers.links && (
                         <div className="mt-4">
                             <PaginationComponent links={auth.customers.links} />

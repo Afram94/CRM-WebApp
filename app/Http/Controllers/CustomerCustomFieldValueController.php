@@ -98,7 +98,7 @@ class CustomerCustomFieldValueController extends Controller
                     $validationRules["custom_fields.$id"] = 'required|date';
                     break;
                 case 'boolean':
-                    $validationRules["custom_fields.$fieldId"] = 'required|boolean';
+                    $validationRules["custom_fields.$id"] = 'required|boolean';
                     break;
                 // ... add other cases as needed
                 default:
