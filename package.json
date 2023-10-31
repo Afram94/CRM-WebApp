@@ -26,8 +26,12 @@
     },
     "dependencies": {
         "@inertiajs/inertia": "^0.11.1",
+        "@types/pusher-js": "^5.1.0",
+        "laravel-echo": "^1.15.3",
+        "pusher-js": "^8.3.0",
         "react-icons": "^4.11.0",
         "react-toastify": "^9.1.3",
+        "socket.io-client": "^4.7.2",
         "sweetalert2": "^11.7.32"
     }
 }

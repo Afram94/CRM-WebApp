@@ -1,44 +1,81 @@
 import DangerButton from '@/Components/DangerButton';
 import TextInput from '@/Components/TextInput';
 import MainLayout from '@/Layouts/MainLayout';
-import { PageProps } from '@/types';
+import { Note, PageProps } from '@/types';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { useEcho } from '../../../providers/WebSocketContext';
+
+interface NewNoteEventPayload {
+  note: Note;
+}
 
 const Show: React.FC<PageProps> = ({ auth }) => {
   const [expandedNoteId, setExpandedNoteId] = useState<number | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredNotes, setFilteredNotes] = useState(auth.notes); // State for filtered notes
+  const [filteredNotes, setFilteredNotes] = useState(auth.notes);
 
   const toggleNote = (noteId: number) => {
     setExpandedNoteId(expandedNoteId === noteId ? null : noteId);
   };
 
+  const echo = useEcho(); // <-- Correct place to call useWebSocket
 
   useEffect(() => {
+    const handleNewNote = (newNote: Note) => {
+      setFilteredNotes((prevNotes) => {
+        if (newNote.user_name) {  // Ensure the new note has a user name
+          return [...prevNotes, newNote];
+        } else {
+          // Handle this case, e.g., provide a default name or fetch additional data
+          console.error('New note does not have a user_name:', newNote);
+          return prevNotes;  // For now, keep the old notes as they were
+        }
+      });
+    };
+
+    if (echo) {
+      echo.channel('new-note').listen('NoteCreated', (e: NewNoteEventPayload) => {
+        if (e.note && e.note.user_name) {
+          handleNewNote(e.note);
+        } else {
+          console.error('Received incomplete note:', e.note);
+        }
+      });
+    }
+  
+    // Search logic
     if (searchTerm === '') {
-        setFilteredNotes(auth.notes);
-        return;
+      setFilteredNotes(auth.notes);
+      return;
     }
-
+  
     if (searchTerm.length >= 3) {
-        const fetchFilteredNotes = async () => {
-            try {
-                const response = await axios.get(`/notes?search=${searchTerm}`);
-                if (response.data && response.data.auth && response.data.auth.notes) {
-                    setFilteredNotes(response.data.auth.notes);
-                }
-            } catch (error) {
-                console.error('Failed to fetch filtered notes:', error);
-            }
-        };
-
-        fetchFilteredNotes();
+      const fetchFilteredNotes = async () => {
+        try {
+          const response = await axios.get(`/notes?search=${searchTerm}`);
+          if (response.data && response.data.auth && response.data.auth.notes) {
+            setFilteredNotes(response.data.auth.notes);
+          }
+        } catch (error) {
+          console.error('Failed to fetch filtered notes:', error);
+        }
+      };
+  
+      fetchFilteredNotes();
     } else {
-        setFilteredNotes(auth.notes);
+      setFilteredNotes(auth.notes);
     }
-  }, [searchTerm, auth.notes]);
+    
+    // Cleanup
+    // Cleanup: Leave the channel
+  return () => {
+    if (echo) {
+      echo.leave('new-note');
+    }
+  };
+}, [searchTerm, auth.notes, echo]);
 
   const handleReset = () => {
     setSearchTerm('');
@@ -88,7 +125,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
             </div>
             <div className="absolute top-0 right-0 mt-2 mr-2 group select-none">
               <div className="w-6 h-6 bg-blue-500 text-white text-[17px] rounded-full flex items-center justify-center">
-                {note.user_name.charAt(0).toUpperCase()}
+              {note.user_name ? note.user_name.charAt(0).toUpperCase() : ''}
               </div>
               <div
                 className="absolute left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-gray-900 text-white rounded px-2 py-1 text-xs select-none"

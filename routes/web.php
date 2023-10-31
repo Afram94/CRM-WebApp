@@ -14,6 +14,9 @@ use App\Http\Controllers\CustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldValueController;
 
+use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -79,7 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/add-custom-field', [CustomerCustomFieldController::class, 'store']);
 
     
-    
+    WebSocketsRouter::webSocket('/app', \App\WebSocketHandlers\NoteWebSocketHandler::class);
     
     Route::get('/notes', [NoteController::class, 'index'])->name('notes.index');
     Route::get('notes/{customer_id}', [NoteController::class, 'getNotesByCustomer'])->name('customer.notes');
