@@ -27,14 +27,44 @@ class CustomerCustomFieldController extends Controller
         // Get the ID of the authenticated user
         $authId = auth()->id();
 
-        // Fetch the user_id from the users table where the id matches the authId
-        // The value method retrieves the user_id value directly without fetching the entire row
-        $userIdOfSameAuth = User::where('id', $authId)->value('user_id');
+        // Check if this user is a main user by looking for an entry with the same 'id' 
+        // and where 'user_id' is null. If found, this user is considered a "main" user.
+        $isMainUser = User::where('id', $authId)->whereNull('user_id')->exists();
+        // If the user is not a main user, then it's assumed to be a child user.
+        $isChildUser = ! $isMainUser;
 
-        // Fetch entries from CustomerCustomField for both authId and userIdOfSameAuth
-        $fields = CustomerCustomField::whereIn('user_id', [$authId, $userIdOfSameAuth])->get();
+        // Initialize an empty array to hold user IDs that will be used for querying the custom fields.
+        $userIdsForQuery = [];
 
+        // Logic for handling main users
+        if ($isMainUser) {
+            // Fetch IDs of all child users whose 'user_id' matches the main user's 'id'.
+            // The pluck method retrieves all values for the given column ('id' in this case) and 
+            // converts them into an array.
+            $childUserIds = User::where('user_id', $authId)->pluck('id')->toArray();
+
+            // Combine the main user's ID with the child user IDs.
+            // array_merge is used to merge the IDs into a single array.
+            $userIdsForQuery = array_merge([$authId], $childUserIds);
+        }
+
+        // Logic for handling child users
+        if ($isChildUser) {
+            // Fetch the ID of the main user by finding the value in 'user_id' column
+            // for the authenticated user.
+            $mainUserId = User::where('id', $authId)->value('user_id');
+
+            // Set the IDs for query to include both the child user and its main user.
+            $userIdsForQuery = [$authId, $mainUserId];
+        }
+
+        // Finally, fetch custom fields from CustomerCustomField that match any of the user IDs.
+        // The whereIn method filters the query by the 'user_id' column based on the array of IDs.
+        $fields = CustomerCustomField::whereIn('user_id', $userIdsForQuery)->get();
+
+        // Return the custom fields as a JSON response.
         return response()->json($fields);
     }
+
 
 }
