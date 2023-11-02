@@ -69,6 +69,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
 
+    Route::get('/child/under-parent', [UserController::class, 'getAllChildUsersUnderSameParent']);
+
     Route::get('/current-user', [UserController::class, 'getTheCurrentUser']);
 
     Route::get('/user-roles', [UserController::class, 'getRoles']);

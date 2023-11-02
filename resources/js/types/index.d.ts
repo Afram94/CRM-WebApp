@@ -1,9 +1,9 @@
 export interface User {
     id: number;
-    user_id: number;
+    user_id: number | null;
     name: string;
     email: string;
-    email_verified_at: string;
+    email_verified_at: string | null;
 }
 
 export interface CustomFieldValue {
@@ -34,6 +34,8 @@ export interface Customer {
 
 export interface Note {
     id: number;
+    customer_id: number;
+    user_id: number;
     customer_name: string;
     user_name: string;
     title: string;
