@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -23,6 +24,8 @@ class NoteCreated implements ShouldBroadcast  // Notice the ShouldBroadcast
     public function __construct(Note $note)
     {
         $this->note = $note;
+        /* \Log::info('Event Constructed', ['note' => $note, 'user_id' => $note->user_id]); */
+
     }
 
     /**
@@ -63,6 +66,24 @@ class NoteCreated implements ShouldBroadcast  // Notice the ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('new-note');
+        $userId = $this->note->user_id;
+        $channels = [];
+
+        if ($userId !== null) {
+            // This is a child user
+            $parentUserId = $this->note->user->user_id;
+            $channels[] = new PrivateChannel('notes-for-user-' . $userId);
+            $channels[] = new PrivateChannel('notes-for-user-' . $parentUserId);
+        } else {
+            // This is a parent user
+            $childUsers = User::where('user_id', $this->note->user->id)->get();
+            $channels[] = new PrivateChannel('notes-for-user-' . $this->note->user->id);
+            foreach ($childUsers as $childUser) {
+                $channels[] = new PrivateChannel('notes-for-user-' . $childUser->id);
+            }
+        }
+
+        return $channels;
     }
+
 }

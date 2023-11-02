@@ -5,7 +5,9 @@ namespace App\WebSocketHandlers;
 use BeyondCode\LaravelWebSockets\WebSockets\WebSocketHandler;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
-use App\Events\NoteCreatedEvent;
+use App\Events\NoteCreated;
+use App\Models\Note;
+
 
 class NoteWebSocketHandler extends WebSocketHandler
 {
@@ -31,7 +33,7 @@ class NoteWebSocketHandler extends WebSocketHandler
             
             // Then broadcast event
             /* broadcast(new NoteCreatedEvent($data['note'])); */
-            broadcast(new NoteCreatedEvent($newNote));
+            broadcast(new NoteCreated($newNote));
 
         }
     }

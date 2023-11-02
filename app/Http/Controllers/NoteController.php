@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Broadcast;
 use App\Events\NoteCreated;
+use App\Events\NotificationCreated;
+use App\Notifications\NoteNotification;
 
 
 class NoteController extends Controller
@@ -17,28 +19,7 @@ class NoteController extends Controller
      */
     public function index(Request $request)
     {
-            /* // Retrieve notes and their associated customers, but only fetch 'id' and 'name' fields for customers.
-            $notes = Note::with('customer:id,name')->get();
 
-            // Loop through each note to transform its structure.
-            $notes = $notes->transform(function ($note, $key) {
-            // Attach the customer's name as a new property 'customer_name' to each note.
-            $note->customer_name = $note->customer->name;
-            $note->user_name = $note->user->name;
-
-            // Remove the 'customer' object from each note if you don't want to send the entire customer object.
-            // After this line, $note->customer will not be accessible.
-            unset($note->customer);
-            unset($note->user);
-
-            return $note;
-        });
-
-        return inertia('Notes/Show', [
-            'auth' => [
-                'notes' => $notes,
-            ]
-        ]); */
 
         $user = auth()->user();
         $search = $request->input('search');
@@ -87,6 +68,7 @@ class NoteController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'auth' => [
+                        'user' => $user,
                         'notes' => $notes,
                     ]
                 ]);
@@ -94,6 +76,7 @@ class NoteController extends Controller
 
             return inertia('Notes/Show', [
                 'auth' => [
+                    'user' => $user,
                     'notes' => $notes,
                 ]
             ]);
@@ -161,12 +144,20 @@ class NoteController extends Controller
 
         /* Broadcast::event(new NoteCreated($note)); // This line is correctly placed here. */
         /* event(new NoteCreated($note)); */
-        broadcast(new NoteCreated($note))->toOthers();
+        broadcast(new NoteCreated($note))->toOthers(); // use NoteCreated for broadcasting
+        // Create and store notification in database
+        /* $note->user->notify(new NoteNotification($note));
+
+        $userNotification = $note->user->notifications->last();
+
+        broadcast(new NotificationCreated($userNotification))->toOthers(); */
+
+
 
 
 
         /* return redirect()->route('dashboard')->with('success', 'Note created successfully'); */
-        return response()->json($data);
+        return response()->json($note);
     }
 
     /**
