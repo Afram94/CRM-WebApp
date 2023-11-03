@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Broadcast;
 use App\Events\NoteCreated;
+use App\Events\NotificationCreated;
+use App\Notifications\NoteNotification;
 
 
 class NoteController extends Controller
@@ -17,28 +19,7 @@ class NoteController extends Controller
      */
     public function index(Request $request)
     {
-            /* // Retrieve notes and their associated customers, but only fetch 'id' and 'name' fields for customers.
-            $notes = Note::with('customer:id,name')->get();
 
-            // Loop through each note to transform its structure.
-            $notes = $notes->transform(function ($note, $key) {
-            // Attach the customer's name as a new property 'customer_name' to each note.
-            $note->customer_name = $note->customer->name;
-            $note->user_name = $note->user->name;
-
-            // Remove the 'customer' object from each note if you don't want to send the entire customer object.
-            // After this line, $note->customer will not be accessible.
-            unset($note->customer);
-            unset($note->user);
-
-            return $note;
-        });
-
-        return inertia('Notes/Show', [
-            'auth' => [
-                'notes' => $notes,
-            ]
-        ]); */
 
         $user = auth()->user();
         $search = $request->input('search');
@@ -87,6 +68,7 @@ class NoteController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'auth' => [
+                        'user' => $user,
                         'notes' => $notes,
                     ]
                 ]);
@@ -94,6 +76,7 @@ class NoteController extends Controller
 
             return inertia('Notes/Show', [
                 'auth' => [
+                    'user' => $user,
                     'notes' => $notes,
                 ]
             ]);
@@ -161,43 +144,93 @@ class NoteController extends Controller
 
         /* Broadcast::event(new NoteCreated($note)); // This line is correctly placed here. */
         /* event(new NoteCreated($note)); */
-        broadcast(new NoteCreated($note))->toOthers();
+        broadcast(new NoteCreated($note))->toOthers(); // use NoteCreated for broadcasting
+        // Create and store notification in database
+        /* $note->user->notify(new NoteNotification($note));
 
+        $userNotification = $note->user->notifications->last();
+
+        broadcast(new NotificationCreated($userNotification))->toOthers(); */
 
 
         /* return redirect()->route('dashboard')->with('success', 'Note created successfully'); */
-        return response()->json($data);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Note $note)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Note $note)
-    {
-        //
+        return response()->json($note);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Note $note)
+    public function update(Request $request, $id)
     {
-        //
+        // Validation, authorization, and finding the note logic here
+
+        $note = Note::findOrFail($id);
+
+        $user = auth()->user();
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+
+        // Check if note exists and belongs to the authenticated user and the users that belongs to it
+        if (!$note || !in_array($note->user_id, $allUserIdsUnderSameParent)) {
+            return response()->json(['error' => 'note not found or not authorized'], 403);
+        }
+
+        // This if statment may i can use it then if i want to make just the user
+        // who create the note can delete it and no one else can do that
+        // Check if note exists and belongs to the authenticated user
+
+        /* if (!$note || $note->user_id !== auth()->id()) {
+            return response()->json(['error' => 'note not found or not authorized'], 403);
+        } */
+
+        $note->update([
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            // ... add other fields as needed
+        ]);
+        $note->save();
+
+        return response()->json($note);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Note $note)
+    public function destroy($id)
     {
-        //
+        $note = Note::findOrFail($id);
+
+        // This if statment may i can use it then if i want to make just the user
+        // who create the note can delete it and no one else can do that
+        // Ensure the user owns this note
+
+        /* if ($note->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Not authorized'], 403);
+        } */
+
+        $user = auth()->user();
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+
+        // Check if note exists and belongs to the authenticated user and the users that belongs to it
+        if (!$note || !in_array($note->user_id, $allUserIdsUnderSameParent)) {
+            return response()->json(['error' => 'note not found or not authorized'], 403);
+        }
+
+        $note->delete();
+
+        return response()->json(['message' => 'note deleted!'], 200);
     }
 }

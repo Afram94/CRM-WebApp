@@ -69,6 +69,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
 
+    Route::get('/child/under-parent', [UserController::class, 'getAllChildUsersUnderSameParent']);
+
     Route::get('/current-user', [UserController::class, 'getTheCurrentUser']);
 
     Route::get('/user-roles', [UserController::class, 'getRoles']);
@@ -88,6 +90,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('notes/{customer_id}', [NoteController::class, 'getNotesByCustomer'])->name('customer.notes');
     Route::get('/notes/create', [NoteController::class, 'create'])->name('notes.create');
     Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::put('notes/{note}', [NoteController::class, 'update'])->name('notes.update');
+    Route::delete('notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 
 });
 

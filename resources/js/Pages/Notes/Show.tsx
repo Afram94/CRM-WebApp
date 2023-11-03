@@ -1,13 +1,28 @@
 import DangerButton from '@/Components/DangerButton';
 import TextInput from '@/Components/TextInput';
 import MainLayout from '@/Layouts/MainLayout';
-import { Note, PageProps } from '@/types';
+import { Note, PageProps, User } from '@/types';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useEcho } from '../../../providers/WebSocketContext';
+import EditModal from './Components/EditModal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import { FaTrashRestore } from 'react-icons/fa';
+import { Inertia } from '@inertiajs/inertia';
+
+interface Notification {
+  id: string;
+  type: string;
+  data: any; // or a more specific type if you know it
+  // ... any other fields
+}
 
 interface NewNoteEventPayload {
   note: Note;
+}
+
+interface NewNotificationEventPayload {
+  notification: Notification;
 }
 
 const Show: React.FC<PageProps> = ({ auth }) => {
@@ -15,36 +30,31 @@ const Show: React.FC<PageProps> = ({ auth }) => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredNotes, setFilteredNotes] = useState(auth.notes);
+  const [notifications, setNotifications] = useState<any[]>([]); // Replace any with your Notification type
 
   const toggleNote = (noteId: number) => {
     setExpandedNoteId(expandedNoteId === noteId ? null : noteId);
   };
 
-  const echo = useEcho(); // <-- Correct place to call useWebSocket
+  const handleDelete = async (noteId: number) => {
+    /* if(window.confirm('Are you sure you want to delete this customer?')) { */
+      try {
+        await axios.delete(`/notes/${noteId}`);
+        /* successToast('The Customer has been deleted'); */
+        /* setTimeout(() => {
+            Inertia.reload({only: ['Show']}); // Delayed reload
+        }, 1300); */ // Delay for 2 seconds. Adjust as needed
+        // Any other post-delete operations, e.g. refreshing a list
+      } catch (error) {
+        
+        console.error('There was an error deleting the customer:', error);
+      }
+    /* } */
+    // .data (beacuse the pagination i use in the backedn)
+  }
+
 
   useEffect(() => {
-    const handleNewNote = (newNote: Note) => {
-      setFilteredNotes((prevNotes) => {
-        if (newNote.user_name) {  // Ensure the new note has a user name
-          return [...prevNotes, newNote];
-        } else {
-          // Handle this case, e.g., provide a default name or fetch additional data
-          console.error('New note does not have a user_name:', newNote);
-          return prevNotes;  // For now, keep the old notes as they were
-        }
-      });
-    };
-
-    if (echo) {
-      echo.channel('new-note').listen('NoteCreated', (e: NewNoteEventPayload) => {
-        if (e.note && e.note.user_name) {
-          handleNewNote(e.note);
-        } else {
-          console.error('Received incomplete note:', e.note);
-        }
-      });
-    }
-  
     // Search logic
     if (searchTerm === '') {
       setFilteredNotes(auth.notes);
@@ -67,19 +77,106 @@ const Show: React.FC<PageProps> = ({ auth }) => {
     } else {
       setFilteredNotes(auth.notes);
     }
-    
-    // Cleanup
-    // Cleanup: Leave the channel
-  return () => {
-    if (echo) {
-      echo.leave('new-note');
-    }
-  };
-}, [searchTerm, auth.notes, echo]);
-
+  
+  }, [searchTerm, auth.notes])
+  
   const handleReset = () => {
     setSearchTerm('');
   }
+
+
+
+  
+
+  const user = auth.user;
+  const userId = user?.id ?? null;
+  const parentId = user?.user_id ?? null;
+
+  /* console.log(user); */
+  console.log(auth);
+
+  const echo = useEcho(); // <-- Correct place to call useWebSocket
+  useEffect(() => {
+    // Existing logic for notes
+    const handleNewNote = (newNote: Note) => {
+      console.log("handleNewNote Work!!")
+      setFilteredNotes((prevNotes) => {
+        if (newNote.id) {  // Ensure the new note has a user name
+          return [...prevNotes, newNote];
+        } else {
+          // Handle this case, e.g., provide a default name or fetch additional data
+          console.error('New note does not have a user_name:', newNote);
+          return prevNotes;  // For now, keep the old notes as they were
+        }
+      });
+    };
+
+    // New logic for notifications
+    const handleNewNotification = (newNotification: any) => { // Replace any with your Notification type
+      /* console.log("handleNewNotification Work!!") */
+      setNotifications((prevNotifications) => {
+        if (newNotification.id) { // Replace with a field that is required for your notification to be valid
+          return [...prevNotifications, newNotification];
+        } else {
+          // Handle this case, e.g., log an error message or fetch additional data
+          console.error('Received incomplete notification:', newNotification);
+          return prevNotifications;  // For now, keep the old notifications as they were
+        }
+      });
+    };
+
+    if (echo && userId) {
+      console.log("userChannel");
+      const userChannel = echo.private(`notes-for-user-${userId}`)
+        .listen('NoteCreated', (e: NewNoteEventPayload) => {
+          if (e.note) {
+            handleNewNote(e.note);
+          } else {
+            console.error('Received incomplete note:', e.note);
+          }
+        });
+  
+      let parentChannel: any;
+      if (parentId !== null) {
+        console.log("parentChannel");
+        parentChannel = echo.private(`notes-for-user-${parentId}`)
+          .listen('NoteCreated', (e: NewNoteEventPayload) => {
+            if (e.note) {
+              handleNewNote(e.note);
+            } else {
+              console.error('Received incomplete note:', e.note);
+            }
+          });
+        }
+    
+      // New logic for listening to new notifications
+      echo.channel('new-notification').listen('NotificationCreated', (e: NewNotificationEventPayload) => { // Updated type here
+        if (e.notification) {
+          handleNewNotification(e.notification);
+        } else {
+          console.error('Received incomplete notification:', e.notification);
+        }
+      });
+
+
+      // Cleanup
+      // Cleanup: Leave the channel
+      return () => {
+        if (echo && userId) {
+          console.log("Cleanup function called");
+          
+          userChannel.stopListening('NoteCreated');
+          console.log("Cleanup function called");
+          if (parentChannel) {
+            parentChannel.stopListening('NoteCreated');
+          }
+          echo.leave('new-notification');
+        }
+      };
+    }
+  }, [echo, userId]);
+
+  
 
   return (
     <MainLayout>
@@ -93,6 +190,15 @@ const Show: React.FC<PageProps> = ({ auth }) => {
           />
           <DangerButton onClick={handleReset}>Reset</DangerButton>
       </div>
+      
+      {/* <div>
+        hej
+  {notifications.map((notification, index) => (
+    <div key={index}>
+      {notification.note_title}
+    </div>
+  ))}
+</div> */}
       <div className="flex flex-wrap ">
         {filteredNotes.map((note) => (
           <div key={note.id} className="m-4 relative">
@@ -134,6 +240,10 @@ const Show: React.FC<PageProps> = ({ auth }) => {
                 {note.user_name}
               </div>
             </div>
+            <EditModal note={note} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
+            <PrimaryButton onClick={() => handleDelete(note.id)}>
+                <FaTrashRestore />
+            </PrimaryButton>
           </div>
         ))}
       </div>
