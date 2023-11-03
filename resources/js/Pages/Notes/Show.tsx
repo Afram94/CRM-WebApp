@@ -5,6 +5,10 @@ import { Note, PageProps, User } from '@/types';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useEcho } from '../../../providers/WebSocketContext';
+import EditModal from './Components/EditModal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import { FaTrashRestore } from 'react-icons/fa';
+import { Inertia } from '@inertiajs/inertia';
 
 interface Notification {
   id: string;
@@ -31,6 +35,23 @@ const Show: React.FC<PageProps> = ({ auth }) => {
   const toggleNote = (noteId: number) => {
     setExpandedNoteId(expandedNoteId === noteId ? null : noteId);
   };
+
+  const handleDelete = async (noteId: number) => {
+    /* if(window.confirm('Are you sure you want to delete this customer?')) { */
+      try {
+        await axios.delete(`/notes/${noteId}`);
+        /* successToast('The Customer has been deleted'); */
+        /* setTimeout(() => {
+            Inertia.reload({only: ['Show']}); // Delayed reload
+        }, 1300); */ // Delay for 2 seconds. Adjust as needed
+        // Any other post-delete operations, e.g. refreshing a list
+      } catch (error) {
+        
+        console.error('There was an error deleting the customer:', error);
+      }
+    /* } */
+    // .data (beacuse the pagination i use in the backedn)
+  }
 
 
   useEffect(() => {
@@ -169,6 +190,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
           />
           <DangerButton onClick={handleReset}>Reset</DangerButton>
       </div>
+      
       {/* <div>
         hej
   {notifications.map((notification, index) => (
@@ -218,6 +240,10 @@ const Show: React.FC<PageProps> = ({ auth }) => {
                 {note.user_name}
               </div>
             </div>
+            <EditModal note={note} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
+            <PrimaryButton onClick={() => handleDelete(note.id)}>
+                <FaTrashRestore />
+            </PrimaryButton>
           </div>
         ))}
       </div>
