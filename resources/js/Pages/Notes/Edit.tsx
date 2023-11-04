@@ -3,6 +3,7 @@ import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Note } from '@/types';
+import { successToast } from '@/Components/toastUtils';
 
 type UpdateProps = {
   note: Note;
@@ -22,6 +23,7 @@ const Update: React.FC<UpdateProps> = ({ closeModal, note }) => {
 
       // Log the updated note and close the modal
       console.log('Note updated:', response.data);
+      successToast('Note successfully updated');
       closeModal();
     } catch (error) {
       console.error('Failed to update note:', error);
