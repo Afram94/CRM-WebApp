@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Broadcast;
 use App\Events\NoteCreated;
+use App\Events\UpdatedNote;
 use App\Events\NotificationCreated;
 use App\Notifications\NoteNotification;
 
@@ -195,6 +196,9 @@ class NoteController extends Controller
             // ... add other fields as needed
         ]);
         $note->save();
+
+        broadcast(new UpdatedNote($note));
+
 
         return response()->json($note);
     }

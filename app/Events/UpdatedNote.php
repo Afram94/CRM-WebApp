@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\Note;
 use App\Models\User;
 
-class NoteCreated implements ShouldBroadcast  // Notice the ShouldBroadcast
+class UpdatedNote implements ShouldBroadcast  // Notice the ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
