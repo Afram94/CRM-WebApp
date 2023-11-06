@@ -41,6 +41,9 @@ const Show: React.FC<PageProps> = ({ auth }) => {
     /* if(window.confirm('Are you sure you want to delete this customer?')) { */
       try {
         await axios.delete(`/notes/${noteId}`);
+
+        /* handleDeleteNote(noteId); */
+
         /* successToast('The Customer has been deleted'); */
         /* setTimeout(() => {
             Inertia.reload({only: ['Show']}); // Delayed reload
@@ -48,7 +51,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
         // Any other post-delete operations, e.g. refreshing a list
       } catch (error) {
         
-        console.error('There was an error deleting the customer:', error);
+        console.error('There was an error deleting the note:', error);
       }
     /* } */
     // .data (beacuse the pagination i use in the backedn)
@@ -133,6 +136,11 @@ const Show: React.FC<PageProps> = ({ auth }) => {
       });
     };
 
+    const handleDeleteNote = (deletedNoteId: number) => {
+      console.log("handleDeleteNote Work!!", deletedNoteId);
+      setFilteredNotes((prevNotes) => prevNotes.filter(note => note.id !== deletedNoteId));
+    };
+
     // New logic for notifications
     const handleNewNotification = (newNotification: any) => { // Replace any with your Notification type
       /* console.log("handleNewNotification Work!!") */
@@ -170,6 +178,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
       parentId={auth.user?.user_id ?? null}
       onNewNote={handleNewNote}
       onUpdateNote={handleUpdateNote}
+      onDeleteNote={handleDeleteNote}
     />
 
       <div className="flex flex-wrap ">

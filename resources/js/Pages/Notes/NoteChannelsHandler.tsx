@@ -7,9 +7,10 @@ interface NoteChannelsHandlerProps {
     parentId: number | null;
     onNewNote: (note: Note) => void;
     onUpdateNote: (note: Note) => void;
+    onDeleteNote: (note: number) => void;
 }
 
-const NoteChannelsHandler: React.FC<NoteChannelsHandlerProps> = ({userId, parentId, onNewNote, onUpdateNote }) => {
+const NoteChannelsHandler: React.FC<NoteChannelsHandlerProps> = ({userId, parentId, onNewNote, onUpdateNote, onDeleteNote }) => {
   const echo = useEcho();
 
 
@@ -45,6 +46,21 @@ const NoteChannelsHandler: React.FC<NoteChannelsHandlerProps> = ({userId, parent
           });
       }
 
+        console.log("Delete_1")
+        const deleteUserChannel = echo.private(`notes-for-user-${userId}`)
+        .listen('NoteDeleted', (e: { noteId: number }) => {
+          onDeleteNote(e.noteId);
+        });
+
+        let deleteParentChannel: any;
+      if (parentId) {
+        console.log("Delete_2")
+        deleteParentChannel = echo.private(`notes-for-user-${parentId}`)
+          .listen('NoteDeleted', (e: { noteId: number }) => {
+            onDeleteNote(e.noteId);
+          });
+      }
+
     
 
       // Cleanup function to unsubscribe from channels
@@ -61,6 +77,13 @@ const NoteChannelsHandler: React.FC<NoteChannelsHandlerProps> = ({userId, parent
         if (updateParentChannel) {
           console.log("Update_clear_2")
           updateParentChannel.stopListening('UpdatedNote');
+        }
+
+        console.log("Delete_clear_1")
+        deleteUserChannel.stopListening('NoteDeleted');
+        if (deleteParentChannel) {
+          console.log("Delete_clear_2")
+          deleteParentChannel.stopListening('NoteDeleted');
         }
 
       };

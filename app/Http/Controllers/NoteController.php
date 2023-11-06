@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use App\Events\NoteCreated;
 use App\Events\UpdatedNote;
+use App\Events\NoteDeleted;
 use App\Events\NotificationCreated;
 use App\Notifications\NoteNotification;
 
@@ -233,8 +234,10 @@ class NoteController extends Controller
             return response()->json(['error' => 'note not found or not authorized'], 403);
         }
 
+        broadcast(new NoteDeleted($note->id, $note->user_id));
+
         $note->delete();
 
-        return response()->json(['message' => 'note deleted!'], 200);
+        return response()->json(['message' => 'Note deleted!'], 200);
     }
 }
