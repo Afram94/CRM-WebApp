@@ -9,6 +9,7 @@ import EditModal from './Components/EditModal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { FaTrashRestore } from 'react-icons/fa';
 import { Inertia } from '@inertiajs/inertia';
+import NoteChannelsHandler from './NoteChannelsHandler';
 
 interface Notification {
   id: string;
@@ -40,6 +41,9 @@ const Show: React.FC<PageProps> = ({ auth }) => {
     /* if(window.confirm('Are you sure you want to delete this customer?')) { */
       try {
         await axios.delete(`/notes/${noteId}`);
+
+        /* handleDeleteNote(noteId); */
+
         /* successToast('The Customer has been deleted'); */
         /* setTimeout(() => {
             Inertia.reload({only: ['Show']}); // Delayed reload
@@ -47,7 +51,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
         // Any other post-delete operations, e.g. refreshing a list
       } catch (error) {
         
-        console.error('There was an error deleting the customer:', error);
+        console.error('There was an error deleting the note:', error);
       }
     /* } */
     // .data (beacuse the pagination i use in the backedn)
@@ -88,15 +92,15 @@ const Show: React.FC<PageProps> = ({ auth }) => {
 
   
 
-  const user = auth.user;
+  /* const user = auth.user;
   const userId = user?.id ?? null;
-  const parentId = user?.user_id ?? null;
+  const parentId = user?.user_id ?? null; */
 
   /* console.log(user); */
-  console.log(auth);
+  /* console.log(auth); */
 
   const echo = useEcho(); // <-- Correct place to call useWebSocket
-  useEffect(() => {
+  
     // Existing logic for notes
     const handleNewNote = (newNote: Note) => {
       console.log("handleNewNote Work!!")
@@ -109,6 +113,32 @@ const Show: React.FC<PageProps> = ({ auth }) => {
           return prevNotes;  // For now, keep the old notes as they were
         }
       });
+    };
+
+    const handleUpdateNote = (updatedNote: Note) => {
+      console.log("Update for note received:", updatedNote);
+      setFilteredNotes((prevNotes) => {
+        let noteFound = false;
+        const nextNotes = prevNotes.map((note) => {
+          if (note.id === updatedNote.id) {
+            noteFound = true;
+            return updatedNote; // Return the updated note
+          }
+          return note; // Return the note as is
+        });
+    
+        if (!noteFound) {
+          // If the note wasn't found, it might be an issue, handle accordingly
+          console.error('Note to update not found:', updatedNote);
+        }
+    
+        return nextNotes;
+      });
+    };
+
+    const handleDeleteNote = (deletedNoteId: number) => {
+      console.log("handleDeleteNote Work!!", deletedNoteId);
+      setFilteredNotes((prevNotes) => prevNotes.filter(note => note.id !== deletedNoteId));
     };
 
     // New logic for notifications
@@ -125,56 +155,8 @@ const Show: React.FC<PageProps> = ({ auth }) => {
       });
     };
 
-    if (echo && userId) {
-      console.log("userChannel");
-      const userChannel = echo.private(`notes-for-user-${userId}`)
-        .listen('NoteCreated', (e: NewNoteEventPayload) => {
-          if (e.note) {
-            handleNewNote(e.note);
-          } else {
-            console.error('Received incomplete note:', e.note);
-          }
-        });
-  
-      let parentChannel: any;
-      if (parentId !== null) {
-        console.log("parentChannel");
-        parentChannel = echo.private(`notes-for-user-${parentId}`)
-          .listen('NoteCreated', (e: NewNoteEventPayload) => {
-            if (e.note) {
-              handleNewNote(e.note);
-            } else {
-              console.error('Received incomplete note:', e.note);
-            }
-          });
-        }
     
-      // New logic for listening to new notifications
-      echo.channel('new-notification').listen('NotificationCreated', (e: NewNotificationEventPayload) => { // Updated type here
-        if (e.notification) {
-          handleNewNotification(e.notification);
-        } else {
-          console.error('Received incomplete notification:', e.notification);
-        }
-      });
-
-
-      // Cleanup
-      // Cleanup: Leave the channel
-      return () => {
-        if (echo && userId) {
-          console.log("Cleanup function called");
-          
-          userChannel.stopListening('NoteCreated');
-          console.log("Cleanup function called");
-          if (parentChannel) {
-            parentChannel.stopListening('NoteCreated');
-          }
-          echo.leave('new-notification');
-        }
-      };
-    }
-  }, [echo, userId]);
+  
 
   
 
@@ -191,14 +173,14 @@ const Show: React.FC<PageProps> = ({ auth }) => {
           <DangerButton onClick={handleReset}>Reset</DangerButton>
       </div>
       
-      {/* <div>
-        hej
-  {notifications.map((notification, index) => (
-    <div key={index}>
-      {notification.note_title}
-    </div>
-  ))}
-</div> */}
+      <NoteChannelsHandler
+      userId={auth.user?.id ?? null}
+      parentId={auth.user?.user_id ?? null}
+      onNewNote={handleNewNote}
+      onUpdateNote={handleUpdateNote}
+      onDeleteNote={handleDeleteNote}
+    />
+
       <div className="flex flex-wrap ">
         {filteredNotes.map((note) => (
           <div key={note.id} className="m-4 relative">

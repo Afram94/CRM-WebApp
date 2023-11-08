@@ -1,7 +1,7 @@
 // EditModal.tsx
 import React, { useState } from 'react';
 import Modal from '@/Components/Modal';
-import Edit from '@/Pages/Notes/Edit'; // <-- Import EditCustomer
+import Edit from '@/Pages/Notes/Edit';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Note } from '@/types';
 import { FaEdit } from 'react-icons/fa';

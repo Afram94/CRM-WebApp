@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Inertia } from '@inertiajs/inertia';
 import { FaTrash } from 'react-icons/fa';
 
-import { PageProps } from '@/types';
+import { Customer, PageProps } from '@/types';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateModal from '@/Pages/Customers/Components/CreateModal';
 import EditModal from './Components/EditModal';
@@ -22,13 +22,21 @@ import { Link } from '@inertiajs/react';
 
 import { usePermissions } from '../../../providers/permissionsContext';
 import CustomerCustomFieldForm from './CustomerCustomFieldForm';
+import CustomerChannelsHandler from './CustomerChannelsHandler';
 
 interface Permission {
     name: string;
     hasPermission: boolean;
   }
 
+
+  
+  
+
 const Show = ({ auth }: PageProps) => {
+
+    /* console.log("hehehehehehehehehehehehehehehehehehehe" + auth.user?.user_id)
+    console.log("hahahahahahahaahahahah" + auth.user?.id) */
 
     const Delete = (customerId: number) => {
         Swal.fire({
@@ -66,6 +74,12 @@ const Show = ({ auth }: PageProps) => {
       const [filteredCustomers, setFilteredCustomers] = useState(auth.customers.data);
       const [searchTerm, setSearchTerm] = useState('');
 
+      
+        
+      
+        
+      
+
       useEffect(() => {
         if (searchTerm === '') {
             setFilteredCustomers(auth.customers.data);
@@ -79,7 +93,7 @@ const Show = ({ auth }: PageProps) => {
                 try {
                     const response = await axios.get(`/customers?search=${searchTerm}`);
                     if (response.data && response.data.auth && response.data.auth.customers) {
-                        console.log("Debug: ", response.data.auth.customers.data);
+                        /* console.log("Debug: ", response.data.auth.customers.data); */
                         setFilteredCustomers(response.data.auth.customers.data);
                     }
                 } catch (error) {
@@ -95,7 +109,7 @@ const Show = ({ auth }: PageProps) => {
         }
     }, [searchTerm, auth.customers.data]);
 
-    console.log(filteredCustomers);
+    /* console.log(filteredCustomers); */
     const handleReset = () => {
         setSearchTerm('');
     };
@@ -150,6 +164,21 @@ const Show = ({ auth }: PageProps) => {
           });
       }, []); */
       const { userPermissions } = usePermissions();
+      const [forceUpdate, setForceUpdate] = useState(false);
+
+      const handleNewCustomer = (newCustomer: Customer) => {
+        console.log("handleNewCustomer Work!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        setFilteredCustomers((prevCustomers) => {
+          if (newCustomer.id) {  // Ensure the new note has a user name
+            setForceUpdate(u => !u); // Where forceUpdate is a state variable used solely to trigger a re-render
+            return [...prevCustomers, newCustomer];
+          } else {
+            // Handle this case, e.g., provide a default name or fetch additional data
+            console.error('New note does not have a user_name:', newCustomer);
+            return prevCustomers;  // For now, keep the old notes as they were
+          }
+        });
+      };
 
       const maxFields = Math.max(...filteredCustomers.map(c => c.custom_fields_values?.length || 0));
 
@@ -162,11 +191,18 @@ const Show = ({ auth }: PageProps) => {
         )
     ];
 
-      
     return (
         <MainLayout>
+            
             {auth.customers?.data && auth.customers.data.length > 0 ? (
+                
                 <div className="bg-white h-full p-4">
+            <CustomerChannelsHandler
+              userId={auth.user?.id ?? null}
+              parentId={auth.user?.user_id ?? null}
+              onNewCustomer={handleNewCustomer}
+            />
+    
                     <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3>
                     <div className="w-full flex justify-between my-2">
                         <div className="flex gap-2">
@@ -191,7 +227,7 @@ const Show = ({ auth }: PageProps) => {
                     <CustomerCustomFieldForm />
                     
                     <div className='overflow-x-auto'>
-                    <table className="min-w-full table-auto">
+                    <table className="min-w-full table-auto" key={forceUpdate ? 'updated' : 'initial'}>
                         <thead>
                             <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                                 <th className="py-2 px-6 text-left">Name</th>
@@ -221,8 +257,7 @@ const Show = ({ auth }: PageProps) => {
                                     if (customer.custom_fields_values && index < customer.custom_fields_values.length) {
                                         const customFieldValue = customer.custom_fields_values[index].custom_field;
                                         let displayValue = customer.custom_fields_values[index].value;
-
-                                        if (customFieldValue.field_type === 'boolean') {
+                                        if (customFieldValue?.field_type === 'boolean') {
                                         displayValue = parseInt(displayValue) === 1 ? <div className='w-4 h-4 bg-green-400 rounded-full animate-pulse'></div>
                                          :
                                         <div className='w-4 h-4 bg-red-400 rounded-full animate-pulse'></div>;
