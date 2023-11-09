@@ -51,7 +51,7 @@ class CustomerCreated implements ShouldBroadcast
     public function broadcastWith()
     {
         // Load the custom fields and their values
-        $this->customer->load(['customFieldsValues', 'customFieldsValues.customField']);
+        $this->customer->load(['customFieldsValues.customField']);
     
         // Now, $this->customer->customFieldsValues should contain all related custom field values
         // and each 'customFieldsValue' should have its related 'customField' loaded

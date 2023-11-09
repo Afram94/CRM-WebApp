@@ -84,7 +84,8 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
     
             // Close the modal after successful customer creation
             closeModal();
-    
+            successToast('A new Customer has been created successfully');
+
             // You can add more logic here if needed, like reloading parts of your UI
         } catch (error) {
             console.error(error);
