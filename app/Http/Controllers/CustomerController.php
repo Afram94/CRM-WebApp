@@ -17,94 +17,92 @@ class CustomerController extends Controller
 {
 
     public function create()
-{
-    return Inertia::render('Customers/CreateCustomer');
-}
-
-    /* public function store(Request $request) {
-    $customer = new Customer($request->all());
-    $customer->user_id = auth()->id();
-    $customer->save();
-    
-    return Inertia::render('Dashboard', ['message' => 'Customer created!']);
-    } */
-
-    /* public function store(Request $request) {
-        $customer = new Customer([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'phone_number' => $request->input('phone_number'),
-        ]);
-        $customer->user_id = auth()->id();
-        $customer->save();
-
-        return response()->json($customer);
-    } */
+    {
+        return Inertia::render('Customers/CreateCustomer');
+    }
 
     public function store(Request $request)
-{
-    // Validate fixed fields
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:customers,email',
-        'phone_number' => 'required|numeric',
-        'custom_fields' => 'required|array' // Ensure custom fields are provided
-    ]);
-
-    // Start the transaction
-    DB::beginTransaction();
-
-    try {
-        // Create the customer
-        $customer = new Customer([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'phone_number' => $request->input('phone_number'),
+    {
+        // Validate fixed fields
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:customers,email',
+            'phone_number' => 'required|numeric',
+            'custom_fields' => 'required|array' // Ensure custom fields are provided
         ]);
 
-        $customer->user_id = auth()->id();
-        $customer->save();
+        // Start the transaction
+        DB::beginTransaction();
 
-        // Process custom fields
-        $customFields = $request->input('custom_fields');
-        $validationRules = $this->prepareValidationRules($customFields);
-        $request->validate($validationRules);
-
-        // Save custom fields
-        foreach ($customFields as $fieldId => $value) {
-            $fieldDefinition = CustomerCustomField::findOrFail($fieldId);
-            $customer->customFieldsValues()->create([
-                'field_id' => $fieldId,
-                'value' => $value,
+        try {
+            // Create the customer
+            $customer = new Customer([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'phone_number' => $request->input('phone_number'),
             ]);
+
+            $customer->user_id = auth()->id();
+            $customer->save();
+
+            // Process custom fields
+            $customFields = $request->input('custom_fields');
+            $validationRules = $this->prepareValidationRules($customFields);
+            $request->validate($validationRules);
+
+            // Save custom fields
+            foreach ($customFields as $fieldId => $value) {
+                $fieldDefinition = CustomerCustomField::findOrFail($fieldId);
+                $customer->customFieldsValues()->create([
+                    'field_id' => $fieldId,
+                    'value' => $value,
+                ]);
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            /* dd($customer->load('customFieldsValues')); */
+            // Broadcast the event after the data has been persisted
+            broadcast(new CustomerCreated($customer->load('customFieldsValues.customField')));
+
+            return response()->json($customer);
+
+        } catch (\Exception $e) {
+            // If there is an exception, rollback the transaction
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+        private function prepareValidationRules(array $customFields)
+        {
+            $validationRules = [];
+            foreach ($customFields as $fieldId => $value) {
+                $fieldDefinition = CustomerCustomField::findOrFail($fieldId);
+
+                // Set validation rules based on the field's type
+                switch ($fieldDefinition->field_type) {
+                    case 'string':
+                        $validationRules["custom_fields.$fieldId"] = 'required|string';
+                        break;
+                    case 'integer':
+                        $validationRules["custom_fields.$fieldId"] = 'required|numeric';
+                        break;
+                    case 'date':
+                        $validationRules["custom_fields.$fieldId"] = 'required|date';
+                        break;
+                    case 'boolean':
+                        $validationRules["custom_fields.$fieldId"] = 'required|boolean';
+                        break;
+                    // ... add other cases as needed
+                    default:
+                        $validationRules["custom_fields.$fieldId"] = 'required|string';
+                }
+            }
+            return $validationRules;
         }
 
-        // Commit the transaction
-        DB::commit();
-
-        // Broadcast the event after the data has been persisted
-        broadcast(new CustomerCreated($customer->load('customFieldsValues')));
-
-        return response()->json($customer);
-
-    } catch (\Exception $e) {
-        // If there is an exception, rollback the transaction
-        DB::rollBack();
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-}
-
-private function prepareValidationRules(array $customFields)
-{
-    $validationRules = [];
-    foreach ($customFields as $fieldId => $value) {
-        $fieldDefinition = CustomerCustomField::findOrFail($fieldId);
-        // Here you can prepare your validation rules based on the field definition
-        // For simplicity, let's just return 'required' for all fields
-        $validationRules["custom_fields.$fieldId"] = 'required';
-    }
-    return $validationRules;
-}
 
     
 
@@ -141,7 +139,7 @@ private function prepareValidationRules(array $customFields)
             }
 
             // Fetch customers that belong to the authenticated user
-            $customers = $query->latest()->paginate(403);
+            $customers = $query->latest()->paginate(20);
 
             /* dd($customers->toArray()['data']); */
 
