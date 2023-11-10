@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\CustomerCustomField;
 use Inertia\Inertia;
 use App\Events\CustomerCreated;
+use App\Events\CustomerUpdated;
 use App\Jobs\ProcessNewCustomer;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -16,9 +17,53 @@ use Illuminate\Support\Facades\DB;
 class CustomerController extends Controller
 {
 
-    public function create()
-    {
-        return Inertia::render('Customers/CreateCustomer');
+    public function index(Request $request) {
+
+        $user = auth()->user();
+        $search = $request->input('search');
+
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+        /* dd($parentUserId); */
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+        // Start the query
+        $query = Customer::with(['customFieldsValues', 'customFieldsValues.customField'])
+            ->whereIn('user_id', $allUserIdsUnderSameParent);
+
+        // If there's a search term, filter the customers by it. 
+        if ($search) {
+            $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('email', 'LIKE', '%' . $search . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $search . '%');
+        }
+
+        // Fetch customers that belong to the authenticated user
+        $customers = $query->latest()->paginate(20);
+
+        /* dd($customers->toArray()['data']); */
+
+        // If the request is an AJAX call, return the customers as JSON.
+        if ($request->wantsJson()) {
+            return response()->json([
+                'auth' => [
+                    'user' => $user,
+                    'customers' => $customers
+                ]
+            ]);
+        }
+
+        // If it's a regular page request, return the Inertia view.
+        return inertia('Customers/Show', [
+            'auth' => [
+                'user' => $user,
+                'customers' => $customers
+            ]
+        ]);
     }
 
     public function store(Request $request)
@@ -75,6 +120,59 @@ class CustomerController extends Controller
         }
     }
 
+
+    // Update the specified customer in storage
+    public function update(Request $request, $id)
+    {
+        // Validate fixed fields
+        $request->validate([
+            'name' => 'string|max:255',
+            'email' => 'email|unique:customers,email,' . $id,
+            'phone_number' => 'numeric',
+            'custom_fields' => 'array' // Custom fields are optional
+        ]);
+
+        // Start the transaction
+        DB::beginTransaction();
+
+        try {
+            // Fetch the customer
+            $customer = Customer::findOrFail($id);
+
+            // Update fixed fields
+            $customer->update($request->only(['name', 'email', 'phone_number']));
+
+            // Process and update custom fields if provided
+            if ($request->has('custom_fields')) {
+                $customFields = $request->input('custom_fields');
+                $validationRules = $this->prepareValidationRules($customFields);
+                $request->validate($validationRules);
+
+                foreach ($customFields as $fieldId => $value) {
+                    // Update or create custom field value
+                    $customer->customFieldsValues()->updateOrCreate(
+                        ['field_id' => $fieldId],
+                        ['value' => $value]
+                    );
+                }
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            // Optionally load relations and broadcast the update event
+            broadcast(new CustomerUpdated($customer->load('customFieldsValues.customField')));
+
+            return response()->json($customer);
+
+        } catch (\Exception $e) {
+            // Rollback the transaction in case of an error
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
         private function prepareValidationRules(array $customFields)
         {
             $validationRules = [];
@@ -104,67 +202,24 @@ class CustomerController extends Controller
         }
 
 
+        // Remove the specified customer from storage
+    public function destroy($id)
+    {
+        $customer = Customer::findOrFail($id);
     
-
-    
-
-        public function index(Request $request) {
-            /* $user = auth()->user();
-            $search = $request->input('search');
-
-            // Start the query
-            $query = Customer::where('user_id', $user->id); */
-
-            $user = auth()->user();
-            $search = $request->input('search');
-
-            // Determine the parent user ID (it's either the user's own ID or their parent's ID)
-            $parentUserId = $user->user_id ? $user->user_id : $user->id;
-            /* dd($parentUserId); */
-
-            // Fetch all users that have the same parent_user_id (including the parent)
-            $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
-                                            ->orWhere('id', $parentUserId)
-                                            ->pluck('id')->toArray();
-
-            // Start the query
-            $query = Customer::with(['customFieldsValues', 'customFieldsValues.customField'])
-                ->whereIn('user_id', $allUserIdsUnderSameParent);
-
-            // If there's a search term, filter the customers by it. 
-            if ($search) {
-                $query->where('name', 'LIKE', '%' . $search . '%')
-                        ->orWhere('email', 'LIKE', '%' . $search . '%')
-                        ->orWhere('phone_number', 'LIKE', '%' . $search . '%');
-            }
-
-            // Fetch customers that belong to the authenticated user
-            $customers = $query->latest()->paginate(20);
-
-            /* dd($customers->toArray()['data']); */
-
-
-
-            // If the request is an AJAX call, return the customers as JSON.
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'auth' => [
-                        'user' => $user,
-                        'customers' => $customers
-                    ]
-                ]);
-            }
-
-            // If it's a regular page request, return the Inertia view.
-            return inertia('Customers/Show', [
-                'auth' => [
-                    'user' => $user,
-                    'customers' => $customers
-                ]
-            ]);
+        // Ensure the user owns this customer
+        if ($customer->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Not authorized'], 403);
         }
+    
+        $customer->delete();
+    
+        return response()->json(['message' => 'Customer deleted!'], 200);
+    }
 
+    
 
+    
     // Show the form for editing the specified customer
     public function edit($id)
     {
@@ -172,43 +227,15 @@ class CustomerController extends Controller
         return Inertia::render('Customers/Edit', ['customer' => $customer]);
     }
 
-    // Update the specified customer in storage
-    public function update(Request $request, $id) {
-        $customer = Customer::find($id);
-    
-        // Check if customer exists and belongs to the authenticated user
-        if (!$customer || $customer->user_id !== auth()->id()) {
-            return response()->json(['error' => 'Customer not found or not authorized'], 403);
-        }
-    
-        // Update the customer
-        //$customer->name = $request->input('name');
-        //or user update function
-        $customer->update([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'phone_number' => $request->input('phone_number'),
-            // ... add other fields as needed
-        ]);
-        $customer->save();
-    
-        return response()->json(['message' => 'Customer updated successfully']);
+    public function create()
+    {
+        return Inertia::render('Customers/CreateCustomer');
     }
 
-    // Remove the specified customer from storage
-    public function destroy($id)
-{
-    $customer = Customer::findOrFail($id);
+    
 
-    // Ensure the user owns this customer
-    if ($customer->user_id !== auth()->id()) {
-        return response()->json(['error' => 'Not authorized'], 403);
-    }
 
-    $customer->delete();
-
-    return response()->json(['message' => 'Customer deleted!'], 200);
-}
+    
 
 
 }

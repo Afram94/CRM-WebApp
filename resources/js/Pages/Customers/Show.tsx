@@ -218,6 +218,31 @@ const Show = ({ auth }: PageProps) => {
         });
       };
 
+      const handleUpdatedCustomer = (updatedCustomer: Customer) => {
+        // Log to console whenever this function is triggered
+        console.log("Updated customer event triggered");
+    
+        // Update state with a function to ensure we have the most current state
+        setFilteredCustomers((prevCustomers) => {
+            // Check if the updated customer object has an ID property
+            if (updatedCustomer.id) {
+                // Map over the existing customers
+                const updatedCustomers = prevCustomers.map(customer => 
+                    customer.id === updatedCustomer.id ? updatedCustomer : customer
+                );
+    
+                // Return the updated customers array
+                return updatedCustomers;
+            } else {
+                // If the updated customer object lacks an ID, log an error for debugging
+                console.error('Updated customer is missing an ID:', updatedCustomer);
+                // Return the previous customer array unchanged
+                return prevCustomers;
+            }
+        });
+    };
+    
+
 
       const maxFields = Math.max(...filteredCustomers.map(c => c.custom_fields_values?.length || 0));
 
@@ -240,6 +265,7 @@ const Show = ({ auth }: PageProps) => {
               userId={auth.user?.id ?? null}
               parentId={auth.user?.user_id ?? null}
               onNewCustomer={handleNewCustomer}
+              onUpdateCustomer={handleUpdatedCustomer}
             />
     
                     <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3>
