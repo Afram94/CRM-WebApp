@@ -6,10 +6,11 @@ interface CustomerChannelsHandlerProps {
     userId: number | null;
     parentId: number | null;
     onNewCustomer: (customer: Customer) => void;
+    onUpdateCustomer: (customer: Customer) => void;
     
 }
 
-const CustomerChannelsHandler: React.FC<CustomerChannelsHandlerProps> = ({userId, parentId, onNewCustomer }) => {
+const CustomerChannelsHandler: React.FC<CustomerChannelsHandlerProps> = ({userId, parentId, onNewCustomer, onUpdateCustomer }) => {
   const echo = useEcho();
 
 
@@ -30,6 +31,21 @@ const CustomerChannelsHandler: React.FC<CustomerChannelsHandlerProps> = ({userId
           });
       }
 
+      console.log("Update_1")
+        const updateUserChannel = echo.private(`customers-for-user-${userId}`)
+        .listen('CustomerUpdated', (e: { customer: Customer }) => {
+          onUpdateCustomer(e.customer);
+        });
+
+        let updateParentChannel: any;
+      if (parentId) {
+        console.log("Update_2")
+        updateParentChannel = echo.private(`customers-for-user-${parentId}`)
+          .listen('CustomerUpdated', (e: { customer: Customer }) => {
+            onUpdateCustomer(e.customer);
+          });
+      }
+
       // Cleanup function to unsubscribe from channels
       return () => {
         console.log("clear_1")
@@ -37,6 +53,13 @@ const CustomerChannelsHandler: React.FC<CustomerChannelsHandlerProps> = ({userId
         if (parentChannel) {
           console.log("clear_2")
           parentChannel.stopListening('CustomerCreated');
+        }
+
+        console.log("Update_clear_1")
+        updateUserChannel.stopListening('CustomerUpdated');
+        if (updateParentChannel) {
+          console.log("Update_clear_2")
+          updateParentChannel.stopListening('CustomerUpdated');
         }
 
       };
