@@ -59,9 +59,9 @@ const Show = ({ auth }: PageProps) => {
           try {
             await axios.delete(`/customers/${customerId}`);
             successToast('The Customer has been deleted');
-            setTimeout(() => {
+            /* setTimeout(() => {
                 Inertia.reload({only: ['Show']}); // Delayed reload
-            }, 1300); // Delay for 2 seconds. Adjust as needed
+            }, 1300); */ // Delay for 2 seconds. Adjust as needed
             // Any other post-delete operations, e.g. refreshing a list
           } catch (error) {
             
@@ -241,6 +241,11 @@ const Show = ({ auth }: PageProps) => {
             }
         });
     };
+
+    const handleDeleteCustomer = (deletedCustomerId: number) => {
+      console.log("handleDeleteNote Work!!", deletedCustomerId);
+      setFilteredCustomers((prevCustomers) => prevCustomers.filter(customer => customer.id !== deletedCustomerId));
+    };
     
 
 
@@ -266,6 +271,7 @@ const Show = ({ auth }: PageProps) => {
               parentId={auth.user?.user_id ?? null}
               onNewCustomer={handleNewCustomer}
               onUpdateCustomer={handleUpdatedCustomer}
+              onDeleteCustomer={handleDeleteCustomer}
             />
     
                     <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3>

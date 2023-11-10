@@ -9,6 +9,7 @@ use App\Models\CustomerCustomField;
 use Inertia\Inertia;
 use App\Events\CustomerCreated;
 use App\Events\CustomerUpdated;
+use App\Events\CustomerDeleted;
 use App\Jobs\ProcessNewCustomer;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -208,11 +209,29 @@ class CustomerController extends Controller
         $customer = Customer::findOrFail($id);
     
         // Ensure the user owns this customer
-        if ($customer->user_id !== auth()->id()) {
+        /* if ($customer->user_id !== auth()->id()) {
             return response()->json(['error' => 'Not authorized'], 403);
+        } */
+
+        $user = auth()->user();
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+
+        // Check if customer exists and belongs to the authenticated user and the users that belongs to it
+        if (!$customer || !in_array($customer->user_id, $allUserIdsUnderSameParent)) {
+            return response()->json(['error' => 'customer not found or not authorized'], 403);
         }
-    
+
+        broadcast(new CustomerDeleted($customer->id, $customer->user_id));
+        
         $customer->delete();
+        
     
         return response()->json(['message' => 'Customer deleted!'], 200);
     }
