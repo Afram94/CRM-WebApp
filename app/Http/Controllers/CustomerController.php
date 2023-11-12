@@ -67,6 +67,35 @@ class CustomerController extends Controller
         ]);
     }
 
+
+    public function customerProfile($id)
+    {
+        $user = auth()->user();
+
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+        // Retrieve the customer by ID and also filter by user IDs who share the same parent_user_id
+        $customer = Customer::with(['notes']) // Assume you have relations defined for notes and orders
+                    ->where('id', $id)
+                    ->whereIn('user_id', $allUserIdsUnderSameParent)
+                    ->firstOrFail();
+
+        // You might want to transform customer data similarly as notes if needed
+        // ...
+
+        return inertia('Customers/CustomerProfile', [
+            'auth' => [
+                'customer_profile' => [$customer] // Wrap $customer in an array
+            ]
+        ]);
+    }
+
     public function store(Request $request)
     {
         // Validate fixed fields

@@ -52,10 +52,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('customers', [CustomerController::class, 'store'])->name('customers.store');
     
     // Display the specified customer
-    Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+    /* Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show'); */
+
+    Route::get('/customer-profile/{id}', [CustomerController::class, 'customerProfile'])->name('customers.customerProfile');
     
     // Show the form for editing the specified customer
-    Route::get('customers/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
+    /* Route::get('customers/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit'); */
     
     // Update the specified customer in storage
     Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');

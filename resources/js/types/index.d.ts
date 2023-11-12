@@ -30,6 +30,7 @@ export interface Customer {
     email: string;
     phone_number: string;
     custom_fields_values: CustomFieldValue[];  // <-- Add this line
+    notes: Note[];
     // ... any other fields for Customer
 }
 
@@ -70,5 +71,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         customers: PaginatedResponse<Customer>;
         notes: Note[];
         customer_notes:Note[];
+        customer_profile:Customer[];
     };
 };
