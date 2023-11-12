@@ -318,9 +318,17 @@ const Show = ({ auth }: PageProps) => {
                             {filteredCustomers.map((customer) => (
                                 
                                 <tr className="border-b border-gray-200 hover:bg-gray-100" key={customer.id}>
-                                    <td className="py-2 px-6">{customer.name}</td>
-                                    <td className="py-2 px-6">{customer.email}</td>
-                                    <td className="py-2 px-6">{customer.phone_number}</td>
+                                    
+                                    <td className="py-2 px-6">
+                                    <Link href={`/customer-profile/${customer.id}`}>{customer.name}</Link>
+                                    </td>
+                                    <td className="py-2 px-6">
+                                    <Link href={`/customer-profile/${customer.id}`}>{customer.email}</Link>
+                                    </td>
+                                    
+                                    <td className="py-2 px-6">
+                                    <Link href={`/customer-profile/${customer.id}`}>{customer.phone_number}</Link>
+                                    </td>
                                     
                                     {/* Loop through customFieldsValues to display custom field data */}
                                     
