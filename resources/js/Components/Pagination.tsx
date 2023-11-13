@@ -1,4 +1,5 @@
-// PaginationComponent.tsx
+// PaginationComponent.tsx 
+
 import React from 'react';
 import { Inertia } from '@inertiajs/inertia';
 
@@ -12,24 +13,50 @@ interface PaginationProps {
 }
 
 const PaginationComponent: React.FC<PaginationProps> = ({ links, onPageClick }) => {
-    // Extract numeric pages from links
+    // Extract numeric pages from links and find the current page index
     const numericPages = links.filter(link => !isNaN(Number(link.label)));
+    const currentPageIndex = numericPages.findIndex(link => link.active);
 
-    // Filter the links to show first 5, and the last page
-    const filteredLinks = links.filter(link => {
-        if (link.label === "&laquo; Previous" || link.label === "Next &raquo;") return true;
-        if (numericPages.indexOf(link) < 3) return true; // first 5 pages
-        if (numericPages.indexOf(link) === numericPages.length - 1) return true; // last page
-        return false;
-    });
+    // Create a new array to hold the final set of pagination links to display
+    let finalLinks = [];
 
-    // Insert ellipsis if more than 6 links (5 pages + 2 for prev and next)
-    if (filteredLinks.length > 7) {
-        filteredLinks.splice(6, 0, { url: null, label: "...", active: false });
+    // Always add the first page and last page links if not included in our range
+    const firstPageLink = numericPages[0];
+    const lastPageLink = numericPages[numericPages.length - 1];
+
+    // Define the range of page numbers to display around the current page
+    const pageWindow = 2; // Determines how many pages to show around the current page
+    const startRange = Math.max(currentPageIndex - pageWindow, 0);
+    const endRange = Math.min(currentPageIndex + pageWindow, numericPages.length - 1);
+
+    // Add the 'Previous' button link
+    finalLinks.push(links[0]);
+
+    // Add the first page if it's not in the initial range
+    if (startRange > 0) {
+        finalLinks.push(firstPageLink);
+        if (startRange > 1) { // If we're skipping pages, add an ellipsis
+            finalLinks.push({ url: null, label: '...', active: false });
+        }
     }
+
+    // Add the numeric page links in the range
+    finalLinks = finalLinks.concat(numericPages.slice(startRange, endRange + 1));
+
+    // Add the last page if it's not in the ending range
+    if (endRange < numericPages.length - 1) {
+        if (endRange < numericPages.length - 2) { // If we're skipping pages, add an ellipsis
+            finalLinks.push({ url: null, label: '...', active: false });
+        }
+        finalLinks.push(lastPageLink);
+    }
+
+    // Add the 'Next' button link
+    finalLinks.push(links[links.length - 1]);
+
     return (
         <div className="mt-4 flex justify-center items-center space-x-4">
-            {filteredLinks.map((link, index) => {
+            {finalLinks.map((link, index) => {
                 let content;
                 if (link.label === "&laquo; Previous") {
                     content = "← Prev";
@@ -42,6 +69,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({ links, onPageClick }) 
                 return (
                     <button
                         key={index}
+                        disabled={!link.url}
                         onClick={() => {
                             if (link.url) {
                                 if (onPageClick) {
@@ -51,7 +79,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({ links, onPageClick }) 
                                 }
                             }
                         }}
-                        className={`px-3 py-1 border rounded ${link.active ? 'bg-black text-white' : 'bg-white text-gray-500 hover:bg-gray-200'}`}
+                        className={`px-3 py-1 border rounded ${link.active ? 'bg-black text-white' : 'bg-white text-gray-500 hover:bg-gray-200'} ${!link.url ? 'cursor-default' : ''}`}
                     >
                         {content}
                     </button>
@@ -62,3 +90,4 @@ const PaginationComponent: React.FC<PaginationProps> = ({ links, onPageClick }) 
 };
 
 export default PaginationComponent;
+

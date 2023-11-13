@@ -59,9 +59,9 @@ const Show = ({ auth }: PageProps) => {
           try {
             await axios.delete(`/customers/${customerId}`);
             successToast('The Customer has been deleted');
-            setTimeout(() => {
+            /* setTimeout(() => {
                 Inertia.reload({only: ['Show']}); // Delayed reload
-            }, 1300); // Delay for 2 seconds. Adjust as needed
+            }, 1300); */ // Delay for 2 seconds. Adjust as needed
             // Any other post-delete operations, e.g. refreshing a list
           } catch (error) {
             
@@ -164,21 +164,90 @@ const Show = ({ auth }: PageProps) => {
           });
       }, []); */
       const { userPermissions } = usePermissions();
-      const [forceUpdate, setForceUpdate] = useState(false);
 
-      const handleNewCustomer = (newCustomer: Customer) => {
+      /* const handleNewCustomer = (newCustomer: Customer) => {
         console.log("handleNewCustomer Work!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         setFilteredCustomers((prevCustomers) => {
           if (newCustomer.id) {  // Ensure the new note has a user name
-            setForceUpdate(u => !u); // Where forceUpdate is a state variable used solely to trigger a re-render
-            return [...prevCustomers, newCustomer];
+            return [newCustomer, ...prevCustomers];
           } else {
             // Handle this case, e.g., provide a default name or fetch additional data
             console.error('New note does not have a user_name:', newCustomer);
             return prevCustomers;  // For now, keep the old notes as they were
           }
         });
+      }; */
+
+      /**
+       * This function is called when a new customer is created.
+       * It updates the state to include the new customer at the beginning of the list.
+       * Because the UI displays a maximum of 5 customers per page (due to pagination),
+       * we need to ensure that adding a new customer doesn't increase the count beyond 20.
+       * If it does, we slice the array to remove the last customer,
+       * effectively maintaining the correct number of customers on the current page.
+       * This approach resolves an issue where the list displayed 21 customers after
+       * a new customer was created until the page was refreshed.
+       *
+       * @param {Customer} newCustomer - The new customer to be added to the list.
+       */
+      const handleNewCustomer = (newCustomer: Customer) => {
+        // Log to console whenever this function is triggered
+        console.log("New customer event triggered");
+
+        // Update state with a function to ensure we have the most current state
+        setFilteredCustomers((prevCustomers) => {
+          // Check if the new customer object has an ID property
+          if (newCustomer.id) {
+            // If it does, add the new customer to the start of the customer array
+            const updatedCustomers = [newCustomer, ...prevCustomers];
+
+            // After adding the new customer, check if we have more than 20 customers
+            if (updatedCustomers.length > 20) {
+              // If we do, return only the first 20 customers to stay within page limits
+              return updatedCustomers.slice(0, 20);
+            }
+
+            // If we have 20 or fewer customers, return the updated list as is
+            return updatedCustomers;
+          } else {
+            // If the new customer object lacks an ID, log an error for debugging
+            console.error('New customer is missing an ID:', newCustomer);
+            // Return the previous customer array unchanged
+            return prevCustomers;
+          }
+        });
       };
+
+      const handleUpdatedCustomer = (updatedCustomer: Customer) => {
+        // Log to console whenever this function is triggered
+        console.log("Updated customer event triggered");
+    
+        // Update state with a function to ensure we have the most current state
+        setFilteredCustomers((prevCustomers) => {
+            // Check if the updated customer object has an ID property
+            if (updatedCustomer.id) {
+                // Map over the existing customers
+                const updatedCustomers = prevCustomers.map(customer => 
+                    customer.id === updatedCustomer.id ? updatedCustomer : customer
+                );
+    
+                // Return the updated customers array
+                return updatedCustomers;
+            } else {
+                // If the updated customer object lacks an ID, log an error for debugging
+                console.error('Updated customer is missing an ID:', updatedCustomer);
+                // Return the previous customer array unchanged
+                return prevCustomers;
+            }
+        });
+    };
+
+    const handleDeleteCustomer = (deletedCustomerId: number) => {
+      console.log("handleDeleteNote Work!!", deletedCustomerId);
+      setFilteredCustomers((prevCustomers) => prevCustomers.filter(customer => customer.id !== deletedCustomerId));
+    };
+    
+
 
       const maxFields = Math.max(...filteredCustomers.map(c => c.custom_fields_values?.length || 0));
 
@@ -196,11 +265,13 @@ const Show = ({ auth }: PageProps) => {
             
             {auth.customers?.data && auth.customers.data.length > 0 ? (
                 
-                <div className="bg-white h-full p-4">
+                <div className="bg-white p-4">
             <CustomerChannelsHandler
               userId={auth.user?.id ?? null}
               parentId={auth.user?.user_id ?? null}
               onNewCustomer={handleNewCustomer}
+              onUpdateCustomer={handleUpdatedCustomer}
+              onDeleteCustomer={handleDeleteCustomer}
             />
     
                     <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3>
@@ -224,10 +295,10 @@ const Show = ({ auth }: PageProps) => {
                         {/* <CreateModalNotes customer={} /> */}
                     </div>
 
-                    <CustomerCustomFieldForm />
+                    {/* <CustomerCustomFieldForm /> */}
                     
                     <div className='overflow-x-auto'>
-                    <table className="min-w-full table-auto" key={forceUpdate ? 'updated' : 'initial'}>
+                    <table className="min-w-full table-auto">
                         <thead>
                             <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                                 <th className="py-2 px-6 text-left">Name</th>
@@ -247,9 +318,17 @@ const Show = ({ auth }: PageProps) => {
                             {filteredCustomers.map((customer) => (
                                 
                                 <tr className="border-b border-gray-200 hover:bg-gray-100" key={customer.id}>
-                                    <td className="py-2 px-6">{customer.name}</td>
-                                    <td className="py-2 px-6">{customer.email}</td>
-                                    <td className="py-2 px-6">{customer.phone_number}</td>
+                                    
+                                    <td className="py-2 px-6">
+                                    <Link href={`/customer-profile/${customer.id}`}>{customer.name}</Link>
+                                    </td>
+                                    <td className="py-2 px-6">
+                                    <Link href={`/customer-profile/${customer.id}`}>{customer.email}</Link>
+                                    </td>
+                                    
+                                    <td className="py-2 px-6">
+                                    <Link href={`/customer-profile/${customer.id}`}>{customer.phone_number}</Link>
+                                    </td>
                                     
                                     {/* Loop through customFieldsValues to display custom field data */}
                                     

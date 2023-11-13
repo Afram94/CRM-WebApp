@@ -68,7 +68,7 @@ const EditCustomer: React.FC<EditCustomerProps> = ({ customer, closeModal }) => 
         });
     }, []);
 
-    const handleSubmit = async () => {
+    /* const handleSubmit = async () => {
         try {
             // Update customer basic details
             await axios.put(`/customers/${customer.id}`, data);
@@ -93,6 +93,31 @@ const EditCustomer: React.FC<EditCustomerProps> = ({ customer, closeModal }) => 
         } catch (error) {
             console.error('There was an error updating the customer:', error);
         }
+    }; */
+
+    const handleSubmit = async () => {
+        try {
+            // Combine fixed and custom field data
+            const updatePayload = {
+                ...data, // Assuming 'data' contains the fixed fields
+                custom_fields: customFieldsValue.reduce((acc, field) => {
+                    return { ...acc, [field.field_id]: field.value };
+                }, {})
+            };
+    
+            // Make a single PUT request to update the customer
+            await axios.put(`/customers/${customer.id}`, updatePayload);
+    
+            closeModal();
+            successToast('Customer details have been updated');
+    
+            // Reload part of your UI or the entire page as necessary
+            /* setTimeout(() => {
+                Inertia.reload({ only: ['Show'] });
+            }, 1300); */
+        } catch (error) {
+            console.error('There was an error updating the customer:', error);
+        }
     };
     
 
@@ -105,12 +130,12 @@ const EditCustomer: React.FC<EditCustomerProps> = ({ customer, closeModal }) => 
                 onChange={e => setData(prevData => ({ ...prevData, name: e.target.value }))}
             />
             <TextInput
-                type="text"
+                type="email"
                 value={data.email}
                 onChange={e => setData(prevData => ({ ...prevData, email: e.target.value }))}
             />
             <TextInput
-                type="text"
+                type="number"
                 value={data.phone_number}
                 onChange={e => setData(prevData => ({ ...prevData, phone_number: e.target.value }))}
             />
