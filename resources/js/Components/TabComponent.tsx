@@ -32,7 +32,7 @@ export const TabComponent: React.FC<TabComponentProps> = ({ categories, selected
         )
       }
     >
-      <Icon className="inline-block " />{name}
+      <Icon className="inline-block mx-1 mb-1" />{name}
     </Tab>
   ))}
 </Tab.List>
