@@ -2,13 +2,16 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '@/Components/Sidebar';
 import Header from '@/Components/Header';
+import '../../css/global.css';
+
 
 // Type definition for the MainLayout props
 type MainLayoutProps = {
   children: React.ReactNode;  // This represents any child components that will be wrapped by MainLayout
+  title: string;
 };
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     // Try to get the sidebar's state (open or closed) from localStorage
     const initialIsOpen = localStorage.getItem('sidebarIsOpen') === 'true';
     // Set the sidebar's initial state based on the value retrieved from localStorage
@@ -26,16 +29,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }, [isOpen]);  // The effect will re-run if and only if 'isOpen' changes
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen bg-[#F3F3FA]">
             {/* // Render the Sidebar component and pass down its state and the toggle function as props */}
             <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden my-2 global-container gap-y-4">
                 {/* // Render the Header component */}
                 <Header />
-                
+
+                <h1 className='text-2xl text-gray-500'>{title}</h1>
+
                 {/* // This is where child components (passed to MainLayout) will be rendered */}
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto"> {/* bg-gray-200 */}
                     {children}
                 </main>
             </div>
