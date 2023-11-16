@@ -7,3 +7,64 @@
   .transition-max-height {
     transition: max-height 0.5s ease-in-out;
 }
+
+.hover-image {
+  transition: transform 0.3s ease; /* Reduced duration */
+  transform-style: preserve-3d;
+  transform: perspective(1500px) rotateY(0deg) rotateX(0deg) scale(1);
+  backface-visibility: hidden;
+  
+}
+
+.hover-image:hover {
+  transform: perspective(1500px) rotateY(20deg) rotateX(20deg) scale(1.05);
+}
+
+@keyframes gradientWave {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background: linear-gradient(270deg, #b6bbd5, #c7bad5, #c5ccdc, #f4e1de);
+  background-size: 400% 400%;
+  -webkit-animation: gradientWave 20s ease infinite;
+  -moz-animation: gradientWave 20s ease infinite;
+  animation: gradientWave 20s ease infinite;
+}
+
+
+@keyframes gradientWaveText {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient-text {
+  background: linear-gradient(270deg, #e42121, #43b364, #666dd1);
+  background-size: 400% 400%;
+  -webkit-animation: gradientWaveText 8s ease infinite;
+  -moz-animation: gradientWaveText 8s ease infinite;
+  animation: gradientWaveText 8s ease infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.animated-gradient-text-2 {
+  background: linear-gradient(270deg, #9D50BB, #dd9da4);
+  background-size: 400% 400%;
+  -webkit-animation: gradientWaveText 8s ease infinite;
+  -moz-animation: gradientWaveText 8s ease infinite;
+  animation: gradientWaveText 8s ease infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
