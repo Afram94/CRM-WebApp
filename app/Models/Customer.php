@@ -32,6 +32,11 @@ class Customer extends Model
         return $this->hasMany(CustomerCustomFieldValue::class, 'customer_id', 'id');
     }
 
+        public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
     /* public function customFields()
     {
         return $this->belongsToMany(
