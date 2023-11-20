@@ -30,16 +30,15 @@ export default function Login({ status, canResetPassword }: { status?: string, c
     return (
         <GuestLayout>
             <Head title="Log in" />
-            <div className="flex h-screen">
-                <div className="w-3/4 flex items-center justify-center">
-                    {/* Add your large icon from unDraw here */}
-                    <img src="/images/login_image.png" alt="image" />
+            <div className="flex flex-col lg:flex-row h-screen">
+                {/* Image Container - Hidden on small screens */}
+                <div className="hidden lg:flex w-full lg:w-3/4 items-center justify-center">
+                    <img src="/images/login_image.png" alt="image" className="max-w-full h-auto" />
                 </div>
 
-                <div className="w-1/4 animated-gradient shadow-md p-8">
-
+                {/* Sidebar Container */}
+                <div className="w-full lg:w-1/4 animated-gradient shadow-md p-8">
                     <div className='text-3xl font-bold my-12 text-gray-700'>NexaCore</div>
-
                     <div className='flex flex-col gap-2 mb-10'>
                         <h2 className='font-semibold text-gray-600'>Welcome to NexaCore! 👋</h2>
                         <p className='text-gray-500'>Please sign-in to your account and start the adventure</p>
@@ -89,7 +88,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
                                 />
                                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
                             </label>
-                            <PrimaryButton className="ml-4" disabled={processing}>
+                            <PrimaryButton className="ml-4 whitespace-nowrap" disabled={processing}>
                                 Log in
                             </PrimaryButton>
                         </div>

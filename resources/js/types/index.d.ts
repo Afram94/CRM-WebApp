@@ -44,6 +44,15 @@ export interface Note {
     content: string;
 }
 
+export interface Product {
+    id: number;
+    name: string;
+    description: string
+    price: number
+    sku: string | any | null;
+    inventory_count: number;
+}
+
 type PaginatedResponse<T> = {
     current_page: number;
     data: T[];
@@ -72,5 +81,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         notes: Note[];
         customer_notes:Note[];
         customer_profile:Customer[];
+        products:Product[];
     };
 };

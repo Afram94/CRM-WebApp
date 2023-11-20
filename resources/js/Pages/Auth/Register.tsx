@@ -39,19 +39,19 @@ export default function Register() {
     return (
         <GuestLayout>
             <Head title="Register" />
-            <div className="flex h-screen">
-                <div className="w-3/4 flex items-center justify-center">
-                    {/* Replace with your desired image or icon */}
-                    <img src="/images/register_image.png" alt="Register" />
+            <div className="flex flex-col lg:flex-row h-screen">
+            {/* Image Container - Hidden on small screens */}
+            <div className="hidden lg:flex w-full lg:w-3/4 items-center justify-center">
+                <img src="/images/register_image.png" alt="Register" className="max-w-full h-auto" />
+            </div>
+
+            {/* Sidebar Container */}
+            <div className="w-full lg:w-1/4 animated-gradient shadow-md p-8">
+                <div className='text-3xl font-bold my-12 text-gray-700'>NexaCore</div>
+                <div className='flex flex-col gap-2 mb-10'>
+                    <h2 className='font-semibold text-gray-600'>Join NexaCore! 🚀</h2>
+                    <p className='text-gray-500'>Create an account and start your journey with us.</p>
                 </div>
-
-                <div className="w-1/4 animated-gradient shadow-md p-8">
-                    <div className='text-3xl font-bold my-12 text-gray-700'>NexaCore</div>
-
-                    <div className='flex flex-col gap-2 mb-10'>
-                        <h2 className='font-semibold text-gray-600'>Join NexaCore! 🚀</h2>
-                        <p className='text-gray-500'>Create an account and start your journey with us.</p>
-                    </div>
 
                     <form onSubmit={submit} className="space-y-6">
                         <div>
@@ -122,7 +122,7 @@ export default function Register() {
                                 Already registered?
                             </Link>
 
-                            <PrimaryButton className="ml-4" disabled={processing}>
+                            <PrimaryButton className="ml-4 whitespace-nowrap" disabled={processing}>
                                 Register
                             </PrimaryButton>
                         </div>

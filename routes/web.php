@@ -9,6 +9,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\ProductController;
 
 use App\Http\Controllers\CustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldController;
@@ -68,6 +69,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/export-csv', [ExportController::class, 'exportCsv']);
     Route::get('/export-single-customer-csv/{customerId}', [ExportController::class, 'exportSingleCustomerCsv']);
 
+    // Products
+    /* Route::resource('products', ProductController::class); */
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    Route::post('products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('/products/create', [ProductController::class, 'create']);
+
+
+    
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
 
