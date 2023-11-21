@@ -44,6 +44,11 @@ export interface Note {
     content: string;
 }
 
+export interface Category {
+    id: number;
+    name: string;
+    description: string;
+}
 export interface Product {
     id: number;
     name: string;
@@ -82,5 +87,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         customer_notes:Note[];
         customer_profile:Customer[];
         products:Product[];
+        categories:Category[];
     };
 };

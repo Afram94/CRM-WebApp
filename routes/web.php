@@ -10,6 +10,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CategoryController;
 
 use App\Http\Controllers\CustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldController;
@@ -73,7 +74,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /* Route::resource('products', ProductController::class); */
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::post('products', [ProductController::class, 'store'])->name('products.store');
-    Route::get('/products/create', [ProductController::class, 'create']);
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+
+
+    // Category
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::get('/categories/create', [CategoryController::class, 'create']);
 
 
     
