@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 use App\Models\Product;
 use App\Models\Category;
 
@@ -10,7 +11,7 @@ class ProductController extends Controller
 {
     public function create()
     {
-
+        $user = auth()->user();
         $categories = Category::all()->transform(function ($categorie) {
             // Modify the categorie object as needed
             return [
@@ -39,13 +40,25 @@ class ProductController extends Controller
             'auth' => [
                 'products' => $products,
                 'categories' => $categories,
+                'user' => $user,
             ]
         ]);
     }
 
     public function index()
     {
-        $products = Product::all()->transform(function ($product) {
+        $user = auth()->user();
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+        // Retrieve products only for users who share the same parent_user_id.
+        $productsQuery = Product::whereIn('user_id', $allUserIdsUnderSameParent);
+
+        $products = $productsQuery->get()->transform(function ($product) {
             // Modify the product object as needed
             return [
                 'id' => $product->id,
@@ -60,7 +73,8 @@ class ProductController extends Controller
 
         return inertia('Products/Show', [
             'auth' => [
-                'products' => $products
+                'products' => $products,
+                'user' => $user
             ]
         ]);
     }
@@ -73,8 +87,10 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'sku' => 'nullable|unique:products,sku',
             'inventory_count' => 'nullable|integer',
-            'category_id' => 'nullable|exists:categories,id' // Ensure the category exists
+            'category_id' => 'nullable|exists:categories,id', // Ensure the category exists
         ]);
+
+        $validatedData['user_id'] = auth()->id(); // Set user_id to the ID of the authenticated user
 
         $product = Product::create($validatedData);
 

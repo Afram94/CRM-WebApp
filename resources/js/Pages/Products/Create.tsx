@@ -11,8 +11,9 @@ const CreateProduct: React.FC<PageProps> = ({ auth }) => {
     const [sku, setSku] = useState<string>("");
     const [inventoryCount, setInventoryCount] = useState<string>("");
     const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [user_id, setUser_id] = useState(auth.user.id);
 
-    console.log(auth);
+    
 
     const addProduct = async () => {
         try {
@@ -23,6 +24,7 @@ const CreateProduct: React.FC<PageProps> = ({ auth }) => {
                 sku,
                 inventory_count: inventoryCount,
                 category_id: selectedCategory, // Add category_id in the request
+                user_id, // Add category_id in the request
             });
             console.log('Product added:', response.data);
             // Handle post-creation logic (like redirecting or updating a list)
@@ -31,6 +33,8 @@ const CreateProduct: React.FC<PageProps> = ({ auth }) => {
             // Handle error (like showing an error message)
         }
     };
+
+    console.log(auth.user.id);
 
     return (
         <>
