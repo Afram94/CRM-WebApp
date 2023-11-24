@@ -61,12 +61,18 @@ class RegisteredUserController extends Controller
         ]);
 
         // Assign the role based on the user type
-        if ($user_id === null) {
+        /* if ($user_id === null) {
             // This is a main user, assign 'admin' role
             $user->assignRole('admin');
         } else {
             // This is a child user, assign 'user' role
             $user->assignRole('user');
+        } */
+
+        $roleName = $user_id === null ? 'admin' : 'user';
+        $role = Role::findByName($roleName);
+        if ($role) {
+            $user->assignRole($roleName);
         }
 
         event(new Registered($user));
