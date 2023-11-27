@@ -75,6 +75,7 @@ class DatabaseSeeder extends Seeder
         for ($i = 1; $i <= 100; $i++) {
             $categories[] = [
                 'id' => $i,
+                'user_id' => $i,
                 'name' => 'Category ' . $i,
                 'description' => 'Description for Category ' . $i,
             ];
