@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PageProps, Product, Category } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
+import CreateCategoriesModal from './Components/CreateCategoriesModal';
 
 const CategoryIndex: React.FC<PageProps> = ({ auth }) => {
 
@@ -33,6 +34,7 @@ const CategoryIndex: React.FC<PageProps> = ({ auth }) => {
 
     return (
         <MainLayout title='categories'>
+            <CreateCategoriesModal/>
         <div className="container mx-auto p-4">
             <table className="min-w-full table-auto border-collapse border border-gray-300">
                 <thead>

@@ -1,19 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Category, PageProps } from '@/types';
 import axios from 'axios';
 
-const CreateProduct: React.FC<PageProps> = ({ auth }) => {
+type CreateProductProps = {
+    closeModal: () => void;
+}
+
+const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [price, setPrice] = useState<string>("");
     const [sku, setSku] = useState<string>("");
     const [inventoryCount, setInventoryCount] = useState<string>("");
     const [selectedCategory, setSelectedCategory] = useState<string>('');
-    const [user_id, setUser_id] = useState(auth.user.id);
+    /* const [user_id, setUser_id] = useState(auth.user.id); */
 
-    
+    const [categories, setCategories] = useState<Category[]>([]);
+
+
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get('/get-categories');
+                console.log(response.data); // Log to inspect the structure
+                setCategories(response.data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                // Handle error
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     const addProduct = async () => {
         try {
@@ -22,9 +43,9 @@ const CreateProduct: React.FC<PageProps> = ({ auth }) => {
                 description,
                 price,
                 sku,
-                inventory_count: inventoryCount,
+                /* inventory_count: inventoryCount, */
                 category_id: selectedCategory, // Add category_id in the request
-                user_id, // Add category_id in the request
+                /* user_id, // Add category_id in the request */
             });
             console.log('Product added:', response.data);
             // Handle post-creation logic (like redirecting or updating a list)
@@ -34,7 +55,6 @@ const CreateProduct: React.FC<PageProps> = ({ auth }) => {
         }
     };
 
-    console.log(auth.user.id);
 
     return (
         <>
@@ -63,12 +83,12 @@ const CreateProduct: React.FC<PageProps> = ({ auth }) => {
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
                 />
-                <TextInput 
+                {/* <TextInput 
                     type="text" 
                     placeholder="Inventory Count" 
                     value={inventoryCount}
                     onChange={(e) => setInventoryCount(e.target.value)}
-                />
+                /> */}
 
                 <select
                     className='border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm'
@@ -76,7 +96,7 @@ const CreateProduct: React.FC<PageProps> = ({ auth }) => {
                     onChange={(e) => setSelectedCategory(e.target.value)}
                 >
                     <option value="">Select a Category</option>
-                    {auth.categories.map((category) => (
+                    {categories.map((category) => (
                         <option key={category.id} value={category.id}>
                             {category.name}
                         </option>

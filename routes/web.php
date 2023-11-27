@@ -78,6 +78,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // Category
+    Route::get('/get-categories', [CategoryController::class, 'getCategories']);
+    
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::get('/categories/create', [CategoryController::class, 'create']);

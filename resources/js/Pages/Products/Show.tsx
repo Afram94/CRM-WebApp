@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { PageProps, Product } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
+import CreateProductsModal from './Components/CreateProductsModal';
 
 const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
 
-    console.log(auth.products);
+    /* console.log(auth.products); */
 
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(auth.products || []);
 
@@ -33,6 +34,7 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
 
     return (
         <MainLayout title='Products'>
+            <CreateProductsModal />
         <div className="container mx-auto p-4">
             <table className="min-w-full table-auto border-collapse border border-gray-300">
                 <thead>
