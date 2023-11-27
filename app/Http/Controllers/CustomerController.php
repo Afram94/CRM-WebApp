@@ -103,7 +103,7 @@ class CustomerController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:customers,email',
             'phone_number' => 'required|numeric',
-            'custom_fields' => 'required|array' // Ensure custom fields are provided
+            /* 'custom_fields' => 'required|array' // Ensure custom fields are provided */
         ]);
 
         // Start the transaction

@@ -26,13 +26,13 @@ export const TabComponent: React.FC<TabComponentProps> = ({ categories, selected
       onClick={() => onSelect(name)}
       className={({ selected }) =>
         classNames(
-          'w-full py-2.5 text-sm leading-5 font-medium text-white rounded-lg lg:text-center text-start',
+          'w-full py-2.5 text-sm leading-5 font-medium text-gray-500 rounded-lg lg:text-center text-start',
           'focus:outline-none focus:ring-2 ring-offset-2 ring-offset-indigo-200 ring-white ring-opacity-60',
-          selected ? 'bg-indigo-500 shadow' : 'text-slate-600 hover:bg-white/[0.12] font-semibold'
+          selected ? 'bg-indigo-500 text-white shadow' : 'text-slate-600 hover:bg-white/[0.12] font-semibold'
         )
       }
     >
-      <Icon className="inline-block " />{name}
+      <Icon className="inline-block mx-1 mb-1" />{name}
     </Tab>
   ))}
 </Tab.List>

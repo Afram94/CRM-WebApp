@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { Inertia } from '@inertiajs/inertia';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaPlus } from 'react-icons/fa';
 
 import { Customer, PageProps } from '@/types';
 import MainLayout from '@/Layouts/MainLayout';
@@ -23,6 +23,7 @@ import { Link } from '@inertiajs/react';
 import { usePermissions } from '../../../providers/permissionsContext';
 import CustomerCustomFieldForm from './CustomerCustomFieldForm';
 import CustomerChannelsHandler from './CustomerChannelsHandler';
+import Modal from '@/Components/Modal';
 
 interface Permission {
     name: string;
@@ -260,8 +261,18 @@ const Show = ({ auth }: PageProps) => {
         )
     ];
 
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+        const openModal = (customer: Customer) => {
+        setSelectedCustomer(customer);
+        setIsModalOpen(true);
+        };
+
+        console.log(selectedCustomer);
+
     return (
-        <MainLayout>
+        <MainLayout title="Customers / All Customers">
             
             {auth.customers?.data && auth.customers.data.length > 0 ? (
                 
@@ -274,8 +285,8 @@ const Show = ({ auth }: PageProps) => {
               onDeleteCustomer={handleDeleteCustomer}
             />
     
-                    <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3>
-                    <div className="w-full flex justify-between my-2">
+                    {/* <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3> */}
+                    <div className="w-full flex justify-between my-4">
                         <div className="flex gap-2">
                             <TextInput 
                                 type="text"
@@ -300,35 +311,49 @@ const Show = ({ auth }: PageProps) => {
                     <div className='overflow-x-auto'>
                     <table className="min-w-full table-auto">
                         <thead>
-                            <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                                <th className="py-2 px-6 text-left">Name</th>
-                                <th className="py-2 px-6 text-left">Email</th>
-                                <th className="py-2 px-6 text-left">Phone Number</th>
+                            <tr className=" text-gray-600 uppercase text-sm leading-normal border-y-2">
+                                <th className="py-2 px-6 text-center sm:hidden"></th>
+                                <th className="py-2 px-6 text-left">Customer</th>
+                                {/* <th className="py-2 px-6 text-left">Email</th>
+                                <th className="hidden sm:table-cell py-2 px-6 text-left">Phone Number</th> */}
                                 {distinctCustomFieldNames.map(name => (
-                                    <th className="py-2 px-6 text-left" key={name}>{name}</th>
+                                    <th className="hidden sm:table-cell py-2 px-6 whitespace-nowrap" key={name}>{name}</th>
                                 ))}
                                 {/* <th className="py-2 px-6 text-left">Last Name</th>
                                 <th className="py-2 px-6 text-left">Org Number</th> */}
-                                <th className="py-2 px-6 text-left">Edit</th>
-                                <th className="py-2 px-6 text-left">Delete</th>
-                                <th className="py-2 px-6 text-left">Other</th>
+                                <th className="hidden sm:table-cell py-2 px-6">Edit</th>
+                                <th className="hidden sm:table-cell py-2 px-6">Delete</th>
+                                <th className="hidden sm:table-cell py-2 px-6">Other</th>
                             </tr>
                         </thead>
                         <tbody className="text-gray-600 text-sm font-light">
                             {filteredCustomers.map((customer) => (
                                 
                                 <tr className="border-b border-gray-200 hover:bg-gray-100" key={customer.id}>
+
+                                    <td className="py-2 px-6 text-center sm:hidden"> {/* Hidden on small and up, shown on extra small */}
+                                        <PrimaryButton onClick={() => openModal(customer)}>
+                                            <FaPlus /> {/* Plus icon */}
+                                        </PrimaryButton>
+                                    </td>
                                     
                                     <td className="py-2 px-6">
-                                    <Link href={`/customer-profile/${customer.id}`}>{customer.name}</Link>
+                                    <Link href={`/customer-profile/${customer.id}`}>
+                                        <div className='flex gap-1'>
+                                            <p className='font-semibold text-indigo-500 text-[17px]'>{customer.name}</p>
+                                            <p className='text-gray-400 py-[2px]'>Tel:{customer.phone_number}</p>
+                                        </div>
+                                            <p className='text-gray-500 mt-1'>Email:{customer.email}</p>
+                                        
+                                    </Link>
                                     </td>
-                                    <td className="py-2 px-6">
+                                    {/* <td className="py-2 px-6">
                                     <Link href={`/customer-profile/${customer.id}`}>{customer.email}</Link>
                                     </td>
                                     
-                                    <td className="py-2 px-6">
+                                    <td className="hidden sm:table-cell py-2 px-6">
                                     <Link href={`/customer-profile/${customer.id}`}>{customer.phone_number}</Link>
-                                    </td>
+                                    </td> */}
                                     
                                     {/* Loop through customFieldsValues to display custom field data */}
                                     
@@ -343,7 +368,7 @@ const Show = ({ auth }: PageProps) => {
                                         }
 
                                         return (
-                                        <td className="py-2 px-6" key={index}>
+                                        <td className="hidden sm:table-cell py-2 px-6 " key={index}>
                                             {displayValue}
                                         </td>
                                         );
@@ -353,15 +378,15 @@ const Show = ({ auth }: PageProps) => {
                                     })}
                                         
                                     
-                                    <td className="py-2 px-6">
+                                    <td className="hidden sm:table-cell py-2 px-6">
                                         <EditModal customer={customer} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
                                     </td>
-                                    <td className="py-2 px-6">
+                                    <td className="hidden sm:table-cell py-2 px-6">
                                         <PrimaryButton onClick={() => Delete(customer.id)}>
                                             <FaTrash />
                                         </PrimaryButton>
                                     </td>
-                                    <td className="py-2 px-6">
+                                    <td className="hidden sm:table-cell py-2 px-6">
                                         <Dropdown>
                                             <Dropdown.Trigger>
                                                 <PrimaryButton>...</PrimaryButton>
@@ -396,17 +421,21 @@ const Show = ({ auth }: PageProps) => {
                                             </Dropdown.Content>
                                         </Dropdown>
                                     </td>
+                                    
 
                                 </tr>
                             ))}
+
                         </tbody>
                     </table>
+                            
                     </div>
                     {auth.customers.links && (
-                        <div className="mt-4">
+                        <div className="mt-4 flex justify-end">
                             <PaginationComponent links={auth.customers.links} />
                         </div>
                     )}
+                    
                 </div>
             ) : (
                 <div className='flex flex-col justify-center items-center h-full text-[30px] font-semibold'>
@@ -418,6 +447,24 @@ const Show = ({ auth }: PageProps) => {
                     )} 
                 </div>   
             )}
+
+        <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            <div className='w-[550px] h-[450px] overflow-auto p-4'>
+                <h2 className="text-lg font-bold mb-4">Customer Details</h2>
+                <div>
+                    <div><strong>Name:</strong> {selectedCustomer?.name}</div>
+                    <div><strong>Email:</strong> {selectedCustomer?.email}</div>
+                    <div><strong>Phone Number:</strong> {selectedCustomer?.phone_number}</div>
+
+                    <h3 className="text-md font-semibold mt-3">Custom Fields:</h3>
+                    {selectedCustomer?.custom_fields_values?.map((field, index) => (
+                        <div key={index}>
+                            <strong>{field.custom_field.field_name}:</strong> {field.value}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Modal>
         </MainLayout>
     );
 };

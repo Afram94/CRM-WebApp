@@ -18,7 +18,7 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
   ];
 
   return (
-    <MainLayout>
+    <MainLayout title="">
       <div className='m-5'>
         <div className='text-gray-600 text-lg sm:text-xl md:text-2xl'>
           Customer ID #3085d6
@@ -26,9 +26,9 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
         <div className='text-gray-500 text-sm sm:text-md md:text-lg mb-5'>
           Aug 17, 2020, 5:48 (ET)
         </div>
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 xl:grid-cols-3 gap-4'>
 
-          <div className='shadow-md rounded-lg bg-slate-100 flex flex-col gap-y-1 mt-4 p-4'>
+          <div className='shadow-md rounded-lg bg-slate-50 flex flex-col gap-y-1 mt-4 p-4'>
             <div className='flex justify-center mb-4'>
               <FaUser className='bg-indigo-200 text-indigo-500 rounded-full p-3 h-16 w-16 sm:h-20 sm:w-20 md:h-28 md:w-28 mt-4' />
             </div>
@@ -82,6 +82,46 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
               selectedTab={selectedTab}
               onSelect={(tab) => setSelectedTab(tab)}
             />
+            {selectedTab === 'Overview' && (
+                <div> 
+                
+                    <div  className="mb-2">
+                        {/* {profile.notes && profile.notes.length > 0 ?
+                        profile.notes.map((note)=>( */}
+                            <div className='grid grid-cols-2 gap-2'>
+
+                                <div className='w-full p-3 h-44 shadow-md bg-white rounded-lg'>
+                                    <div className='mb-2 flex flex-col gap-3'>
+                                        <MdAttachMoney className="w-9 h-9 text-indigo-500 bg-indigo-200 rounded-md p-1" />
+                                        <p className='text-xl text-gray-700'>Account Balance</p>
+                                    </div>
+
+                                    <div className='flex gap-1 mb-2'>
+                                        <p className='text-indigo-600 text-xl'>$2345</p>
+                                        <p className='text-[14px] my-1 text-gray-500 font-semibold'>Credit Left</p>
+                                    </div>
+                                    <p className='text-gray-500'>Account balance for next purchase</p>
+                                </div>
+                                {auth.customer_profile.map((profile) => (
+                                    <div key={profile.id}>
+                                        {profile.notes && profile.notes.length > 0 ? (
+                                            profile.notes.map((note) => (
+                                                <div key={note.id} className='w-full p-3 h-44 shadow-md bg-white rounded-lg'>
+                                                    <p className="text-sm font-semibold text-gray-800">{note.title}</p>
+                                                    <p className="text-sm text-gray-600">{note.content}</p>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className='w-full p-3 h-44 shadow-md items-center flex justify-center bg-white rounded-lg'>
+                                                <p className="text-xl text-gray-500">No notes available</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                    </div>
+                </div>
+            )}
           </div>
         </div>
       </div>
