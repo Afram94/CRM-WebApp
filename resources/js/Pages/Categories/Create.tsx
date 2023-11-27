@@ -3,7 +3,11 @@ import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 
-const CreateCategory: React.FC = () => {
+type CreateCategoryProps = {
+    closeModal: () => void;
+}
+
+const CreateCategory: React.FC<CreateCategoryProps> = ({ closeModal }) => {
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
 
@@ -13,6 +17,7 @@ const CreateCategory: React.FC = () => {
                 name,
                 description,
             });
+            closeModal();
             console.log('Category added:', response.data);
             // Handle post-creation logic (like redirecting or updating a list)
         } catch (error) {
