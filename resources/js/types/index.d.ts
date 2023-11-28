@@ -59,6 +59,16 @@ export interface Product {
     inventory_count: number;
 }
 
+export interface Inventory {
+    id: number;
+    user_id: number;
+    product_id: number;
+    product_name: string;
+    quantity: number;
+    stock_status: string;
+    restock_date?: string | null;
+}
+
 type PaginatedResponse<T> = {
     current_page: number;
     data: T[];
@@ -89,5 +99,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         customer_profile:Customer[];
         products:Product[];
         categories:Category[];
+        inventories:Inventory[];
     };
 };
