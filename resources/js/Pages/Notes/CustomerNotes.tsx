@@ -9,7 +9,7 @@ const CustomerNotes: React.FC<PageProps> = ({ auth }) => {
         setExpandedNoteId(expandedNoteId === noteId ? null : noteId);
     };
   return (
-    <MainLayout>
+    <MainLayout title='Customer/Notes'>
         {auth && auth.customer_notes.length > 0 ? (
       <div className="flex flex-wrap justify-around">
         {auth.customer_notes.map((note) => (

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Category;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
@@ -95,5 +96,29 @@ class ProductController extends Controller
         $product = Product::create($validatedData);
 
         return response()->json($product, 200);
+    }
+
+    public function getProducts()
+    {
+        $user = auth()->user();
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+        // Retrieve products only for users who share the same parent_user_id.
+        $productsQuery = Product::whereIn('user_id', $allUserIdsUnderSameParent);
+
+        $products = $productsQuery->get()->transform(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                // Add or transform other fields as needed
+            ];
+        });
+
+        return response()->json($products, Response::HTTP_OK);
     }
 }

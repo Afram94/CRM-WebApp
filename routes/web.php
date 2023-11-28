@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\InventoryController;
 
 use App\Http\Controllers\CustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldController;
@@ -75,11 +76,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::post('products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::get('/get-products', [ProductController::class, 'getProducts']);
+
+    // Inventory
+    Route::get('inventories', [InventoryController::class, 'index']);
+    Route::post('inventories', [InventoryController::class, 'store']);
+    Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
 
 
     // Category
     Route::get('/get-categories', [CategoryController::class, 'getCategories']);
-    
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::get('/categories/create', [CategoryController::class, 'create']);
