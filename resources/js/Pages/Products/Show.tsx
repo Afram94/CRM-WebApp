@@ -3,12 +3,21 @@ import { PageProps, Product } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateProductsModal from './Components/CreateProductsModal';
+import EditProductModal from './Components/EditProductModal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import { FaTrashRestore } from 'react-icons/fa';
+import axios from 'axios';
+
+
+type GroupedProducts = {
+    [category: string]: Product[];
+  };
 
 const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
 
     /* console.log(auth.products); */
 
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>(auth.products || []);
+    /* const [filteredProducts, setFilteredProducts] = useState<Product[]>(auth.products || []);
 
     const handleNewProduct = (newProduct: Product) => {
         console.log("handleNewNote Work!!")
@@ -28,44 +37,82 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
         if (auth.products) {
             setFilteredProducts(auth.products);
         }
-    }, [auth.products]); // Dependency array to re-run this effect if auth.products changes
+    }, [auth.products]); // Dependency array to re-run this effect if auth.products changes */
     
+    const [groupedProducts, setGroupedProducts] = useState<GroupedProducts>({});
+    const [openCategories, setOpenCategories] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (auth.products) {
+            const initialGroup: GroupedProducts = {};
+            const groups = auth.products.reduce((acc, product) => {
+                const categoryName = product.category_name || 'Uncategorized';
+                if (!acc[categoryName]) {
+                    acc[categoryName] = [];
+                }
+                acc[categoryName].push(product);
+                return acc;
+            }, initialGroup);
+
+            setGroupedProducts(groups);
+        }
+    }, [auth.products]);
+
+    const toggleAccordion = (categoryName: string) => {
+        setOpenCategories(prev => 
+            prev.includes(categoryName) 
+                ? prev.filter(name => name !== categoryName) 
+                : [...prev, categoryName]
+        );
+    };
+
+    const isAccordionOpen = (categoryName: string): boolean => {
+        return openCategories.includes(categoryName);
+    };
+
+    const deleteProduct = async (productId: number) => {
+        try {
+            const response = await axios.delete(`/products/${productId}`);
+            console.log(response.data);
+            // Update UI or redirect as needed
+        } catch (error) {
+            console.error('Error deleting product', error);
+            // Handle errors
+        }
+    };    
       
 
     return (
         <MainLayout title='Products'>
             <CreateProductsModal />
-        <div className="container mx-auto p-4">
-            <table className="min-w-full table-auto border-collapse border border-gray-300">
-                <thead>
-                    <tr className="bg-gray-200">
-                        <th className="border border-gray-300 p-2">Name</th>
-                        <th className="border border-gray-300 p-2">Description</th>
-                        <th className="border border-gray-300 p-2">Price</th>
-                        <th className="border border-gray-300 p-2">SKU</th>
-                        <th className="border border-gray-300 p-2">Inventory Count</th>
-                        {/* Add more headers as needed */}
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredProducts?.map(product => (
-                        <tr key={product.id} className="hover:bg-gray-100">
-                            <td className="border border-gray-300 p-2">
-                                <Link href={`/products/${product.id}`} className="text-blue-600 hover:text-blue-800">
-                                    {product.name}
-                                </Link>
-                            </td>
-                            <td className="border border-gray-300 p-2">{product.description}</td>
-                            <td className="border border-gray-300 p-2">${product.price.toFixed(2)}</td>
-                            <td className="border border-gray-300 p-2">{product.sku ?? 'N/A'}</td>
-                            <td className="border border-gray-300 p-2">{product.inventory_count}</td>
-                            {/* Add more product details as needed */}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    </MainLayout>
+            <div className="grid grid-cols-2 gap-2 rounded-lg p-4">
+                {Object.entries(groupedProducts).map(([categoryName, products]) => (
+                    <div key={categoryName} className="mb-2">
+                        <div onClick={() => toggleAccordion(categoryName)} className="cursor-pointer bg-gray-200 p-2 rounded">
+                            <div className='flex justify-between'>
+                                <p>{categoryName}</p>
+                                <p>{products.length}</p>
+                            </div>
+                        </div>
+                        <div className={`transition-height duration-500 ease-in-out overflow-hidden ${isAccordionOpen(categoryName) ? 'max-h-96' : 'max-h-0'}`}>
+                            <ul className="list-disc list-inside bg-red-200 rounded-b-lg">
+                                {products.map(product => (
+                                    <li key={product.id} className="p-1">
+                                        <Link href={`/products/${product.id}`} className="text-blue-600 hover:text-blue-800">
+                                            {product.name}
+                                        </Link>
+                                        <EditProductModal product={product} onClose={() => {/* Operations after closing modal */}} />
+                                        <PrimaryButton onClick={() => deleteProduct(product.id)}>
+                                            <FaTrashRestore />
+                                        </PrimaryButton>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </MainLayout>
     );
 };
 

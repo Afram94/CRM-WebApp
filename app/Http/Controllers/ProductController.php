@@ -10,6 +10,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
+
+    private function getUserIdsUnderSameParent()
+    {
+        $user = auth()->user();
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+    
+        return User::where('user_id', $parentUserId)
+                   ->orWhere('id', $parentUserId)
+                   ->pluck('id')->toArray();
+    }
+
+
     public function create()
     {
         $user = auth()->user();
@@ -49,12 +61,8 @@ class ProductController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+        $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
 
-        // Fetch all users that have the same parent_user_id (including the parent)
-        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
-                                        ->orWhere('id', $parentUserId)
-                                        ->pluck('id')->toArray();
 
         // Retrieve products only for users who share the same parent_user_id.
         $productsQuery = Product::whereIn('user_id', $allUserIdsUnderSameParent);
@@ -63,6 +71,8 @@ class ProductController extends Controller
             // Modify the product object as needed
             return [
                 'id' => $product->id,
+                'category_id' => $product->category->id,
+                'category_name' => $product->category->name,
                 'name' => $product->name,
                 'description' => $product->description,
                 'price' => (float) $product->price, // Casting price to float
@@ -98,15 +108,56 @@ class ProductController extends Controller
         return response()->json($product, 200);
     }
 
+    public function update(Request $request, $id)
+    {
+        $user = auth()->user();
+        // Determine the parent user ID
+        $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
+
+        // Find the product and check if it belongs to the authenticated user or to a user under the same parent
+        $product = Product::where('id', $id)
+                        ->whereIn('user_id', $allUserIdsUnderSameParent)
+                        ->firstOrFail();
+
+        $validatedData = $request->validate([
+            'name' => 'required|max:255',
+            'description' => 'nullable',
+            'price' => 'required|numeric',
+            'sku' => 'nullable|unique:products,sku,' . $product->id,
+            'inventory_count' => 'nullable|integer',
+            'category_id' => 'nullable|exists:categories,id',
+        ]);
+
+        // Update the product with validated data
+        $product->update($validatedData);
+
+        return response()->json($product, Response::HTTP_OK);
+    }
+
+
+    public function destroy($id)
+    {
+        $product = Product::findOrFail($id);
+
+        $user = auth()->user();
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
+
+        // Check if product exists and belongs to the authenticated user or to the users under the same parent
+        if (!$product || !in_array($product->user_id, $allUserIdsUnderSameParent)) {
+            return response()->json(['error' => 'Product not found or not authorized'], 403);
+        }
+
+        $product->delete();
+
+        return response()->json(['message' => 'Product deleted successfully'], 200);
+    }
+
+
     public function getProducts()
     {
         $user = auth()->user();
-        $parentUserId = $user->user_id ? $user->user_id : $user->id;
-
-        // Fetch all users that have the same parent_user_id (including the parent)
-        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
-                                        ->orWhere('id', $parentUserId)
-                                        ->pluck('id')->toArray();
+        $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
 
         // Retrieve products only for users who share the same parent_user_id.
         $productsQuery = Product::whereIn('user_id', $allUserIdsUnderSameParent);
