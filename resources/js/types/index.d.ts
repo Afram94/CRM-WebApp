@@ -52,11 +52,13 @@ export interface Category {
 }
 export interface Product {
     id: number;
+    category_name: string | number;
     name: string;
-    description: string
-    price: number
-    sku: string | any | null;
+    description: string;
+    price: number;
+    sku: string | null;
     inventory_count: number;
+    category_id?: number; // Add this line if category_id exists for a product
 }
 
 export interface Inventory {
