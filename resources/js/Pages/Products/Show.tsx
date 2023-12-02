@@ -8,55 +8,52 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { FaTrashRestore } from 'react-icons/fa';
 import axios from 'axios';
 
-
 type GroupedProducts = {
     [category: string]: Product[];
-  };
+};
 
 const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
-
-    /* console.log(auth.products); */
-
-    /* const [filteredProducts, setFilteredProducts] = useState<Product[]>(auth.products || []);
-
-    const handleNewProduct = (newProduct: Product) => {
-        console.log("handleNewNote Work!!")
-        setFilteredProducts((prevNotes) => {
-          if (newProduct.id) {  // Ensure the new note has a user name
-            return [...prevNotes, newProduct];
-          } else {
-            // Handle this case, e.g., provide a default name or fetch additional data
-            console.error('New note does not have a user_name:', newProduct);
-            return prevNotes;  // For now, keep the old notes as they were
-          }
-        });
-      };
-
-      useEffect(() => {
-        // Check if auth.products is not null or undefined
-        if (auth.products) {
-            setFilteredProducts(auth.products);
-        }
-    }, [auth.products]); // Dependency array to re-run this effect if auth.products changes */
-    
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>(auth.products || []);
     const [groupedProducts, setGroupedProducts] = useState<GroupedProducts>({});
     const [openCategories, setOpenCategories] = useState<string[]>([]);
 
-    useEffect(() => {
-        if (auth.products) {
-            const initialGroup: GroupedProducts = {};
-            const groups = auth.products.reduce((acc, product) => {
-                const categoryName = product.category_name || 'Uncategorized';
-                if (!acc[categoryName]) {
-                    acc[categoryName] = [];
-                }
-                acc[categoryName].push(product);
-                return acc;
-            }, initialGroup);
+    // Function to group products by category
+    const groupProducts = (products: Product[]) => {
+        const initialGroup: GroupedProducts = {};
+        return products.reduce((acc, product) => {
+            const categoryName = product.category_name || 'Uncategorized';
+            if (!acc[categoryName]) {
+                acc[categoryName] = [];
+            }
+            acc[categoryName].push(product);
+            return acc;
+        }, initialGroup);
+    };
 
-            setGroupedProducts(groups);
+    // Fetch filtered products based on search term
+    const fetchFilteredProducts = async () => {
+        try {
+            const response = await axios.get(`/products?search=${searchTerm}`);
+            if (response.data && response.data.auth && response.data.auth.products) {
+                setFilteredProducts(response.data.auth.products);
+            }
+        } catch (error) {
+            console.error('Failed to fetch filtered products:', error);
         }
-    }, [auth.products]);
+    };
+
+    // Fetch products when search term changes
+    useEffect(() => {
+        if (searchTerm.length >= 3 || searchTerm === '') {
+            fetchFilteredProducts();
+        }
+    }, [searchTerm]);
+
+    // Group products when filteredProducts changes
+    useEffect(() => {
+        setGroupedProducts(groupProducts(filteredProducts));
+    }, [filteredProducts]);
 
     const toggleAccordion = (categoryName: string) => {
         setOpenCategories(prev => 
@@ -80,10 +77,15 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
             // Handle errors
         }
     };    
-      
 
     return (
         <MainLayout title='Products'>
+            <input 
+                type="text" 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+                placeholder="Search products..."
+            />
             <CreateProductsModal />
             <div className="grid grid-cols-2 gap-2 rounded-lg p-4">
                 {Object.entries(groupedProducts).map(([categoryName, products]) => (

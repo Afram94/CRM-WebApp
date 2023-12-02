@@ -58,16 +58,28 @@ class ProductController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
-
+        $search = $request->input('search');
 
         // Retrieve products only for users who share the same parent_user_id.
-        $productsQuery = Product::whereIn('user_id', $allUserIdsUnderSameParent);
+        $productsQuery = Product::with('category') // Ensure the category relation is loaded
+                            ->whereIn('user_id', $allUserIdsUnderSameParent);
 
-        $products = $productsQuery->get()->transform(function ($product) {
+        // Apply search filter if search term is present
+        if ($search) {
+            $productsQuery->where(function($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('description', 'LIKE', '%' . $search . '%')
+                    ->orWhereHas('category', function($query) use ($search) {
+                        $query->where('name', 'LIKE', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $products = $productsQuery->get()->map(function ($product) {
             // Modify the product object as needed
             return [
                 'id' => $product->id,
@@ -82,6 +94,15 @@ class ProductController extends Controller
             ];
         });
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'auth' => [
+                    'products' => $products,
+                    'user' => $user
+                ]
+            ]);
+        }
+
         return inertia('Products/Show', [
             'auth' => [
                 'products' => $products,
@@ -89,6 +110,7 @@ class ProductController extends Controller
             ]
         ]);
     }
+
 
     public function store(Request $request)
     {
