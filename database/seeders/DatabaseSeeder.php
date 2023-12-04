@@ -112,6 +112,53 @@ class DatabaseSeeder extends Seeder
         }
         DB::table('orders')->insert($orders);
 
+     
+        $productVariants = [];
+        for ($i = 1; $i <= 50; $i++) {
+            $productVariants[] = [
+                'user_id' => rand(1, 10), // Assuming you have users 1-10
+                'product_id' => rand(1, 10), // Assuming you have products 1-10
+                'variant_name' => 'Size', // Example variant name
+                'variant_value' => $i % 2 == 0 ? 'Large' : 'Small', // Alternating values
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        DB::table('product_variants')->insert($productVariants);
+
+
+
+        $serialNumbers = [];
+        for ($i = 1; $i <= 100; $i++) {
+            $serialNumbers[] = [
+                'user_id' => rand(1, 10), // Assuming you have users 1-10
+                'product_variant_id' => rand(1, 50), // Assuming you have product variants 1-50
+                'serial_number' => 'SN' . str_pad($i, 5, '0', STR_PAD_LEFT),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        DB::table('serial_numbers')->insert($serialNumbers);
+        
+
+
+        $orderItems = [];
+        for ($i = 1; $i <= 100; $i++) {
+            $orderItems[] = [
+                'order_id' => rand(1, 30), // Assuming you have orders 1-30
+                'product_id' => rand(1, 10), // Assuming you have products 1-10
+                'product_variant_id' => rand(1, 50), // Assuming you have product variants 1-50
+                'quantity' => rand(1, 5), // Random quantity
+                'price' => rand(100, 1000) / 100, // Random price
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        DB::table('order_items')->insert($orderItems);
+
 
         // Array of Inventory
         $inventories = [];
@@ -120,11 +167,16 @@ class DatabaseSeeder extends Seeder
                 'id' => $i,
                 'user_id' => $i, // Assuming each inventory record is linked to a user
                 'product_id' => $i, // Assuming each inventory record is linked to a product
+                'product_variant_id' => rand(1, 10), // Assuming 10 variants, randomly assign
                 'quantity' => rand(10, 200), // Random quantity
                 'stock_status' => 'in_stock', // Assuming all are in stock
+                'min_stock_level' => rand(5, 20), // Random minimum stock level
+                'max_stock_level' => rand(100, 500), // Random maximum stock level
+                'restock_date' => now()->addDays(rand(10, 60))->format('Y-m-d'), // Random restock date in the future
             ];
         }
         DB::table('inventories')->insert($inventories);
+
         
 
         // ... Repeat for other tables as necessary
