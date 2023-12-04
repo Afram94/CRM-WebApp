@@ -9,7 +9,7 @@ class Inventory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'product_id', 'quantity', 'stock_status', 'restock_date'];
+    protected $fillable = ['user_id', 'product_variant_id', 'quantity', 'stock_status', 'min_stock_level', 'max_stock_level', 'restock_date'];
 
     protected $table = 'inventories';
 
@@ -21,5 +21,10 @@ class Inventory extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class);
     }
 }

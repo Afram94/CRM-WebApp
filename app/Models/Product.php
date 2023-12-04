@@ -32,4 +32,9 @@ class Product extends Model
     {
         return $this->hasOne(Inventory::class);
     }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
 }
