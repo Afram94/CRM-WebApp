@@ -7,6 +7,7 @@ import EditProductModal from './Components/EditProductModal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { FaTrashRestore } from 'react-icons/fa';
 import axios from 'axios';
+import ProductCustomFieldForm from './ProductCustomFieldForm';
 
 type GroupedProducts = {
     [category: string]: Product[];
@@ -87,6 +88,8 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
                 placeholder="Search products..."
             />
             <CreateProductsModal />
+            
+            <ProductCustomFieldForm />
             <div className="grid grid-cols-2 gap-2 rounded-lg p-4">
                 {Object.entries(groupedProducts).map(([categoryName, products]) => (
                     <div key={categoryName} className="mb-2">
