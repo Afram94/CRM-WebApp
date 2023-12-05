@@ -15,12 +15,12 @@ class DatabaseSeeder extends Seeder
         $adminIds = [];
 
         // First, create all admin users
-        for ($i = 1; $i <= 100; $i += 4) {
+        for ($i = 1; $i <= 1000; $i += 41) {
             $users[] = [
                 'id' => $i, 
                 'user_id' => null, 
-                'name' => 'Admin_' . ceil($i / 4),
-                'email' => 'admin_' . ceil($i / 4) . '@example.com',
+                'name' => 'Admin_' . ceil($i / 41),
+                'email' => 'admin_' . $i . '@example.com', // Use the user ID directly
                 'password' => Hash::make('password')
             ];
             $adminIds[] = $i;
@@ -28,14 +28,14 @@ class DatabaseSeeder extends Seeder
 
         // Then, create all child users
         foreach ($adminIds as $adminId) {
-            for ($j = 1; $j <= 3; $j++) {
+            for ($j = 1; $j <= 40; $j++) {
                 $childId = $adminId + $j;
-                if ($childId > 100) break; // Ensure not to exceed 100 users
+                if ($childId > 1000) break; // Ensure not to exceed 100 users
 
                 $users[] = [
                     'id' => $childId, 
                     'user_id' => $adminId,
-                    'name' => 'child_to_admin_' . ceil($adminId / 4),
+                    'name' => 'child_to_admin_' . ceil($adminId / 41),
                     'email' => 'john_' . $childId . '@example.com',
                     'password' => Hash::make('password')
                 ];
@@ -57,9 +57,23 @@ class DatabaseSeeder extends Seeder
             Role::findByName($role)->users()->attach($createdUserId);
         }
 
+        
+
+        // Seed the Categories table
+        $categories = [];
+        for ($i = 1; $i <= 1000; $i++) {
+            $categories[] = [
+                'id' => $i,
+                'user_id' => $i,
+                'name' => 'Category ' . $i,
+                'description' => 'Description for Category ' . $i,
+            ];
+        }
+        DB::table('categories')->insert($categories);
+
         // Array of Customers
         $customers = [];
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 1000; $i++) {
             $customers[] = [
                 'id' => $i,
                 'user_id' => $i, // Assuming each customer is linked to a user
@@ -70,21 +84,45 @@ class DatabaseSeeder extends Seeder
         }
         DB::table('customers')->insert($customers);
 
-        // Seed the Categories table
-        $categories = [];
-        for ($i = 1; $i <= 100; $i++) {
-            $categories[] = [
-                'id' => $i,
-                'user_id' => $i,
-                'name' => 'Category ' . $i,
-                'description' => 'Description for Category ' . $i,
-            ];
+        $customFields = [
+            ['field_name' => 'Custom Field 1', 'field_type' => 'text'],
+            ['field_name' => 'Custom Field 2', 'field_type' => 'text'],
+            ['field_name' => 'Custom Field 3', 'field_type' => 'text'],
+            ['field_name' => 'Custom Field 4', 'field_type' => 'text'],
+            ['field_name' => 'Custom Field 5', 'field_type' => 'text'],
+            ['field_name' => 'Custom Field 6', 'field_type' => 'text'],
+            ['field_name' => 'Custom Field 7', 'field_type' => 'text'],
+            // Add more custom fields if needed
+        ];
+        
+        $fieldIds = [];
+        
+        foreach ($customFields as $field) {
+            $fieldIds[] = DB::table('customer_custom_fields')->insertGetId([
+                'user_id' => 1, // or any specific user ID
+                'field_name' => $field['field_name'],
+                'field_type' => $field['field_type'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
-        DB::table('categories')->insert($categories);
+        
+        // Seed Customer Custom Field Values
+        foreach ($customers as $customer) {
+            foreach ($fieldIds as $fieldId) {
+                DB::table('customer_custom_field_values')->insert([
+                    'customer_id' => $customer['id'],
+                    'field_id' => $fieldId,
+                    'value' => 'Sample Value', // You can customize this value as needed
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
 
         // Array of Products
         $products = [];
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 1000; $i++) {
             $products[] = [
                 'id' => $i,
                 'user_id' => $i, // Assuming each product is linked to a user
@@ -101,7 +139,7 @@ class DatabaseSeeder extends Seeder
 
         // Array of Orders
         $orders = [];
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 1000; $i++) {
             $orders[] = [
                 'id' => $i,
                 'user_id' => $i, // Assuming each order is linked to a user
@@ -130,7 +168,7 @@ class DatabaseSeeder extends Seeder
 
 
         $serialNumbers = [];
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 1000; $i++) {
             $serialNumbers[] = [
                 'user_id' => rand(1, 10), // Assuming you have users 1-10
                 'product_variant_id' => rand(1, 50), // Assuming you have product variants 1-50
@@ -145,7 +183,7 @@ class DatabaseSeeder extends Seeder
 
 
         $orderItems = [];
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 1000; $i++) {
             $orderItems[] = [
                 'order_id' => rand(1, 30), // Assuming you have orders 1-30
                 'product_id' => rand(1, 10), // Assuming you have products 1-10
@@ -162,7 +200,7 @@ class DatabaseSeeder extends Seeder
 
         // Array of Inventory
         $inventories = [];
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 1000; $i++) {
             $inventories[] = [
                 'id' => $i,
                 'user_id' => $i, // Assuming each inventory record is linked to a user

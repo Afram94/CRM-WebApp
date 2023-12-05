@@ -17,6 +17,8 @@ use App\Http\Controllers\CustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldValueController;
 
+use App\Http\Controllers\ProductCustomFieldController;
+
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
 
@@ -108,11 +110,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
 
 
+    //Customers Custom fields
     Route::post('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'store']);
     Route::put('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'update']);
     Route::get('/custom-fields', [CustomerCustomFieldController::class, 'index']);
     Route::post('/add-custom-field', [CustomerCustomFieldController::class, 'store']);
 
+
+
+    //Products Custom fields
+    Route::post('/add-product-custom-field', [ProductCustomFieldController::class, 'store']);
+    Route::get('/product-custom-fields', [ProductCustomFieldController::class, 'index']);
     
     WebSocketsRouter::webSocket('/app', \App\WebSocketHandlers\NoteWebSocketHandler::class);
     
