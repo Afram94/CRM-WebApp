@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\ProductCustomField;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -19,6 +21,34 @@ class ProductController extends Controller
         return User::where('user_id', $parentUserId)
                    ->orWhere('id', $parentUserId)
                    ->pluck('id')->toArray();
+    }
+
+    private function prepareValidationRules(array $customFields)
+    {
+        $validationRules = [];
+        foreach ($customFields as $fieldId => $value) {
+            $fieldDefinition = ProductCustomField::findOrFail($fieldId); // Use ProductCustomField model
+
+            // Set validation rules based on the field's type
+            switch ($fieldDefinition->field_type) {
+                case 'string':
+                    $validationRules["custom_fields.$fieldId"] = 'required|string';
+                    break;
+                case 'integer':
+                    $validationRules["custom_fields.$fieldId"] = 'required|numeric';
+                    break;
+                case 'date':
+                    $validationRules["custom_fields.$fieldId"] = 'required|date';
+                    break;
+                case 'boolean':
+                    $validationRules["custom_fields.$fieldId"] = 'required|boolean';
+                    break;
+                // ... add other cases as needed
+                default:
+                    $validationRules["custom_fields.$fieldId"] = 'required|string';
+            }
+        }
+        return $validationRules;
     }
 
 
@@ -58,7 +88,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function index(Request $request)
+    /* public function index(Request $request)
     {
         $user = auth()->user();
         $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
@@ -109,10 +139,55 @@ class ProductController extends Controller
                 'user' => $user
             ]
         ]);
+    } */
+
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+        $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
+        $search = $request->input('search');
+    
+        // Retrieve products only for users who share the same parent_user_id.
+        $productsQuery = Product::with(['category', 'customFieldsValues', 'customFieldsValues.customField'])
+                                ->whereIn('user_id', $allUserIdsUnderSameParent);
+    
+        // Apply search filter if search term is present
+        if ($search) {
+            $productsQuery->where(function($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('description', 'LIKE', '%' . $search . '%')
+                    ->orWhereHas('category', function($query) use ($search) {
+                        $query->where('name', 'LIKE', '%' . $search . '%');
+                    });
+            });
+        }
+    
+        // Fetch all products
+        $products = $productsQuery->get();
+    
+        // If the request is an AJAX call, return the products as JSON.
+        if ($request->wantsJson()) {
+            return response()->json([
+                'auth' => [
+                    'user' => $user,
+                    'products' => $products
+                ]
+            ]);
+        }
+    
+        // If it's a regular page request, return the Inertia view.
+        return inertia('Products/Show', [
+            'auth' => [
+                'user' => $user,
+                'products' => $products
+            ]
+        ]);
     }
+    
 
 
-    public function store(Request $request)
+
+    /* public function store(Request $request)
     {
         $validatedData = $request->validate([
             'name' => 'required|max:255',
@@ -128,7 +203,58 @@ class ProductController extends Controller
         $product = Product::create($validatedData);
 
         return response()->json($product, 200);
+    } */
+
+    public function store(Request $request)
+{
+    // Validate fixed fields
+    $request->validate([
+        'name' => 'required|max:255',
+        'description' => 'nullable',
+        'price' => 'required|numeric',
+        'sku' => 'nullable|unique:products,sku',
+        'inventory_count' => 'nullable|integer',
+        'category_id' => 'nullable|exists:categories,id', // Ensure the category exists
+        // 'custom_fields' => 'sometimes|array' // Custom fields are optional
+    ]);
+
+    // Start the transaction
+    DB::beginTransaction();
+
+    try {
+        // Create the product
+        $validatedData = $request->only(['name', 'description', 'price', 'sku', 'inventory_count', 'category_id']);
+        $validatedData['user_id'] = auth()->id(); // Set user_id to the ID of the authenticated user
+        $product = Product::create($validatedData);
+
+        // Process custom fields
+        if ($request->has('custom_fields')) {
+            $customFields = $request->input('custom_fields');
+            // Assume prepareValidationRules() method exists and is similar to that in CustomerController
+            $validationRules = $this->prepareValidationRules($customFields);
+            $request->validate($validationRules);
+
+            foreach ($customFields as $fieldId => $value) {
+                $fieldDefinition = ProductCustomField::findOrFail($fieldId);
+                $product->customFieldsValues()->create([
+                    'field_id' => $fieldId,
+                    'value' => $value,
+                ]);
+            }
+        }
+
+        // Commit the transaction
+        DB::commit();
+
+        return response()->json($product, 200);
+
+    } catch (\Exception $e) {
+        // If there is an exception, rollback the transaction
+        DB::rollBack();
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
+
 
     public function update(Request $request, $id)
     {

@@ -261,6 +261,9 @@ const Show = ({ auth }: PageProps) => {
         )
     ];
 
+    console.log(filteredCustomers);
+
+
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 

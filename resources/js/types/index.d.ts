@@ -6,7 +6,7 @@ export interface User {
     email_verified_at: string | null;
 }
 
-export interface CustomFieldValue {
+export interface CustomerCustomFieldValue {
     id?: number;  // Making it optional
     customer_id?: number;  // Making it optional
     custom_field?: any;  // Making it optional
@@ -15,7 +15,7 @@ export interface CustomFieldValue {
     // ... any other fields for CustomFieldValue
 }
 
-export interface CustomField {
+export interface CustomerCustomField {
     id: number;
     user_id: number;
     field_name: string;
@@ -29,7 +29,7 @@ export interface Customer {
     name: string;
     email: string;
     phone_number: string;
-    custom_fields_values: CustomFieldValue[];  // <-- Add this line
+    custom_fields_values: CustomerCustomFieldValue[];
     notes: Note[];
     // ... any other fields for Customer
 }
@@ -50,6 +50,24 @@ export interface Category {
     name: string;
     description: string;
 }
+
+export interface ProductCustomFieldValue {
+    id?: number;  // Making it optional
+    customer_id?: number;  // Making it optional
+    custom_field?: any;  // Making it optional
+    field_id: number;
+    value: any;
+    // ... any other fields for CustomFieldValue
+}
+
+export interface ProductCustomField {
+    id: number;
+    user_id: number;
+    field_name: string;
+    field_type: string;
+    // ... any other fields for CustomFieldValue
+}
+
 export interface Product {
     id: number;
     category_name: string | number;
@@ -59,6 +77,7 @@ export interface Product {
     sku: string | null;
     inventory_count: number;
     category_id?: number; // Add this line if category_id exists for a product
+    custom_fields_values: ProductCustomFieldValue[];
 }
 
 export interface Inventory {
