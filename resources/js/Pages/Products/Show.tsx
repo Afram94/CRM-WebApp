@@ -77,7 +77,20 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
             console.error('Error deleting product', error);
             // Handle errors
         }
-    };    
+    };
+
+    const maxFields = Math.max(...filteredProducts.map(p => p.custom_fields_values?.length || 0));
+
+      const distinctCustomFieldNames = [
+        ...new Set(
+            filteredProducts
+                .flatMap(p => p.custom_fields_values || [])
+                .filter(field => field.custom_field) // Filter out any undefined custom_field
+                .map(field => field.custom_field.field_name)
+        )
+    ];
+
+    console.log(distinctCustomFieldNames);
 
     return (
         <MainLayout title='Products'>
@@ -90,33 +103,54 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
             <CreateProductsModal />
             
             <ProductCustomFieldForm />
-            <div className="grid grid-cols-2 gap-2 rounded-lg p-4">
-                {Object.entries(groupedProducts).map(([categoryName, products]) => (
-                    <div key={categoryName} className="mb-2">
-                        <div onClick={() => toggleAccordion(categoryName)} className="cursor-pointer bg-gray-200 p-2 rounded">
-                            <div className='flex justify-between'>
-                                <p>{categoryName}</p>
-                                <p>{products.length}</p>
-                            </div>
-                        </div>
-                        <div className={`transition-height duration-500 ease-in-out overflow-hidden ${isAccordionOpen(categoryName) ? 'max-h-96' : 'max-h-0'}`}>
-                            <ul className="list-disc list-inside bg-red-200 rounded-b-lg">
-                                {products.map(product => (
-                                    <li key={product.id} className="p-1">
-                                        <Link href={`/products/${product.id}`} className="text-blue-600 hover:text-blue-800">
-                                            {product.name}
-                                        </Link>
-                                        <EditProductModal product={product} onClose={() => {/* Operations after closing modal */}} />
-                                        <PrimaryButton onClick={() => deleteProduct(product.id)}>
-                                            <FaTrashRestore />
-                                        </PrimaryButton>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <div className='overflow-x-auto'>
+            <table className="min-w-full table-auto">
+                <thead>
+                    <tr className="text-gray-600 uppercase text-sm leading-normal border-y-2">
+                        <th className="py-2 px-6 text-left">Product</th>
+                        {distinctCustomFieldNames.map(name => (
+                            <th className="hidden sm:table-cell py-2 px-6 whitespace-nowrap" key={name}>{name}</th>
+                        ))}
+                        <th className="hidden sm:table-cell py-2 px-6">Edit</th>
+                        <th className="hidden sm:table-cell py-2 px-6">Delete</th>
+                    </tr>
+                </thead>
+                <tbody className="text-gray-600 text-sm font-light">
+                    {filteredProducts.map((product) => (
+                        <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-100">
+                            <td className="py-2 px-6">
+                                <Link href={`/products/${product.id}`}>{product.name}</Link>
+                            </td>
+                            {Array.from({ length: maxFields }).map((_, index) => {
+                                if (product.custom_fields_values && index < product.custom_fields_values.length) {
+                                    const customFieldValue = product.custom_fields_values[index];
+                                    let displayValue = customFieldValue.value;
+                                    if (customFieldValue.custom_field.field_type === 'boolean') {
+                                        displayValue = parseInt(displayValue) === 1 
+                                            ? <div className='w-4 h-4 bg-green-400 rounded-full animate-pulse'></div>
+                                            : <div className='w-4 h-4 bg-red-400 rounded-full animate-pulse'></div>;
+                                    }
+                                    return <td key={index} className="hidden sm:table-cell py-2 px-6">{displayValue}</td>;
+                                } else {
+                                    return <td key={index} className="hidden sm:table-cell py-2 px-6"></td>;
+                                }
+                            })}
+                            
+
+                            {/* Edit and delete buttons */}
+                            <td className="py-2 px-6">
+                                <EditProductModal product={product} onClose={() => {/* Operations after closing modal */}}/>
+                            </td>
+                            <td className="py-2 px-6">
+                                <PrimaryButton onClick={() => deleteProduct(product.id)}>
+                                    <FaTrashRestore />
+                                </PrimaryButton>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
         </MainLayout>
     );
 };
