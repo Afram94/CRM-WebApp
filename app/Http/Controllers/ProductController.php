@@ -158,6 +158,10 @@ class ProductController extends Controller
                     ->orWhere('description', 'LIKE', '%' . $search . '%')
                     ->orWhereHas('category', function($query) use ($search) {
                         $query->where('name', 'LIKE', '%' . $search . '%');
+                    })
+                    ->orWhereHas('customFieldsValues', function($query) use ($search) {
+                        // Assuming 'value' is the field in the 'customFieldsValues' table where the actual value is stored
+                        $query->where('value', 'LIKE', '%' . $search . '%');
                     });
             });
         }
