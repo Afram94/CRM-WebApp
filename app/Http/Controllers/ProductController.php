@@ -23,7 +23,7 @@ class ProductController extends Controller
                    ->pluck('id')->toArray();
     }
 
-    private function prepareValidationRules(array $customFields)
+    private function prepareValidationRulesForProduct(array $customFields)
     {
         $validationRules = [];
         foreach ($customFields as $fieldId => $value) {
@@ -274,13 +274,49 @@ class ProductController extends Controller
             'sku' => 'nullable|unique:products,sku,' . $product->id,
             'inventory_count' => 'nullable|integer',
             'category_id' => 'nullable|exists:categories,id',
+            'custom_fields' => 'array' // Add this line to validate custom fields
         ]);
 
-        // Update the product with validated data
-        $product->update($validatedData);
+        // Start the transaction
+        DB::beginTransaction();
 
-        return response()->json($product, Response::HTTP_OK);
+        try {
+            // Update the product with validated data
+            $product->update($validatedData);
+
+            // Process and update custom fields if provided
+            if ($request->has('custom_fields')) {
+                $customFields = $request->input('custom_fields');
+                // Add a method to prepare validation rules for custom fields
+                $validationRules = $this->prepareValidationRulesForProduct($customFields);
+                $request->validate($validationRules);
+
+                foreach ($customFields as $fieldId => $value) {
+                    // Update or create custom field value for the product
+                    // You'll need to define a relationship method like `customFieldsValues` for products
+                    $product->customFieldsValues()->updateOrCreate(
+                        ['field_id' => $fieldId],
+                        ['value' => $value]
+                    );
+                }
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            // Optionally load relations
+            // Replace 'customFieldsValues.customField' with the appropriate relation for the product
+            $product->load('customFieldsValues.customField');
+
+            return response()->json($product, Response::HTTP_OK);
+
+        } catch (\Exception $e) {
+            // Rollback the transaction in case of an error
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
+
 
 
     public function destroy($id)

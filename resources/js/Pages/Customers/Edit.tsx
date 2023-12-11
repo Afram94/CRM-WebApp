@@ -4,7 +4,7 @@ import { Inertia } from '@inertiajs/inertia';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { successToast } from '@/Components/toastUtils';
-import { CustomField, CustomFieldValue, Customer } from '@/types';
+import { CustomerCustomField, CustomerCustomFieldValue, Customer } from '@/types';
 import SwitchButton from '@/Components/SwitchButton';
 
 interface EditCustomerProps {
@@ -31,7 +31,7 @@ const EditCustomer: React.FC<EditCustomerProps> = ({ customer, closeModal }) => 
      * 
      * @returns {CustomFieldValue[]} - An array of CustomFieldValue objects with initialized values.
      */
-    const initializeFieldValues = (fields: CustomField[], values: CustomFieldValue[]): CustomFieldValue[] => {
+    const initializeFieldValues = (fields: CustomerCustomField[], values: CustomerCustomFieldValue[]): CustomerCustomFieldValue[] => {
         return fields.map(field => {
             const existingValue = values.find(v => v.field_id === field.id);
             if (field.field_type === 'boolean') {
