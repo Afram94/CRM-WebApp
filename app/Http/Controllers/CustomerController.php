@@ -40,7 +40,10 @@ class CustomerController extends Controller
         if ($search) {
             $query->where('name', 'LIKE', '%' . $search . '%')
                     ->orWhere('email', 'LIKE', '%' . $search . '%')
-                    ->orWhere('phone_number', 'LIKE', '%' . $search . '%');
+                    ->orWhere('phone_number', 'LIKE', '%' . $search . '%')
+                    ->orWhereHas('customFieldsValues', function($query) use ($search) {
+                        $query->where('value', 'LIKE', '%' . $search . '%'); // Assuming 'value' is the field in the JSON
+                    });
         }
 
         // Fetch customers that belong to the authenticated user
