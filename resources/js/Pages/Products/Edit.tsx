@@ -1,85 +1,132 @@
 // UpdateProduct.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { Product } from '@/types';
-import axios from 'axios';
+import SwitchButton from '@/Components/SwitchButton';
+import { Product, ProductCustomField, ProductCustomFieldValue } from '@/types';
 
-type UpdateProductProps = {
+interface EditProps {
     product: Product;
     closeModal: () => void;
-};
+}
 
-const Edit: React.FC<UpdateProductProps> = ({ product, closeModal }) => {
+const Edit: React.FC<EditProps> = ({ product, closeModal }) => {
     const [data, setData] = useState({
         name: product.name,
         description: product.description,
-        price: product.price.toString(), // Convert to string for input field
+        price: product.price.toString(),
         sku: product.sku,
-        category_id: product.category_id?.toString() // Convert to string if it exists
+        inventoryCount: product.inventory_count,
+        category_id: product.category_id?.toString()
     });
 
-    console.log(product);
+    const [customFields, setCustomFields] = useState<ProductCustomField[]>([]);
+    const [customFieldsValue, setCustomFieldsValue] = useState<ProductCustomFieldValue[]>([]);
 
+    useEffect(() => {
+        axios.get('/product-custom-fields').then(response => {
+            setCustomFields(response.data);
+            setCustomFieldsValue(initializeFieldValues(response.data, product.custom_fields_values));
+        });
+    }, [product.custom_fields_values]);
 
-    const [isLoading, setLoading] = useState<boolean>(false);
-
-    const updateProduct = async () => {
-        setLoading(true);
-        try {
-            const updatedData = {
-                ...data,
-                price: parseFloat(data.price), // Convert back to number
-                category_id: data.category_id ? parseInt(data.category_id) : null // Convert back to number or null
+    const initializeFieldValues = (fields: ProductCustomField[], values: ProductCustomFieldValue[]): ProductCustomFieldValue[] => {
+        return fields.map(field => {
+            const existingValue = values.find(v => v.field_id === field.id);
+            return {
+                field_id: field.id,
+                value: existingValue ? existingValue.value : ''
             };
-            const response = await axios.put(`/products/${product.id}`, updatedData);
-            // ...
-        } catch (error) {
-            // ...
-        } finally {
-            setLoading(false);
-        }
+        });
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setData(prevData => ({ ...prevData, [name]: value }));
+    };
+
+    const handleCustomFieldChange = (fieldId: number, value: any) => {
+        setCustomFieldsValue(prevFields =>
+            prevFields.map(f => 
+                f.field_id === fieldId ? { ...f, value } : f
+            )
+        );
+    };
+
+    const updateProduct = async () => {
+        try {
+            const updatePayload = {
+                ...data,
+                custom_fields: customFieldsValue.reduce((acc, field) => ({
+                    ...acc,
+                    [field.field_id]: field.value
+                }), {})
+            };
+
+            await axios.put(`/products/${product.id}`, updatePayload);
+            closeModal();
+            // Optionally add successToast or Inertia reload here
+        } catch (error) {
+            console.error('Error updating the product:', error);
+        }
     };
 
     return (
         <>
             <div className='grid grid-cols-1 gap-2'>
                 <TextInput 
-                    type="text" 
                     name="name"
-                    placeholder="Name" 
+                    placeholder="Name"
                     value={data.name}
                     onChange={handleChange}
                 />
                 <textarea
-                    className='border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm'
                     name="description"
                     placeholder="Description"
                     value={data.description}
                     onChange={handleChange}
                 />
                 <TextInput 
-                    type="text" 
                     name="price"
-                    placeholder="Price" 
+                    placeholder="Price"
                     value={data.price}
                     onChange={handleChange}
                 />
                 <TextInput 
-                    type="text" 
                     name="sku"
-                    placeholder="SKU" 
-                    value={data.sku || ""} // Convert null to empty string
+                    placeholder="Sku"
+                    value={data.sku || ""}
                     onChange={handleChange}
                 />
-                {/* Add category select input if needed */}
+                <TextInput 
+                    type="text" 
+                    placeholder="Inventory Count" 
+                    value={data.inventoryCount}
+                    onChange={handleChange}
+                />
+                {/* Add more inputs for other fields if needed */}
             </div>
-            <PrimaryButton className='mt-2' onClick={updateProduct} disabled={isLoading}>Update Product</PrimaryButton>
+
+            {customFields.map(field => (
+                <div key={field.id}>
+                    {field.field_type === 'boolean' ? (
+                        <SwitchButton
+                            enabled={Boolean(customFieldsValue.find(fv => fv.field_id === field.id)?.value)}
+                            setEnabled={(value) => handleCustomFieldChange(field.id, value)}
+                            css='' // Ensure this prop exists or is optional in SwitchButton
+                        />
+                    ) : (
+                        <TextInput
+                            placeholder={field.field_name}
+                            value={customFieldsValue.find(fv => fv.field_id === field.id)?.value || ''}
+                            onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
+                        />
+                    )}
+                </div>
+            ))}
+
+            <PrimaryButton onClick={updateProduct}>Update Product</PrimaryButton>
         </>
     );
 };
