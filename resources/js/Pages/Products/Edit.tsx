@@ -4,7 +4,7 @@ import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SwitchButton from '@/Components/SwitchButton';
-import { Product, ProductCustomField, ProductCustomFieldValue } from '@/types';
+import { Category, Product, ProductCustomField, ProductCustomFieldValue } from '@/types';
 
 interface EditProps {
     product: Product;
@@ -72,6 +72,26 @@ const Edit: React.FC<EditProps> = ({ product, closeModal }) => {
         }
     };
 
+    const [categories, setCategories] = useState<Category[]>([]);
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get('/get-categories');
+                console.log(response.data); // Log to inspect the structure
+                setCategories(response.data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                // Handle error
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    const handleInputChange = (name: string, value: string | boolean) => {
+        setData({ ...data, [name]: value });
+    };
+
     return (
         <>
             <div className='grid grid-cols-1 gap-2'>
@@ -107,6 +127,20 @@ const Edit: React.FC<EditProps> = ({ product, closeModal }) => {
                 />
                 {/* Add more inputs for other fields if needed */}
             </div>
+
+            <select
+                name="category_id"
+                className='border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm'
+                value={data.category_id}
+                onChange={(e) => handleInputChange("category_id", e.target.value)}
+            >
+                <option value="">Select a Category</option>
+                {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                        {category.name}
+                    </option>
+                ))}
+            </select>
 
             {customFields.map(field => (
                 <div key={field.id}>
