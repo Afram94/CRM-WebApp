@@ -9,7 +9,7 @@ export default {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.tsx',
     ],
-
+    darkMode: 'class', // Enable dark mode option
     theme: {
         extend: {
             fontFamily: {
@@ -17,6 +17,5 @@ export default {
             },
         },
     },
-
     plugins: [forms],
 };
