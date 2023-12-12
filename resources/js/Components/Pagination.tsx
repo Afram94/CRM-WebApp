@@ -65,7 +65,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({ links, onPageClick }) 
                 } else {
                     content = link.label;
                 }
-
+    
                 return (
                     <button
                         key={index}
@@ -79,7 +79,13 @@ const PaginationComponent: React.FC<PaginationProps> = ({ links, onPageClick }) 
                                 }
                             }
                         }}
-                        className={`px-3 py-1 border rounded ${link.active ? 'bg-black text-white' : 'bg-white text-gray-500 hover:bg-gray-200'} ${!link.url ? 'cursor-default' : ''}`}
+                        className={`px-3 py-1 border rounded ${
+                            link.active ? 
+                            'bg-black text-white dark:bg-blue-600 dark:text-white' : 
+                            'bg-white text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                        } ${
+                            !link.url ? 'cursor-default' : ''
+                        }`}
                     >
                         {content}
                     </button>
@@ -87,6 +93,7 @@ const PaginationComponent: React.FC<PaginationProps> = ({ links, onPageClick }) 
             })}
         </div>
     );
+    
 };
 
 export default PaginationComponent;

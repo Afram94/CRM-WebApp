@@ -279,7 +279,7 @@ const Show = ({ auth }: PageProps) => {
             
             {auth.customers?.data && auth.customers.data.length > 0 ? (
                 
-                <div className="bg-white p-4">
+                <div className="bg-white dark:bg-gray-800 p-4">
             <CustomerChannelsHandler
               userId={auth.user?.id ?? null}
               parentId={auth.user?.user_id ?? null}
@@ -314,7 +314,7 @@ const Show = ({ auth }: PageProps) => {
                     <div className='overflow-x-auto'>
                     <table className="min-w-full table-auto">
                         <thead>
-                            <tr className=" text-gray-600 uppercase text-sm leading-normal border-y-2">
+                        <tr className="text-gray-600 dark:text-gray-300 uppercase text-sm leading-normal border-y-2">
                                 <th className="py-2 px-6 text-center sm:hidden"></th>
                                 <th className="py-2 px-6 text-left">Customer</th>
                                 {/* <th className="py-2 px-6 text-left">Email</th>
@@ -329,10 +329,10 @@ const Show = ({ auth }: PageProps) => {
                                 <th className="hidden sm:table-cell py-2 px-6">Other</th>
                             </tr>
                         </thead>
-                        <tbody className="text-gray-600 text-sm font-light">
+                        <tbody className="text-gray-600 dark:text-gray-400 text-sm font-light">
                             {filteredCustomers.map((customer) => (
                                 
-                                <tr className="border-b border-gray-200 hover:bg-gray-100" key={customer.id}>
+                                <tr className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700" key={customer.id}>
 
                                     <td className="py-2 px-6 text-center sm:hidden"> {/* Hidden on small and up, shown on extra small */}
                                         <PrimaryButton onClick={() => openModal(customer)}>
@@ -441,8 +441,8 @@ const Show = ({ auth }: PageProps) => {
                     
                 </div>
             ) : (
-                <div className='flex flex-col justify-center items-center h-full text-[30px] font-semibold'>
-                    {userPermissions.find(perm => perm.name === 'create customer' && perm.hasPermission) && (
+                <div className='flex flex-col justify-center items-center h-full text-[30px] font-semibold text-gray-600 dark:text-gray-300'>
+                        {userPermissions.find(perm => perm.name === 'create customer' && perm.hasPermission) && (
                         <div>
                             <p>Add a new Customer</p>
                             <span className='animate-pulse flex justify-center'><CreateModal /></span>
