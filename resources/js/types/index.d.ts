@@ -20,6 +20,7 @@ export interface CustomerCustomField {
     user_id: number;
     field_name: string;
     field_type: string;
+    created_at: Date;
     // ... any other fields for CustomFieldValue
 }
 
@@ -65,6 +66,7 @@ export interface ProductCustomField {
     user_id: number;
     field_name: string;
     field_type: string;
+    created_at: Date;
     // ... any other fields for CustomFieldValue
 }
 
@@ -121,5 +123,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         products:Product[];
         categories:Category[];
         inventories:Inventory[];
+        customer_custom_fields: CustomerCustomField[];
+        product_custom_fields: ProductCustomField[];
     };
 };

@@ -113,9 +113,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Customers Custom fields
     Route::post('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'store']);
     Route::put('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'update']);
-    Route::get('/custom-fields', [CustomerCustomFieldController::class, 'index']);
+    /* Route::get('/custom-fields', [CustomerCustomFieldController::class, 'index']); */
     Route::post('/add-custom-field', [CustomerCustomFieldController::class, 'store']);
-
+    
+    Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
 
     //Products Custom fields
