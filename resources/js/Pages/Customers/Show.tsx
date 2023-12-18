@@ -21,7 +21,7 @@ import CreateModalNotes from '../Notes/Components/CreateModalNotes';
 import { Link } from '@inertiajs/react';
 
 import { usePermissions } from '../../../providers/permissionsContext';
-import CustomerCustomFieldForm from './CustomerCustomFieldForm';
+import CustomerCustomFieldForm from '../CustomFields/CustomersCustomFields/CreateCustomerCustomFieldForm';
 import CustomerChannelsHandler from './CustomerChannelsHandler';
 import Modal from '@/Components/Modal';
 
