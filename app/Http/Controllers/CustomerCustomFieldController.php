@@ -66,5 +66,24 @@ class CustomerCustomFieldController extends Controller
         return response()->json($fields);
     }
 
+    public function update(Request $request, $id)
+    {
+        // Find the custom field or fail if not found
+        $customField = CustomerCustomField::findOrFail($id);
+
+        // Validate the request data
+        $validatedData = $request->validate([
+            'field_name' => 'required|string|max:255',
+            'field_type' => 'required|string|max:255',
+        ]);
+
+        // Update the custom field
+        $customField->update($validatedData);
+
+        // Return a success response
+        return response()->json(['message' => 'Custom field updated successfully', 'customField' => $customField]);
+    }
+
+
 
 }

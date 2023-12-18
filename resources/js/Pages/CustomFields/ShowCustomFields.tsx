@@ -3,6 +3,8 @@ import MainLayout from '@/Layouts/MainLayout';
 import { PageProps } from '@/types';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
+import CreateCustomerCustomFieldsModal from '../../Pages/CustomFields/CustomersCustomFields/Components/CreateCustomerCustomFieldsModal'
+import EditCustomerCustomFieldsModal from '../../Pages/CustomFields/CustomersCustomFields/Components/EditCustomerCustomFieldsModal'
 
 const Show = ({ auth }: PageProps) => {
     const { customer_custom_fields, product_custom_fields } = auth;
@@ -14,7 +16,12 @@ const Show = ({ auth }: PageProps) => {
           <div className='grid grid-cols-1 gap-4'>
 
             <div className=''>
-            <h2 className="bg-indigo-100 text-2xl p-2 cursor-pointer flex justify-start items-start text-start rounded-t-md text-indigo-500 font-thin">Customer Custom Fields</h2>
+              <div className=' flex justify-between bg-indigo-100'>
+                <h2 className=" text-2xl p-2 cursor-pointer flex justify-start items-start text-start rounded-t-md text-indigo-500 font-thin">Customer Custom Fields</h2>
+                <span className='flex items-center'>
+                    <CreateCustomerCustomFieldsModal />
+                </span>
+              </div>
                 
                     <table className="min-w-full table-auto bg-gray-100">
                         <thead>
@@ -34,7 +41,8 @@ const Show = ({ auth }: PageProps) => {
                                     
                                     <td className="py-2 px-6 flex gap-3">
                                       <span className="w-7 h-7 flex justify-center items-center bg-blue-100 rounded-full cursor-pointer">
-                                          <FaEdit size={17} color="#00A2F3"/>
+                                          <EditCustomerCustomFieldsModal customerCustomField={field} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
+                                            {/* <FaEdit size={17} color="#00A2F3"/> */}
                                       </span>
                                       <span className="w-7 h-7 flex justify-center items-center bg-red-100 rounded-full cursor-pointer">
                                           <FaTrash size={17} color="#FF5C5C"/>
