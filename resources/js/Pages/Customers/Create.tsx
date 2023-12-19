@@ -43,7 +43,7 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
 
     const fetchCustomFields = async () => {
         try {
-            const response = await axios.get('/custom-fields');
+            const response = await axios.get('/get-customer-custom-fields');
             setCustomFields(response.data);
             console.log("customFields", response.data)
 
