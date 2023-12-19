@@ -122,6 +122,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
+    Route::get('/get-customer-custom-fields', [CustomerCustomFieldController::class, 'getCustomerCustomFields']);
+
 
 
     //Products Custom fields

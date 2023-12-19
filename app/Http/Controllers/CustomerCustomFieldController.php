@@ -28,7 +28,7 @@ class CustomerCustomFieldController extends Controller
         return response()->json($customField);
     }
 
-    public function index()
+    public function getCustomerCustomFields()
     {
         // Get the ID of the authenticated user
         $authId = auth()->id();
