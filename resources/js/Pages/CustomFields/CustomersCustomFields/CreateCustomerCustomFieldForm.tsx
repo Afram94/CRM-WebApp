@@ -64,7 +64,7 @@ const CustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> = ({ cl
             {fieldTypes.map((type) => (
               <div 
                 key={type.value}
-                className={`p-2 border rounded-xl cursor-pointer text-sm w-20 text-center ${selectedFieldType === type.value ? 'bg-blue-200' : ''}`}
+                className={`p-2 border rounded-xl cursor-pointer text-sm w-20 text-center font-mono ${selectedFieldType === type.value ? 'bg-indigo-500 text-white font-semibold' : 'bg-slate-50'}`}
                 onClick={() => handleFieldTypeChange(type.value)}
               >
                 {type.label}

@@ -60,7 +60,7 @@ const EditCustomerCustomFields: React.FC<EditCustomerCustomFieldsProps> = ({ cus
                 {fieldTypes.map((type) => (
                     <div 
                     key={type.value}
-                    className={`p-2 border rounded-xl cursor-pointer text-sm w-20 text-center ${fieldType === type.value ? 'bg-blue-200' : ''}`}
+                    className={`p-2 border rounded-xl cursor-pointer text-sm w-20 text-center font-mono ${fieldType === type.value ? 'bg-indigo-500 text-white font-semibold' : 'bg-slate-50'}`}
                     onClick={() => handleFieldTypeChange(type.value)}
                     >
                     {type.label}

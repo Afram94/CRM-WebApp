@@ -9,6 +9,12 @@ use App\Models\User;
 
 class CustomerCustomFieldController extends Controller
 {
+
+    /* The Index Function is located in the "CustomFieldController".
+    It is specifically designed to handle the indexing and display of all custom fields related to customers, products,
+    and other entities managed within the CustomFieldController. */
+
+
     public function store(Request $request)
     {
         $customField = new CustomerCustomField([
@@ -71,6 +77,22 @@ class CustomerCustomFieldController extends Controller
         // Find the custom field or fail if not found
         $customField = CustomerCustomField::findOrFail($id);
 
+
+        $user = auth()->user();
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+
+        // Check if custom-field exists and belongs to the authenticated user and the users that belongs to it
+        if (!$customField || !in_array($customField->user_id, $allUserIdsUnderSameParent)) {
+            return response()->json(['error' => 'customField not found or not authorized'], 403);
+        }
+
         // Validate the request data
         $validatedData = $request->validate([
             'field_name' => 'required|string|max:255',
@@ -82,6 +104,30 @@ class CustomerCustomFieldController extends Controller
 
         // Return a success response
         return response()->json(['message' => 'Custom field updated successfully', 'customField' => $customField]);
+    }
+
+    public function destroy(Request $request, $id){
+        // Find the custom field or fail if not found
+        $customField = CustomerCustomField::findOrFail($id);
+
+        $user = auth()->user();
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Fetch all users that have the same parent_user_id (including the parent)
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+
+
+        // Check if custom-field exists and belongs to the authenticated user and the users that belongs to it
+        if (!$customField || !in_array($customField->user_id, $allUserIdsUnderSameParent)) {
+            return response()->json(['error' => 'customField not found or not authorized'], 403);
+        }
+
+        $customField->delete();
+
+        return response()->json(['message' => 'Custom field deleted successfully', 'customField' => $customField]);
     }
 
 

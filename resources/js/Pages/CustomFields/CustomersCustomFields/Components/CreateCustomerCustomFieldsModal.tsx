@@ -4,17 +4,19 @@ import Create from '@/Pages/Customers/Create';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { FaPlus } from 'react-icons/fa';
 import CustomerCustomFieldForm from '../CreateCustomerCustomFieldForm';
+import GradientButton from '@/Components/GradientButton';
 
 const CreateModal: React.FC = () => {
     const [isModalOpen, setModalOpen] = useState(false);
 
     return (
         <div>
-            <PrimaryButton onClick={() => setModalOpen(true)}>
-                <FaPlus/>
-                <p className='px-2'>Add Customer Custom-Felid</p>
-                
-            </PrimaryButton>
+        <GradientButton
+            label="Add New"
+            onClick={() => setModalOpen(true)}
+            icon={<FaPlus className="text-lg" />}
+            className="bg-red-500"
+        />
 
             <Modal show={isModalOpen} onClose={() => setModalOpen(false)}>
                 <div className="p-4">
