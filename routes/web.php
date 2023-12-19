@@ -11,10 +11,13 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\InventoryController;
 
 use App\Http\Controllers\CustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldController;
 use App\Http\Controllers\CustomerCustomFieldValueController;
+
+use App\Http\Controllers\ProductCustomFieldController;
 
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
@@ -74,15 +77,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /* Route::resource('products', ProductController::class); */
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::post('products', [ProductController::class, 'store'])->name('products.store');
+    Route::put('/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::get('/get-products', [ProductController::class, 'getProducts']);
+
+    // Inventory
+    Route::get('inventories', [InventoryController::class, 'index']);
+    Route::post('inventories', [InventoryController::class, 'store']);
+    Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
 
 
     // Category
     Route::get('/get-categories', [CategoryController::class, 'getCategories']);
-    
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::get('/categories/create', [CategoryController::class, 'create']);
+    Route::put('/categories/{category}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
 
     
@@ -98,11 +110,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
 
 
+    //Customers Custom fields
     Route::post('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'store']);
     Route::put('/customers/{customerId}/custom-fields', [CustomerCustomFieldValueController::class, 'update']);
-    Route::get('/custom-fields', [CustomerCustomFieldController::class, 'index']);
-    Route::post('/add-custom-field', [CustomerCustomFieldController::class, 'store']);
+    /* Route::get('/custom-fields', [CustomerCustomFieldController::class, 'index']); */
 
+    Route::post('/add-custom-field', [CustomerCustomFieldController::class, 'store']);
+    Route::put('/customer-custom-fields/{id}', [CustomerCustomFieldController::class, 'update']);
+    Route::delete('/customer-custom-fields/{id}', [CustomerCustomFieldController::class, 'destroy']);
+    
+    
+    Route::get('/custom-fields', [CustomFieldController::class, 'index']);
+
+    Route::get('/get-customer-custom-fields', [CustomerCustomFieldController::class, 'getCustomerCustomFields']);
+
+
+
+    //Products Custom fields
+    Route::post('/add-product-custom-field', [ProductCustomFieldController::class, 'store']);
+    Route::get('/product-custom-fields', [ProductCustomFieldController::class, 'index']);
     
     WebSocketsRouter::webSocket('/app', \App\WebSocketHandlers\NoteWebSocketHandler::class);
     

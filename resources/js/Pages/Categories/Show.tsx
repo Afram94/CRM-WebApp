@@ -3,6 +3,10 @@ import { PageProps, Product, Category } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateCategoriesModal from './Components/CreateCategoriesModal';
+import EditCategoryModal from './Components/EditCategoryModal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import { FaTrashRestore } from 'react-icons/fa';
+import axios from 'axios';
 
 const CategoryIndex: React.FC<PageProps> = ({ auth }) => {
 
@@ -23,12 +27,23 @@ const CategoryIndex: React.FC<PageProps> = ({ auth }) => {
         });
       }; */
 
+      const deleteCategory = async (categoryId: number) => {
+        try {
+            const response = await axios.delete(`/categories/${categoryId}`);
+            console.log(response.data);
+            // Update UI or redirect as needed
+        } catch (error) {
+            console.error('Error deleting product', error);
+            // Handle errors
+        }
+    };  
+
       useEffect(() => {
         // Check if auth.products is not null or undefined
         if (auth.categories) {
             setFilteredCategories(auth.categories);
         }
-    }, [auth.products]); // Dependency array to re-run this effect if auth.products changes
+    }, [auth.categories]); // Dependency array to re-run this effect if auth.products changes
     
       
 
@@ -45,14 +60,22 @@ const CategoryIndex: React.FC<PageProps> = ({ auth }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredCategories?.map(product => (
-                        <tr key={product.id} className="hover:bg-gray-100">
+                    {filteredCategories?.map(category => (
+                        <tr key={category.id} className="hover:bg-gray-100">
                             <td className="border border-gray-300 p-2">
-                                <Link href={`/products/${product.id}`} className="text-blue-600 hover:text-blue-800">
-                                    {product.name}
+                                <Link href={`/products/${category.id}`} className="text-blue-600 hover:text-blue-800">
+                                    {category.name}
                                 </Link>
                             </td>
-                            <td className="border border-gray-300 p-2">{product.description}</td>
+                            <td className="border border-gray-300 p-2">{category.description}</td>
+                            <td>
+                                <EditCategoryModal category={category} onClose={() => {/* Operations after closing modal */}} />
+                            </td>
+                            <td>
+                                <PrimaryButton onClick={() => deleteCategory(category.id)}>
+                                    <FaTrashRestore />
+                                </PrimaryButton>
+                            </td>
                             {/* Add more product details as needed */}
                         </tr>
                     ))}

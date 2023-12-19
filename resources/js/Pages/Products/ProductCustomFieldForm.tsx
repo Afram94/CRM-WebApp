@@ -1,9 +1,9 @@
-// src/components/AddCustomField.tsx
+// src/components/ProductCustomFieldForm.tsx
 
 import React, { useState, ChangeEvent, MouseEvent } from 'react';
 import axios from 'axios';
 import PrimaryButton from '@/Components/PrimaryButton';
-import DropdownSelect from '@/Components/DropdownSelect';  // import the reusable Listbox
+import DropdownSelect from '@/Components/DropdownSelect';
 import TextInput from '@/Components/TextInput';
 
 const fieldTypes = [
@@ -12,9 +12,9 @@ const fieldTypes = [
   { label: 'Boolean', value: 'boolean' },
 ];
 
-const CustomerCustomFieldForm: React.FC = () => {
+const ProductCustomFieldForm: React.FC = () => {
   const [fieldName, setFieldName] = useState<string>('');
-  const [fieldType, setFieldType] = useState(fieldTypes[0]);  // Initialize to first item in fieldTypes array
+  const [fieldType, setFieldType] = useState(fieldTypes[0]);
 
   const handleFieldChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFieldName(e.target.value);
@@ -22,22 +22,22 @@ const CustomerCustomFieldForm: React.FC = () => {
 
   const handleButtonClick = async (e: MouseEvent<HTMLButtonElement>) => {
     try {
-      const response = await axios.post('/add-custom-field', {
+      const response = await axios.post('/add-product-custom-field', {
         field_name: fieldName,
-        field_type: fieldType.value,  // Use fieldType.value instead of just fieldType
+        field_type: fieldType.value,
       });
 
       if (response.status === 200) {
-        alert('Custom field added successfully');
+        alert('Product custom field added successfully');
       }
     } catch (error) {
-      alert('Failed to add custom field');
+      alert('Failed to add product custom field');
     }
   };
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md mx-auto">
-        <h1 className="text-2xl font-semibold mb-6">Add a Custom Field</h1>
+        <h1 className="text-2xl font-semibold mb-6">Add a Product Custom Field</h1>
         
         <div className="mb-4">
             <TextInput
@@ -60,12 +60,11 @@ const CustomerCustomFieldForm: React.FC = () => {
         
         <div className="flex justify-end">
             <PrimaryButton onClick={handleButtonClick} className="bg-blue-500 hover:bg-blue-600 text-white rounded-md p-2">
-            Add Custom Field
+            Add Product Custom Field
             </PrimaryButton>
         </div>
     </div>
-
   );
 };
 
-export default CustomerCustomFieldForm;
+export default ProductCustomFieldForm;

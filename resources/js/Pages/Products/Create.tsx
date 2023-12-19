@@ -1,25 +1,61 @@
 import React, { useEffect, useState } from 'react';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { Category, PageProps } from '@/types';
+import { Category } from '@/types';
 import axios from 'axios';
+import SwitchButton from '@/Components/SwitchButton';
+
+type FormData = {
+    name: string;
+    description: string;
+    price: string;
+    sku: string;
+    inventoryCount: string;
+    category_id: string;
+    [key: string]: string | boolean | undefined;
+};
+
+type CustomField = {
+    id: string;
+    field_name: string;
+    field_type: string;
+};
 
 type CreateProductProps = {
     closeModal: () => void;
 }
 
 const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
-    const [name, setName] = useState<string>("");
-    const [description, setDescription] = useState<string>("");
-    const [price, setPrice] = useState<string>("");
-    const [sku, setSku] = useState<string>("");
-    const [inventoryCount, setInventoryCount] = useState<string>("");
-    const [selectedCategory, setSelectedCategory] = useState<string>('');
-    /* const [user_id, setUser_id] = useState(auth.user.id); */
+    const [formData, setFormData] = useState<FormData>({
+        name: '',
+        description: '',
+        price: '',
+        sku: '',
+        inventoryCount: '',
+        category_id: ''
+    });
 
+    const [customFields, setCustomFields] = useState<CustomField[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
 
+    useEffect(() => {
+        const fetchCustomFields = async () => {
+            try {
+                const response = await axios.get('/product-custom-fields');
+                setCustomFields(response.data);
+                // Initialize default values for custom fields
+                const defaultValues = response.data.reduce((acc: { [key: string]: string | boolean }, field: CustomField) => {
+                    acc[field.field_name] = field.field_type === 'boolean' ? false : '';
+                    return acc;
+                }, {});
+                setFormData(formData => ({ ...formData, ...defaultValues }));
+            } catch (error) {
+                console.error('Error fetching custom fields:', error);
+            }
+        };
 
+        fetchCustomFields();
+    }, []);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -36,24 +72,32 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
         fetchCategories();
     }, []);
 
+    const handleInputChange = (name: string, value: string | boolean) => {
+        setFormData({ ...formData, [name]: value });
+    };
+
     const addProduct = async () => {
         try {
+            // Prepare custom fields data
+            const customFieldsData = customFields.reduce((acc: { [key: string]: string | boolean }, field: CustomField) => {
+                const fieldValue = formData[field.field_name];
+                acc[field.id] = fieldValue !== undefined ? fieldValue : (field.field_type === 'boolean' ? false : '');
+                return acc;
+            }, {});
+    
             const response = await axios.post('/products', {
-                name,
-                description,
-                price,
-                sku,
-                /* inventory_count: inventoryCount, */
-                category_id: selectedCategory, // Add category_id in the request
-                /* user_id, // Add category_id in the request */
+                ...formData,
+                custom_fields: customFieldsData
             });
+    
             console.log('Product added:', response.data);
-            // Handle post-creation logic (like redirecting or updating a list)
+            closeModal(); // Close modal on success
         } catch (error) {
             console.error('Failed to add product:', error);
-            // Handle error (like showing an error message)
         }
     };
+    
+    
 
 
     return (
@@ -62,38 +106,37 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
                 <TextInput 
                     type="text" 
                     placeholder="Name" 
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                 />
                 <textarea
                     className='border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm'
                     placeholder="Description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    value={formData.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
                 />
                 <TextInput 
                     type="text" 
                     placeholder="Price" 
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    value={formData.price}
+                    onChange={(e) => handleInputChange("price", e.target.value)}
                 />
                 <TextInput 
                     type="text" 
                     placeholder="SKU" 
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
+                    value={formData.sku}
+                    onChange={(e) => handleInputChange("sku", e.target.value)}
                 />
-                {/* <TextInput 
+                <TextInput 
                     type="text" 
                     placeholder="Inventory Count" 
-                    value={inventoryCount}
-                    onChange={(e) => setInventoryCount(e.target.value)}
-                /> */}
-
+                    value={formData.inventoryCount}
+                    onChange={(e) => handleInputChange("inventoryCount", e.target.value)}
+                />
                 <select
                     className='border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm'
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    value={formData.category_id}
+                    onChange={(e) => handleInputChange("category_id", e.target.value)}
                 >
                     <option value="">Select a Category</option>
                     {categories.map((category) => (
@@ -102,10 +145,31 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
                         </option>
                     ))}
                 </select>
+    
+                {/* Dynamic custom fields inputs */}
+                {customFields.map(field => (
+                    <div key={field.id}>
+                        {field.field_type === 'boolean' ? (
+                            <SwitchButton
+                                css='' // Add CSS if required
+                                enabled={Boolean(formData[field.field_name])}
+                                setEnabled={(value) => handleInputChange(field.field_name, value)}
+                            />
+                        ) : (
+                            <TextInput
+                                type={field.field_type === 'integer' ? 'number' : 'text'}
+                                placeholder={field.field_name}
+                                value={formData[field.field_name] as string || ''}
+                                onChange={(e) => handleInputChange(field.field_name, e.target.value)}
+                            />
+                        )}
+                    </div>
+                ))}
             </div>
             <PrimaryButton className='mt-2' onClick={addProduct}>Add Product</PrimaryButton>
         </>
     );
+    
 };
 
 export default CreateProduct;

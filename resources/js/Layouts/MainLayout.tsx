@@ -29,7 +29,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     }, [isOpen]);  // The effect will re-run if and only if 'isOpen' changes
 
     return (
-        <div className="flex h-screen bg-[#F3F3FA]">
+        <div className="flex h-screen bg-[#F3F3FA] dark:bg-[#1A202C]">
             {/* // Render the Sidebar component and pass down its state and the toggle function as props */}
             <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
@@ -37,10 +37,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
                 {/* // Render the Header component */}
                 <Header />
 
-                <h1 className='text-2xl text-gray-500'>{title}</h1>
+                <h1 className='text-2xl text-gray-500 dark:text-gray-300'>{title}</h1>
 
                 {/* // This is where child components (passed to MainLayout) will be rendered */}
-                <main className="flex-1 overflow-x-hidden overflow-y-auto"> {/* bg-gray-200 */}
+                <main className="flex-1 overflow-x-hidden overflow-y-auto dark:bg-gray-800"> {/* bg-gray-200 */}
                     {children}
                 </main>
             </div>

@@ -6,7 +6,7 @@ export interface User {
     email_verified_at: string | null;
 }
 
-export interface CustomFieldValue {
+export interface CustomerCustomFieldValue {
     id?: number;  // Making it optional
     customer_id?: number;  // Making it optional
     custom_field?: any;  // Making it optional
@@ -15,11 +15,12 @@ export interface CustomFieldValue {
     // ... any other fields for CustomFieldValue
 }
 
-export interface CustomField {
+export interface CustomerCustomField {
     id: number;
     user_id: number;
     field_name: string;
     field_type: string;
+    created_at: Date;
     // ... any other fields for CustomFieldValue
 }
 
@@ -29,7 +30,7 @@ export interface Customer {
     name: string;
     email: string;
     phone_number: string;
-    custom_fields_values: CustomFieldValue[];  // <-- Add this line
+    custom_fields_values: CustomerCustomFieldValue[];
     notes: Note[];
     // ... any other fields for Customer
 }
@@ -50,13 +51,45 @@ export interface Category {
     name: string;
     description: string;
 }
+
+export interface ProductCustomFieldValue {
+    id?: number;  // Making it optional
+    customer_id?: number;  // Making it optional
+    custom_field?: any;  // Making it optional
+    field_id: number;
+    value: any;
+    // ... any other fields for CustomFieldValue
+}
+
+export interface ProductCustomField {
+    id: number;
+    user_id: number;
+    field_name: string;
+    field_type: string;
+    created_at: Date;
+    // ... any other fields for CustomFieldValue
+}
+
 export interface Product {
     id: number;
+    category_name: string | number;
     name: string;
-    description: string
-    price: number
-    sku: string | any | null;
+    description: string;
+    price: number;
+    sku: string | null;
     inventory_count: number;
+    category_id?: number; // Add this line if category_id exists for a product
+    custom_fields_values: ProductCustomFieldValue[];
+}
+
+export interface Inventory {
+    id: number;
+    user_id: number;
+    product_id: number;
+    product_name: string;
+    quantity: number;
+    stock_status: string;
+    restock_date?: string | null;
 }
 
 type PaginatedResponse<T> = {
@@ -89,5 +122,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         customer_profile:Customer[];
         products:Product[];
         categories:Category[];
+        inventories:Inventory[];
+        customer_custom_fields: CustomerCustomField[];
+        product_custom_fields: ProductCustomField[];
     };
 };

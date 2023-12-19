@@ -32,4 +32,14 @@ class Product extends Model
     {
         return $this->hasOne(Inventory::class);
     }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    public function customFieldsValues()
+    {
+        return $this->hasMany(ProductCustomFieldValue::class, 'product_id', 'id');
+    }
 }

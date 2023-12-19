@@ -161,7 +161,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
   
 
   return (
-    <MainLayout>
+    <MainLayout title='/Notes'>
         <div className="m-5 flex justify-end gap-2">
           <TextInput
               type="text"
