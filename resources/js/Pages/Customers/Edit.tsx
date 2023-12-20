@@ -58,7 +58,7 @@ const EditCustomer: React.FC<EditCustomerProps> = ({ customer, closeModal }) => 
     // Fetch custom fields and their corresponding values when the component mounts.
     useEffect(() => {
         // Make a GET request to fetch custom fields from the server.
-        axios.get('/custom-fields').then(response => {
+        axios.get('/get-customer-custom-fields').then(response => {
             // Set the metadata of custom fields into state.
             setCustomFields(response.data);
             
