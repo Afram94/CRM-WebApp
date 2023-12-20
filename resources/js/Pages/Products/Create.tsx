@@ -4,6 +4,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { Category } from '@/types';
 import axios from 'axios';
 import SwitchButton from '@/Components/SwitchButton';
+import { successToast } from '@/Components/toastUtils';
 
 type FormData = {
     name: string;
@@ -92,6 +93,7 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
     
             console.log('Product added:', response.data);
             closeModal(); // Close modal on success
+            successToast('A new Product has been created successfully');
         } catch (error) {
             console.error('Failed to add product:', error);
         }
@@ -116,7 +118,7 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
                     onChange={(e) => handleInputChange("description", e.target.value)}
                 />
                 <TextInput 
-                    type="text" 
+                    type="number" 
                     placeholder="Price" 
                     value={formData.price}
                     onChange={(e) => handleInputChange("price", e.target.value)}
@@ -128,7 +130,7 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
                     onChange={(e) => handleInputChange("sku", e.target.value)}
                 />
                 <TextInput 
-                    type="text" 
+                    type="number" 
                     placeholder="Inventory Count" 
                     value={formData.inventoryCount}
                     onChange={(e) => handleInputChange("inventoryCount", e.target.value)}

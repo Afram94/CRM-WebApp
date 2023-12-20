@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\ProductCustomField;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
+use App\Events\ProductCreated;
 
 class ProductController extends Controller
 {
@@ -167,7 +168,7 @@ class ProductController extends Controller
         }
     
         // Fetch all products
-        $products = $productsQuery->get();
+        $products = $productsQuery->latest()->get();
     
         // If the request is an AJAX call, return the products as JSON.
         if ($request->wantsJson()) {
@@ -235,7 +236,7 @@ class ProductController extends Controller
         if ($request->has('custom_fields')) {
             $customFields = $request->input('custom_fields');
             // Assume prepareValidationRules() method exists and is similar to that in CustomerController
-            $validationRules = $this->prepareValidationRules($customFields);
+            $validationRules = $this->prepareValidationRulesForProduct($customFields);
             $request->validate($validationRules);
 
             foreach ($customFields as $fieldId => $value) {
@@ -249,6 +250,9 @@ class ProductController extends Controller
 
         // Commit the transaction
         DB::commit();
+
+        // Broadcast the event after the data has been persisted
+        broadcast(new ProductCreated($product->load('customFieldsValues.customField')));
 
         return response()->json($product, 200);
 
