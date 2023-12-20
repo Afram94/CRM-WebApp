@@ -25,6 +25,10 @@ Broadcast::channel('notes-for-user-{userId}', function ($user, $userId) {
 Broadcast::channel('customers-for-user-{userId}', function ($user, $userId) {
     return $user->id == $userId || $user->user_id == $userId;
 });
+
+Broadcast::channel('products-for-user-{userId}', function ($user, $userId) {
+    return $user->id == $userId || $user->user_id == $userId;
+});
 /* Broadcast::channel('customer.{customerId}', function ($user, $userId) {
     return ture;
 }); */
