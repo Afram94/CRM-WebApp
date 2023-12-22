@@ -168,7 +168,62 @@ class ProductController extends Controller
         }
     
         // Fetch all products
-        $products = $productsQuery->latest()->get();
+        /* $products = $productsQuery->latest()->get(); */
+
+        /* $products = $productsQuery->latest()->get()->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'price' => $product->price,
+                'sku' => $product->sku,
+                'category_name' => $product->category ? $product->category->name : 'Uncategorized',
+                // ...other fields...
+            ];
+        }); */
+
+     // Fetch all products
+    $products = $productsQuery->latest()->get()->map(function ($product) {
+        $customFields = $product->customFieldsValues->map(function ($customFieldValue) {
+            return [
+                'id' => $customFieldValue->id,
+                'value' => $customFieldValue->value,
+                'field_id' => $customFieldValue->field_id,
+                'product_id' => $customFieldValue->product_id,
+                'created_at' => $customFieldValue->created_at ? $customFieldValue->created_at->toDateTimeString() : null,
+                'updated_at' => $customFieldValue->updated_at ? $customFieldValue->updated_at->toDateTimeString() : null,
+                'custom_field' => [
+                    'id' => $customFieldValue->customField->id,
+                    'user_id' => $customFieldValue->customField->user_id,
+                    'field_name' => $customFieldValue->customField->field_name,
+                    'field_type' => $customFieldValue->customField->field_type,
+                    'created_at' => $customFieldValue->customField->created_at ? $customFieldValue->customField->created_at->toDateTimeString() : null,
+                    'updated_at' => $customFieldValue->customField->updated_at ? $customFieldValue->customField->updated_at->toDateTimeString() : null,
+                    // Add other relevant fields from the customField if needed
+                ],
+            ];
+        });
+
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'category_name' => $product->category ? $product->category->name : 'Uncategorized',
+            'category_id' => $product->category->id,
+            'description' => $product->description,
+            'price' => $product->price,
+            'sku' => $product->sku,
+            'created_at' => $product->created_at ? $product->created_at->toDateTimeString() : null,
+            'updated_at' => $product->updated_at ? $product->updated_at->toDateTimeString() : null,
+            /* 'category' => [
+                'id' => $product->category->id,
+                'name' => $product->category->name,
+            ], */
+            'custom_fields_values' => $customFields,
+            // Add other necessary fields from the product if needed
+        ];
+    });
+
+        
     
         // If the request is an AJAX call, return the products as JSON.
         if ($request->wantsJson()) {
