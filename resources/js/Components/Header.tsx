@@ -1,19 +1,12 @@
-// src/components/Header.tsx
-
 import React from 'react';
-
-type HeaderProps = {
-  /* isOpen: boolean; */
-  /* toggleSidebar: () => void; */
-};
+import ThemeToggle from './ThemeToggle';
 
 const Header = () => {
   return (
-    <div className="bg-gray-500 p-4 text-white flex justify-between items-center">
-      {/* <button onClick={toggleSidebar}>
-        {isOpen ? "Hide Sidebar" : "Show Sidebar"}
-      </button> */}
-      <h1>Logo</h1>
+    <div className="bg-white dark:bg-gray-800 text-black dark:text-white p-4 shadow-md flex justify-between items-center rounded-lg mt-1">
+      {/* Existing elements like button and ThemeToggle */}
+      <h1 className='text-gray-500 dark:text-gray-300'>Search here...</h1>
+      <ThemeToggle/>
     </div>
   );
 };

@@ -10,6 +10,7 @@ class Customer extends Model
     use HasFactory;
     
     protected $fillable = [
+        'user_id', // Add this line
         'name',
         'email',
         'phone_number'
@@ -30,6 +31,11 @@ class Customer extends Model
     public function customFieldsValues()
     {
         return $this->hasMany(CustomerCustomFieldValue::class, 'customer_id', 'id');
+    }
+
+        public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 
     /* public function customFields()

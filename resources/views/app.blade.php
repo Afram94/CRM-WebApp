@@ -6,6 +6,11 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Add this line to inject the Pusher key into JavaScript -->
+        <script>
+            window.PUSHER_APP_KEY = "{{ env('PUSHER_APP_KEY') }}";
+        </script>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

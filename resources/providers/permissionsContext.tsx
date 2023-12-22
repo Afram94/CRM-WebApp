@@ -37,7 +37,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
     // Moved this useEffect inside the functional component
     const fetchUser = async () => {
       try {
-        const response = await axios.get('current-user');
+        const response = await axios.get('/current-user');
         console.log(response.data);
         setUserId(response.data.id); // Assuming response.data contains the user ID
       } catch (error) {
@@ -50,7 +50,7 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
 
   useEffect(() => {
     if (userId) { // Check if userId is available
-      axios.get(`users/${userId}/permissions`)
+      axios.get(`http://127.0.0.1:8000/users/${userId}/permissions`)
         .then(response => {
           setUserPermissions(response.data);
         });

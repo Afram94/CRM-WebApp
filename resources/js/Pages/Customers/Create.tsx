@@ -4,12 +4,13 @@ import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Inertia } from '@inertiajs/inertia';
 import { successToast } from '@/Components/toastUtils';
+import SwitchButton from '@/Components/SwitchButton';
 
 type FormData = {
     name: string;
     email: string;
     phone_number?: string;
-    [key: string]: string | undefined; // for dynamic keys
+    [key: string]: string | boolean | undefined; // include boolean type here
 };
 
 type CreateCustomerProps = {
@@ -27,58 +28,66 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
     const [customFields, setCustomFields] = useState<any[]>([]);  // Add this line
 
     // Fetch custom fields when component mounts
-    useEffect(() => {
-        axios.get('/custom-fields').then(response => {
+    // Initialize default values for custom fields
+    const initializeDefaultCustomFields = (fields: any[]): { [key: string]: string | boolean } => {
+        const defaultValues: { [key: string]: string | boolean } = {};
+        fields.forEach(field => {
+            if (field.field_type === 'boolean') {
+                defaultValues[field.field_name] = true;
+            } else {
+                defaultValues[field.field_name] = '';
+            }
+        })
+        return defaultValues;
+    };
+
+    const fetchCustomFields = async () => {
+        try {
+            const response = await axios.get('/get-customer-custom-fields');
             setCustomFields(response.data);
-        });
+            console.log("customFields", response.data)
+
+            // Initialize default values for custom fields
+            const defaultValues = initializeDefaultCustomFields(response.data);
+
+            // Merge default custom field values into formData
+            setFormData({
+                ...formData,
+                ...defaultValues
+            });
+        } catch (error) {
+            console.error("Error fetching custom fields:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchCustomFields();
     }, []);
 
-    console.log("customFields", customFields)
+
+    /* console.log("customFields", customFields) */
 
     // Define an asynchronous function named handleSave
     const handleSave = async () => {
         try {
-            // Attempt to create a new customer using the form data
-            // Make an HTTP POST request to the '/customers' endpoint
+            // Combine the fixed fields and custom fields in formData
+            formData.custom_fields = customFields.reduce((acc, field) => {
+                acc[field.id] = formData[field.field_name];
+                return acc;
+            }, {});
+    
+            // Make an HTTP POST request to create the customer and their custom fields
             const response = await axios.post('/customers', formData);
+    
+            // Log the response
+            console.log("Customer response", response.data);
+    
+            // Close the modal after successful customer creation
+            closeModal();
+            successToast('A new Customer has been created successfully');
 
-            // Check if the server responds with data
-            if (response.data) {
-                // Log the server's response data to the console
-                console.log(response.data);
-
-                // Extract the customer ID from the server's response
-                // (Assuming the server returns a customer object with an 'id' property)
-                const customerId = response.data.id;
-
-                // Prepare the payload for custom fields
-                const customFieldPayload = {
-                    // Using reduce to transform the customFields array into an object
-                    custom_fields: customFields.reduce(
-                        (acc, field) => ({
-                            ...acc, // Keep the existing key-value pairs
-                            [field.id]: formData[field.field_name] // Add new key-value pairs
-                        }),
-                        {} // Initial value for the accumulator is an empty object
-                    )
-                };
-
-                // Make an HTTP POST request to save the custom fields for the created customer
-                await axios.post(`/customers/${customerId}/custom-fields`, customFieldPayload);
-                console.log("customFieldPayload", customFieldPayload)
-                // Close the modal after successful customer creation
-                closeModal();
-
-                // Display a toast message indicating successful customer creation
-                successToast('Customer successfully created');
-
-                // Reload a specific component (assumed to be named 'Show') after a slight delay
-                setTimeout(() => {
-                    Inertia.reload({only: ['Show']});
-                }, 1300);
-            }
+            // You can add more logic here if needed, like reloading parts of your UI
         } catch (error) {
-            // Log any errors to the console
             console.error(error);
         }
     };
@@ -107,16 +116,34 @@ const Create: React.FC<CreateCustomerProps> = ({ closeModal }) => {
             />
             
             {/* Dynamic custom fields */}
-            {customFields.map(field => (
-                <TextInput
-                    className='p-2 px-4 border border-1'
-                    key={field.id}
-                    type={field.field_type}
-                    placeholder={field.field_name}
-                    value={formData[field.field_name]}
-                    onChange={e => setFormData({ ...formData, [field.field_name]: e.target.value })}
-                />
-            ))}
+            {customFields.map((field) => (
+                <div key={field.id}>
+                    {field.field_type === "boolean" ? (
+                    <SwitchButton
+                        css=''
+                        enabled={Boolean(formData[field.field_name])}  // Cast to boolean
+                        setEnabled={(value) => setFormData({ ...formData, [field.field_name]: value })}
+                    />
+                    ) : (
+                    <TextInput
+                        className='p-2 px-4 border border-1 w-full'
+                        type={
+                        field.field_type === "string" ? "text" :
+                        field.field_type === "integer" ? "number" : ""
+                        }
+                        placeholder={field.field_name}
+                        value={(typeof formData[field.field_name] === 'boolean' ? formData[field.field_name] : formData[field.field_name] || '') as string}
+                        onChange={e => {
+                            let value: string | number = e.target.value;
+                            if (field.field_type === "integer") {
+                              value = Number(value);
+                            }
+                            setFormData({ ...formData, [field.field_name]: value });
+                          }}
+                    />
+                    )}
+                </div>
+                ))}
         </div>
         <div className='mt-3 flex justify-end'>
             <PrimaryButton onClick={handleSave}>Create Customer</PrimaryButton>
