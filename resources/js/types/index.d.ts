@@ -72,7 +72,7 @@ export interface ProductCustomField {
 
 export interface Product {
     id: number;
-    category_name: string | number;
+    category_name: string;
     name: string;
     description: string;
     price: number;
