@@ -6,12 +6,12 @@ interface ProductChannelsHandlerProps {
     userId: number | null;
     parentId: number | null;
     onNewProduct: (product: Product) => void;
-    /* onUpdateProduct: (product: Product) => void;
-    onDeleteProduct: (product: number) => void; */
+    onUpdateProduct: (product: Product) => void;
+    /* onDeleteProduct: (product: number) => void; */
     
 }
 
-const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, parentId, onNewProduct }) => { /* onUpdateProduct, onDeleteProduct */
+const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, parentId, onNewProduct, onUpdateProduct }) => { /* onDeleteProduct */
   const echo = useEcho();
 
 
@@ -32,7 +32,7 @@ const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, 
           });
       }
 
-      /* console.log("Update_1")
+      console.log("Update_1")
         const updateUserChannel = echo.private(`products-for-user-${userId}`)
         .listen('ProductUpdated', (e: { product: Product }) => {
           onUpdateProduct(e.product);
@@ -45,7 +45,7 @@ const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, 
           .listen('ProductUpdated', (e: { product: Product }) => {
             onUpdateProduct(e.product);
           });
-      } */
+      }
 
 
       /* console.log("Delete_1")
@@ -74,14 +74,14 @@ const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, 
           parentChannel.stopListening('ProductCreated');
         }
 
-        /* console.log("Update_clear_1")
+        console.log("Update_clear_1")
         updateUserChannel.stopListening('ProductUpdated');
         if (updateParentChannel) {
           console.log("Update_clear_2")
           updateParentChannel.stopListening('ProductUpdated');
         }
 
-        console.log("Delete_clear_1")
+        /* console.log("Delete_clear_1")
         deleteUserChannel.stopListening('ProductDeleted');
         if (deleteParentChannel) {
           console.log("Delete_clear_2")

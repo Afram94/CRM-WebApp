@@ -10,6 +10,7 @@ use App\Models\ProductCustomField;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use App\Events\ProductCreated;
+use App\Events\ProductUpdated;
 
 class ProductController extends Controller
 {
@@ -219,7 +220,6 @@ class ProductController extends Controller
                 'name' => $product->category->name,
             ], */
             'custom_fields_values' => $customFields,
-            // Add other necessary fields from the product if needed
         ];
     });
 
@@ -369,7 +369,9 @@ class ProductController extends Controller
 
             // Optionally load relations
             // Replace 'customFieldsValues.customField' with the appropriate relation for the product
-            $product->load('customFieldsValues.customField');
+            /* $product->load('customFieldsValues.customField'); */
+
+            broadcast(new ProductUpdated($product->load('customFieldsValues.customField')));
 
             return response()->json($product, Response::HTTP_OK);
 
