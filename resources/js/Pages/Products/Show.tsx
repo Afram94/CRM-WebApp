@@ -128,6 +128,30 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
             });
         };
 
+        const handleUpdatedProduct = (updatedProduct: Product) => {
+            // Log to console whenever this function is triggered
+            console.log("Updated product event triggered");
+        
+            // Update state with a function to ensure we have the most current state
+            setFilteredProducts((prevProduct) => {
+                // Check if the updated product object has an ID property
+                if (updatedProduct.id) {
+                    // Map over the existing products
+                    const updatedProducts = prevProduct.map(product => 
+                        product.id === updatedProduct.id ? updatedProduct : product
+                    );
+        
+                    // Return the updated products array
+                    return updatedProducts;
+                } else {
+                    // If the updated product object lacks an ID, log an error for debugging
+                    console.error('Updated product is missing an ID:', updatedProduct);
+                    // Return the previous product array unchanged
+                    return prevProduct;
+                }
+            });
+        };
+
     const maxFields = Math.max(...filteredProducts.map(p => p.custom_fields_values?.length || 0));
 
       const distinctCustomFieldNames = [
@@ -163,8 +187,8 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
                             userId={auth.user?.id ?? null}
                             parentId={auth.user?.user_id ?? null}
                             onNewProduct={handleNewProduct}
-                            /* onUpdateProduct={()=>{}}
-                            onDeleteProduct={()=>{}} */
+                            onUpdateProduct={handleUpdatedProduct}
+                            /* onDeleteProduct={()=>{}} */
                         />
                 </div>
                         {/* <ProductCustomFieldForm /> */}
