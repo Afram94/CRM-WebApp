@@ -7,11 +7,11 @@ interface ProductChannelsHandlerProps {
     parentId: number | null;
     onNewProduct: (product: Product) => void;
     onUpdateProduct: (product: Product) => void;
-    /* onDeleteProduct: (product: number) => void; */
+    onDeleteProduct: (product: number) => void;
     
 }
 
-const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, parentId, onNewProduct, onUpdateProduct }) => { /* onDeleteProduct */
+const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, parentId, onNewProduct, onUpdateProduct, onDeleteProduct }) => {
   const echo = useEcho();
 
 
@@ -48,7 +48,7 @@ const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, 
       }
 
 
-      /* console.log("Delete_1")
+      console.log("Delete_1")
         const deleteUserChannel = echo.private(`products-for-user-${userId}`)
         .listen('ProductDeleted', (e: { productId: number }) => {
           onDeleteProduct(e.productId);
@@ -61,7 +61,7 @@ const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, 
           .listen('ProductDeleted', (e: { productId: number }) => {
             onDeleteProduct(e.productId);
           });
-      } */
+      }
 
       
 
@@ -81,12 +81,12 @@ const ProductChannelsHandler: React.FC<ProductChannelsHandlerProps> = ({userId, 
           updateParentChannel.stopListening('ProductUpdated');
         }
 
-        /* console.log("Delete_clear_1")
+        console.log("Delete_clear_1")
         deleteUserChannel.stopListening('ProductDeleted');
         if (deleteParentChannel) {
           console.log("Delete_clear_2")
           deleteParentChannel.stopListening('ProductDeleted');
-        } */
+        }
 
       };
     }

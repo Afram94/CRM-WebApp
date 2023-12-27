@@ -152,6 +152,11 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
             });
         };
 
+        const handleDeleteProduct = (deletedProductId: number) => {
+            console.log("handleDeleteNote Work!!", deletedProductId);
+            setFilteredProducts((prevProducts) => prevProducts.filter(product => product.id !== deletedProductId));
+          };
+
     const maxFields = Math.max(...filteredProducts.map(p => p.custom_fields_values?.length || 0));
 
       const distinctCustomFieldNames = [
@@ -188,7 +193,7 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
                             parentId={auth.user?.user_id ?? null}
                             onNewProduct={handleNewProduct}
                             onUpdateProduct={handleUpdatedProduct}
-                            /* onDeleteProduct={()=>{}} */
+                            onDeleteProduct={handleDeleteProduct}
                         />
                 </div>
                         {/* <ProductCustomFieldForm /> */}

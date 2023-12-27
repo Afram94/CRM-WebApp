@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use App\Events\ProductCreated;
 use App\Events\ProductUpdated;
+use App\Events\ProductDeleted;
 
 class ProductController extends Controller
 {
@@ -396,6 +397,8 @@ class ProductController extends Controller
         if (!$product || !in_array($product->user_id, $allUserIdsUnderSameParent)) {
             return response()->json(['error' => 'Product not found or not authorized'], 403);
         }
+
+        broadcast(new ProductDeleted($product->id, $product->user_id));
 
         $product->delete();
 
