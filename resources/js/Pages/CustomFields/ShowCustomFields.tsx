@@ -5,6 +5,8 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
 import CreateCustomerCustomFieldsModal from '../../Pages/CustomFields/CustomersCustomFields/Components/CreateCustomerCustomFieldsModal'
 import EditCustomerCustomFieldsModal from '../../Pages/CustomFields/CustomersCustomFields/Components/EditCustomerCustomFieldsModal'
+
+import CreateProductCustomFieldFormModal from '../../Pages/CustomFields/ProductsCustomFields/Components/CreateProductCustomFieldFormModal'
 import axios from 'axios';
 
 const Show = ({ auth }: PageProps) => {
@@ -82,7 +84,7 @@ const Show = ({ auth }: PageProps) => {
             <div className='flex justify-between bg-indigo-100 dark:bg-slate-800 py-2'>
             <h2 className="text-2xl p-2 ml-3 cursor-pointer flex justify-start items-start text-start rounded-t-md text-indigo-400 font-semibold"> Product Custom Fields </h2>
                 <span className='flex items-center'>
-                    <CreateCustomerCustomFieldsModal />
+                    <CreateProductCustomFieldFormModal />
                 </span>
               </div>
             
