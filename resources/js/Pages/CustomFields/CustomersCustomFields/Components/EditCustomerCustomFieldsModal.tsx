@@ -11,7 +11,7 @@ interface EditModalProps {
     onClose: () => void; // new prop for closing the modal
 }
 
-const EditModal: React.FC<EditModalProps> = ({ customerCustomField, onClose }) => {
+const EditCustomerCustomFieldsModal: React.FC<EditModalProps> = ({ customerCustomField, onClose }) => {
     const [isModalOpen, setModalOpen] = useState(false);
 
     return (
@@ -31,4 +31,4 @@ const EditModal: React.FC<EditModalProps> = ({ customerCustomField, onClose }) =
     );
 }
 
-export default EditModal;
+export default EditCustomerCustomFieldsModal;

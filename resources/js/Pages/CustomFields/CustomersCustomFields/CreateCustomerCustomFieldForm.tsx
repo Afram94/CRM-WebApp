@@ -14,7 +14,7 @@ const fieldTypes = [
   { label: 'Boolean', value: 'boolean' },
 ];
 
-const CustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> = ({ closeModal }) => {
+const CreateCustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> = ({ closeModal }) => {
   const [fieldName, setFieldName] = useState<string>('');
   const [selectedFieldType, setSelectedFieldType] = useState<string>(fieldTypes[0].value);
 
@@ -84,4 +84,4 @@ const CustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> = ({ cl
   );
 };
 
-export default CustomerCustomFieldForm;
+export default CreateCustomerCustomFieldForm;
