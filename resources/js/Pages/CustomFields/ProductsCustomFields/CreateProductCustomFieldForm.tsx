@@ -1,12 +1,15 @@
+// src/components/CreateProductCustomFieldForm.tsx
+
 import React, { useState, ChangeEvent, MouseEvent } from 'react';
 import axios from 'axios';
 import PrimaryButton from '@/Components/PrimaryButton';
+import DropdownSelect from '@/Components/DropdownSelect';
 import TextInput from '@/Components/TextInput';
-import  InputLabel  from '@/Components/InputLabel';
+import InputLabel from '@/Components/InputLabel';
 
-type CreateCustomerCustomFiledsProps = {
-  closeModal: () => void;
-}
+type CreateProductCustomFiledsProps = {
+    closeModal: () => void;
+  }
 
 const fieldTypes = [
   { label: 'String', value: 'string' },
@@ -14,9 +17,14 @@ const fieldTypes = [
   { label: 'Boolean', value: 'boolean' },
 ];
 
-const CreateCustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> = ({ closeModal }) => {
+const CreateProductCustomFieldForm: React.FC<CreateProductCustomFiledsProps> = ({ closeModal }) => {
   const [fieldName, setFieldName] = useState<string>('');
+  const [fieldType, setFieldType] = useState(fieldTypes[0]);
   const [selectedFieldType, setSelectedFieldType] = useState<string>(fieldTypes[0].value);
+
+  /* const handleFieldChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFieldName(e.target.value);
+  }; */
 
   const handleFieldChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFieldName(e.target.value);
@@ -28,17 +36,17 @@ const CreateCustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> =
 
   const handleButtonClick = async (e: MouseEvent<HTMLButtonElement>) => {
     try {
-      const response = await axios.post('/add-custom-field', {
+      const response = await axios.post('/add-product-custom-field', {
         field_name: fieldName,
-        field_type: selectedFieldType, // Use the selectedFieldType here
+        field_type: fieldType.value,
       });
 
       if (response.status === 200) {
-        alert('Custom field added successfully');
+        alert('Product custom field added successfully');
         closeModal();
       }
     } catch (error) {
-      alert('Failed to add custom field');
+      alert('Failed to add product custom field');
     }
   };
 
@@ -84,4 +92,4 @@ const CreateCustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> =
   );
 };
 
-export default CreateCustomerCustomFieldForm;
+export default CreateProductCustomFieldForm;
