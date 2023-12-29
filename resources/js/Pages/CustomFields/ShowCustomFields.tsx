@@ -7,6 +7,7 @@ import CreateCustomerCustomFieldsModal from '../../Pages/CustomFields/CustomersC
 import EditCustomerCustomFieldsModal from '../../Pages/CustomFields/CustomersCustomFields/Components/EditCustomerCustomFieldsModal'
 
 import CreateProductCustomFieldFormModal from '../../Pages/CustomFields/ProductsCustomFields/Components/CreateProductCustomFieldFormModal'
+import EditProductCustomFieldsModal from './ProductsCustomFields/Components/EditProductCustomFieldsModal';
 import axios from 'axios';
 
 const Show = ({ auth }: PageProps) => {
@@ -105,7 +106,8 @@ const Show = ({ auth }: PageProps) => {
                                     <td className="py-2 px-6">{new Date(field.created_at).toLocaleDateString()}</td>
                                     <td className="py-2 px-6 flex gap-3">
                                       <span className="w-7 h-7 flex justify-center items-center bg-blue-100 rounded-full cursor-pointer">
-                                          <FaEdit size={17} color="#00A2F3"/>
+                                          {/* <FaEdit size={17} color="#00A2F3"/> */}
+                                          <EditProductCustomFieldsModal productCustomField={field} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
                                       </span>
                                       <span className="w-7 h-7 flex justify-center items-center bg-red-100 rounded-full cursor-pointer">
                                           <FaTrash size={17} color="#FF5C5C"/>
