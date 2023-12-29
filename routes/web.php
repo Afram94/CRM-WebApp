@@ -129,6 +129,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Products Custom fields
     Route::post('/add-product-custom-field', [ProductCustomFieldController::class, 'store']);
     Route::get('/product-custom-fields', [ProductCustomFieldController::class, 'index']);
+
+    Route::put('/product-custom-fields/{id}', [ProductCustomFieldController::class, 'update']);
     
     WebSocketsRouter::webSocket('/app', \App\WebSocketHandlers\NoteWebSocketHandler::class);
     
