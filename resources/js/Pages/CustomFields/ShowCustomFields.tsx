@@ -26,7 +26,7 @@ const Show = ({ auth }: PageProps) => {
 
     const deleteProduct = async (productId: number) => {
       try {
-          const response = await axios.delete(`/products/${productId}`);
+          const response = await axios.delete(`/product-custom-fields/${productId}`);
           console.log(response.data);
           // Update UI or redirect as needed
       } catch (error) {
@@ -105,11 +105,11 @@ const Show = ({ auth }: PageProps) => {
                                     <td className="py-2 px-6">{field.field_type}</td>
                                     <td className="py-2 px-6">{new Date(field.created_at).toLocaleDateString()}</td>
                                     <td className="py-2 px-6 flex gap-3">
-                                      <span className="w-7 h-7 flex justify-center items-center bg-blue-100 rounded-full cursor-pointer">
+                                      <span className="w-7 h-7 flex justify-center items-center bg-blue-100 rounded-full cursor-pointer hover:scale-125 transition-transform duration-300 ease-in-out">
                                           {/* <FaEdit size={17} color="#00A2F3"/> */}
                                           <EditProductCustomFieldsModal productCustomField={field} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
                                       </span>
-                                      <span className="w-7 h-7 flex justify-center items-center bg-red-100 rounded-full cursor-pointer">
+                                      <span onClick={()=>deleteProduct(field.id)} className="w-7 h-7 flex justify-center items-center bg-blue-100 rounded-full cursor-pointer hover:scale-125 transition-transform duration-300 ease-in-out">
                                           <FaTrash size={17} color="#FF5C5C"/>
                                       </span>
                                     </td>
