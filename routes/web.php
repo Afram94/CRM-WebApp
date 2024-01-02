@@ -131,6 +131,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/product-custom-fields', [ProductCustomFieldController::class, 'index']);
 
     Route::put('/product-custom-fields/{id}', [ProductCustomFieldController::class, 'update']);
+    Route::delete('/product-custom-fields/{id}', [ProductCustomFieldController::class, 'destroy']);
     
     WebSocketsRouter::webSocket('/app', \App\WebSocketHandlers\NoteWebSocketHandler::class);
     
