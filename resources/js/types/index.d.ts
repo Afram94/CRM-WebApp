@@ -32,6 +32,8 @@ export interface Customer {
     phone_number: string;
     custom_fields_values: CustomerCustomFieldValue[];
     notes: Note[];
+    products: Product[]; // Add this line
+
     // ... any other fields for Customer
 }
 
