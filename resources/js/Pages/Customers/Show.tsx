@@ -24,6 +24,7 @@ import { usePermissions } from '../../../providers/permissionsContext';
 import CustomerCustomFieldForm from '../CustomFields/CustomersCustomFields/CreateCustomerCustomFieldForm';
 import CustomerChannelsHandler from './CustomerChannelsHandler';
 import Modal from '@/Components/Modal';
+import AddProductModal from './Components/AddProductModal';
 
 interface Permission {
     name: string;
@@ -421,8 +422,16 @@ const Show = ({ auth }: PageProps) => {
                                                     <CreateModalNotes customerId={customer.id} />
                                                 </div>
 
+                                                
+
                                             </Dropdown.Content>
                                         </Dropdown>
+                                    </td>
+
+                                    <td>
+                                    <div className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
+                                                    <AddProductModal customerId={customer.id} />
+                                                </div>
                                     </td>
                                     
 

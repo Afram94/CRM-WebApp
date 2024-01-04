@@ -11,18 +11,16 @@ use DB;
 
 class CustomerProductController extends Controller
 {
-    public function addProductToCustomer(Request $request, Customer $customer)
+    public function addProductToCustomer(Request $request, $customerId)
     {
         $productId = $request->input('product_id');
+        $customer = Customer::findOrFail($customerId);
 
-        // Begin Transaction
         DB::beginTransaction();
 
         try {
-            // Add product to customer
             $customer->products()->attach($productId);
 
-            // Update Inventory
             $inventory = Inventory::where('product_id', $productId)->first();
             if ($inventory && $inventory->quantity > 0) {
                 $inventory->decrement('quantity');

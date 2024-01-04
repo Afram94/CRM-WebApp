@@ -24,7 +24,7 @@ const EditProductCustomFieldsModal: React.FC<EditModalProps> = ({ productCustomF
             <Modal show={isModalOpen} onClose={() => setModalOpen(false)}>
                 <div className="p-4">
                     <h2 className="text-lg font-medium mb-4 flex justify-center">Edit Custom Filed</h2>
-                    <EditProductCustomFieldsForm productCustomField={productCustomField} closeModal={()=> setModalOpen(false)} /> {/* Place EditProductCustomer inside the modal */}
+                    <EditProductCustomFieldsForm productCustomField={productCustomField} closeModal={()=> setModalOpen(false)} /> {/* Place EditProduct inside the modal */}
                 </div>
             </Modal>
         </div>

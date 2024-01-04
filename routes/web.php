@@ -19,6 +19,8 @@ use App\Http\Controllers\CustomerCustomFieldValueController;
 
 use App\Http\Controllers\ProductCustomFieldController;
 
+use App\Http\Controllers\CustomerProductController;
+
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
 
@@ -143,6 +145,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 
 });
+
+// Customer-Product-Controller
+Route::post('/customers/{customerId}/addProduct', [CustomerProductController::class, 'addProductToCustomer']);
+
 
 
 
