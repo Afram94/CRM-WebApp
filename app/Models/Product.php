@@ -42,4 +42,10 @@ class Product extends Model
     {
         return $this->hasMany(ProductCustomFieldValue::class, 'product_id', 'id');
     }
+
+    public function customers()
+    {
+        return $this->belongsToMany(Customer::class);
+    }
+
 }
