@@ -82,6 +82,7 @@ export interface Product {
     inventory_count: number;
     category_id?: number; // Add this line if category_id exists for a product
     custom_fields_values: ProductCustomFieldValue[];
+    category: Category;
 }
 
 export interface Inventory {
