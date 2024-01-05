@@ -79,7 +79,7 @@ class CustomerController extends Controller
                                         ->orWhere('id', $parentUserId)
                                         ->pluck('id')->toArray();
 
-        $customer = Customer::with(['notes', 'products']) // Include 'products' in the eager load
+        $customer = Customer::with(['notes', 'products.category']) // Include 'products' in the eager load
                     ->where('id', $id)
                     ->whereIn('user_id', $allUserIdsUnderSameParent)
                     ->firstOrFail();
