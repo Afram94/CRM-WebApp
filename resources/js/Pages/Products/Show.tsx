@@ -11,6 +11,7 @@ import ProductCustomFieldForm from './ProductCustomFieldForm';
 import ProductChannelsHandler from './ProductChannelsHandler';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
+import PaginationComponent from '@/Components/Pagination';
 
 type GroupedProducts = {
     [category: string]: Product[];
@@ -18,7 +19,7 @@ type GroupedProducts = {
 
 const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>(auth.products || []);
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>(auth.products.data || []);
     const [groupedProducts, setGroupedProducts] = useState<GroupedProducts>({});
     const [openCategories, setOpenCategories] = useState<string[]>([]);
 
@@ -57,7 +58,7 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
         try {
             const response = await axios.get(`/products?search=${searchTerm}`);
             if (response.data && response.data.auth && response.data.auth.products) {
-                setFilteredProducts(response.data.auth.products);
+                setFilteredProducts(response.data.auth.products.data);
             }
         } catch (error) {
             console.error('Failed to fetch filtered products:', error);
@@ -252,6 +253,11 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
                         </tbody>
                     </table>
                 </div>
+                {auth.products.links && (
+                        <div className="mt-4 flex justify-end">
+                            <PaginationComponent links={auth.products.links} />
+                        </div>
+                    )}
             </div>
         </MainLayout>
     );

@@ -120,10 +120,11 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         allUserIdsUnderSameParent: User[];
         user: User;
         customers: PaginatedResponse<Customer>;
+        products: PaginatedResponse<Product>;
         notes: Note[];
         customer_notes:Note[];
         customer_profile:Customer[];
-        products:Product[];
+        /* products:Product[]; */
         categories:Category[];
         inventories:Inventory[];
         customer_custom_fields: CustomerCustomField[];
