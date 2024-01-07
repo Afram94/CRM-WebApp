@@ -150,79 +150,61 @@ class ProductController extends Controller
         $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
         $search = $request->input('search');
     
-        // Retrieve products only for users who share the same parent_user_id.
+        // Build the query
         $productsQuery = Product::with(['category', 'customFieldsValues', 'customFieldsValues.customField'])
                                 ->whereIn('user_id', $allUserIdsUnderSameParent);
     
-        // Apply search filter if search term is present
+        // Apply search filters
         if ($search) {
             $productsQuery->where(function($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('description', 'LIKE', '%' . $search . '%')
-                    ->orWhereHas('category', function($query) use ($search) {
-                        $query->where('name', 'LIKE', '%' . $search . '%');
-                    })
-                    ->orWhereHas('customFieldsValues', function($query) use ($search) {
-                        // Assuming 'value' is the field in the 'customFieldsValues' table where the actual value is stored
-                        $query->where('value', 'LIKE', '%' . $search . '%');
-                    });
+                      ->orWhere('description', 'LIKE', '%' . $search . '%')
+                      ->orWhereHas('category', function($query) use ($search) {
+                          $query->where('name', 'LIKE', '%' . $search . '%');
+                      })
+                      ->orWhereHas('customFieldsValues', function($query) use ($search) {
+                          $query->where('value', 'LIKE', '%' . $search . '%');
+                      });
             });
         }
     
-        // Fetch all products
-        /* $products = $productsQuery->latest()->get(); */
-
-        /* $products = $productsQuery->latest()->get()->map(function ($product) {
+        // Paginate the results
+        $products = $productsQuery->latest()->paginate(20);
+    
+        // Transform the paginated result
+        $products->getCollection()->transform(function ($product) {
+            $customFields = $product->customFieldsValues->map(function ($customFieldValue) {
+                return [
+                    'id' => $customFieldValue->id,
+                    'value' => $customFieldValue->value,
+                    'field_id' => $customFieldValue->field_id,
+                    'product_id' => $customFieldValue->product_id,
+                    'created_at' => $customFieldValue->created_at ? $customFieldValue->created_at->toDateTimeString() : null,
+                    'updated_at' => $customFieldValue->updated_at ? $customFieldValue->updated_at->toDateTimeString() : null,
+                    'custom_field' => [
+                        'id' => $customFieldValue->customField->id,
+                        'user_id' => $customFieldValue->customField->user_id,
+                        'field_name' => $customFieldValue->customField->field_name,
+                        'field_type' => $customFieldValue->customField->field_type,
+                        'created_at' => $customFieldValue->customField->created_at ? $customFieldValue->customField->created_at->toDateTimeString() : null,
+                        'updated_at' => $customFieldValue->customField->updated_at ? $customFieldValue->customField->updated_at->toDateTimeString() : null,
+                    ],
+                ];
+            });
+    
             return [
                 'id' => $product->id,
                 'name' => $product->name,
+                'category_name' => $product->category ? $product->category->name : 'Uncategorized',
+                'category_id' => $product->category_id,
                 'description' => $product->description,
                 'price' => $product->price,
                 'sku' => $product->sku,
-                'category_name' => $product->category ? $product->category->name : 'Uncategorized',
-                // ...other fields...
-            ];
-        }); */
-
-     // Fetch all products
-    $products = $productsQuery->latest()->get()->map(function ($product) {
-        $customFields = $product->customFieldsValues->map(function ($customFieldValue) {
-            return [
-                'id' => $customFieldValue->id,
-                'value' => $customFieldValue->value,
-                'field_id' => $customFieldValue->field_id,
-                'product_id' => $customFieldValue->product_id,
-                'created_at' => $customFieldValue->created_at ? $customFieldValue->created_at->toDateTimeString() : null,
-                'updated_at' => $customFieldValue->updated_at ? $customFieldValue->updated_at->toDateTimeString() : null,
-                'custom_field' => [
-                    'id' => $customFieldValue->customField->id,
-                    'user_id' => $customFieldValue->customField->user_id,
-                    'field_name' => $customFieldValue->customField->field_name,
-                    'field_type' => $customFieldValue->customField->field_type,
-                    'created_at' => $customFieldValue->customField->created_at ? $customFieldValue->customField->created_at->toDateTimeString() : null,
-                    'updated_at' => $customFieldValue->customField->updated_at ? $customFieldValue->customField->updated_at->toDateTimeString() : null,
-                    // Add other relevant fields from the customField if needed
-                ],
+                'created_at' => $product->created_at ? $product->created_at->toDateTimeString() : null,
+                'updated_at' => $product->updated_at ? $product->updated_at->toDateTimeString() : null,
+                'custom_fields_values' => $customFields,
             ];
         });
-
-        return [
-            'id' => $product->id,
-            'name' => $product->name,
-            'category_name' => $product->category ? $product->category->name : 'Uncategorized',
-            'category_id' => $product->category->id,
-            'description' => $product->description,
-            'price' => $product->price,
-            'sku' => $product->sku,
-            'created_at' => $product->created_at ? $product->created_at->toDateTimeString() : null,
-            'updated_at' => $product->updated_at ? $product->updated_at->toDateTimeString() : null,
-            /* 'category' => [
-                'id' => $product->category->id,
-                'name' => $product->category->name,
-            ], */
-            'custom_fields_values' => $customFields,
-        ];
-    });
 
         
     
