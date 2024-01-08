@@ -151,7 +151,7 @@ class DatabaseSeeder extends Seeder
         DB::table('orders')->insert($orders);
 
      
-        $productVariants = [];
+        /* $productVariants = [];
         for ($i = 1; $i <= 50; $i++) {
             $productVariants[] = [
                 'user_id' => rand(1, 10), // Assuming you have users 1-10
@@ -163,11 +163,11 @@ class DatabaseSeeder extends Seeder
             ];
         }
 
-        DB::table('product_variants')->insert($productVariants);
+        DB::table('product_variants')->insert($productVariants); */
 
 
 
-        $serialNumbers = [];
+        /* $serialNumbers = [];
         for ($i = 1; $i <= 1000; $i++) {
             $serialNumbers[] = [
                 'user_id' => rand(1, 10), // Assuming you have users 1-10
@@ -178,7 +178,7 @@ class DatabaseSeeder extends Seeder
             ];
         }
 
-        DB::table('serial_numbers')->insert($serialNumbers);
+        DB::table('serial_numbers')->insert($serialNumbers); */
         
 
 
@@ -187,7 +187,7 @@ class DatabaseSeeder extends Seeder
             $orderItems[] = [
                 'order_id' => rand(1, 30), // Assuming you have orders 1-30
                 'product_id' => rand(1, 10), // Assuming you have products 1-10
-                'product_variant_id' => rand(1, 50), // Assuming you have product variants 1-50
+                /* 'product_variant_id' => rand(1, 50), // Assuming you have product variants 1-50 */
                 'quantity' => rand(1, 5), // Random quantity
                 'price' => rand(100, 1000) / 100, // Random price
                 'created_at' => now(),
@@ -205,7 +205,7 @@ class DatabaseSeeder extends Seeder
                 'id' => $i,
                 'user_id' => $i, // Assuming each inventory record is linked to a user
                 'product_id' => $i, // Assuming each inventory record is linked to a product
-                'product_variant_id' => rand(1, 10), // Assuming 10 variants, randomly assign
+                /* 'product_variant_id' => rand(1, 10), // Assuming 10 variants, randomly assign */
                 'quantity' => rand(10, 200), // Random quantity
                 'stock_status' => 'in_stock', // Assuming all are in stock
                 'min_stock_level' => rand(5, 20), // Random minimum stock level
