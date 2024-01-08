@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
         $adminIds = [];
 
         // First, create all admin users
-        for ($i = 1; $i <= 1000; $i += 41) {
+        for ($i = 1; $i <= 100; $i += 41) {
             $users[] = [
                 'id' => $i, 
                 'user_id' => null, 
@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
         foreach ($adminIds as $adminId) {
             for ($j = 1; $j <= 40; $j++) {
                 $childId = $adminId + $j;
-                if ($childId > 1000) break; // Ensure not to exceed 100 users
+                if ($childId > 100) break; // Ensure not to exceed 100 users
 
                 $users[] = [
                     'id' => $childId, 
@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
 
         // Seed the Categories table
         $categories = [];
-        for ($i = 1; $i <= 1000; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $categories[] = [
                 'id' => $i,
                 'user_id' => $i,
@@ -73,7 +73,7 @@ class DatabaseSeeder extends Seeder
 
         // Array of Customers
         $customers = [];
-        for ($i = 1; $i <= 1000; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $customers[] = [
                 'id' => $i,
                 'user_id' => $i, // Assuming each customer is linked to a user
@@ -122,7 +122,7 @@ class DatabaseSeeder extends Seeder
 
         // Array of Products
         $products = [];
-        for ($i = 1; $i <= 1000; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $products[] = [
                 'id' => $i,
                 'user_id' => $i, // Assuming each product is linked to a user
@@ -139,7 +139,7 @@ class DatabaseSeeder extends Seeder
 
         // Array of Orders
         $orders = [];
-        for ($i = 1; $i <= 1000; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $orders[] = [
                 'id' => $i,
                 'user_id' => $i, // Assuming each order is linked to a user
@@ -168,7 +168,7 @@ class DatabaseSeeder extends Seeder
 
 
         /* $serialNumbers = [];
-        for ($i = 1; $i <= 1000; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $serialNumbers[] = [
                 'user_id' => rand(1, 10), // Assuming you have users 1-10
                 'product_variant_id' => rand(1, 50), // Assuming you have product variants 1-50
@@ -183,7 +183,7 @@ class DatabaseSeeder extends Seeder
 
 
         $orderItems = [];
-        for ($i = 1; $i <= 1000; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $orderItems[] = [
                 'order_id' => rand(1, 30), // Assuming you have orders 1-30
                 'product_id' => rand(1, 10), // Assuming you have products 1-10
@@ -200,7 +200,7 @@ class DatabaseSeeder extends Seeder
 
         // Array of Inventory
         $inventories = [];
-        for ($i = 1; $i <= 1000; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $inventories[] = [
                 'id' => $i,
                 'user_id' => $i, // Assuming each inventory record is linked to a user

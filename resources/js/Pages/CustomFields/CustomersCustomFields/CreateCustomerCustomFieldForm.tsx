@@ -17,6 +17,7 @@ const fieldTypes = [
 const CreateCustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> = ({ closeModal }) => {
   const [fieldName, setFieldName] = useState<string>('');
   const [selectedFieldType, setSelectedFieldType] = useState<string>(fieldTypes[0].value);
+  const [isRequired, setIsRequired] = useState<boolean>(false);
 
   const handleFieldChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFieldName(e.target.value);
@@ -26,11 +27,16 @@ const CreateCustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> =
     setSelectedFieldType(value);
   };
 
+  const handleIsRequiredChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setIsRequired(e.target.checked);
+};
+
   const handleButtonClick = async (e: MouseEvent<HTMLButtonElement>) => {
     try {
       const response = await axios.post('/add-custom-field', {
         field_name: fieldName,
         field_type: selectedFieldType, // Use the selectedFieldType here
+        is_required: isRequired,
       });
 
       if (response.status === 200) {
@@ -57,6 +63,16 @@ const CreateCustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> =
             className="w-full p-2 border rounded-md"
           />
         </div>
+        <div className="mb-4">
+          <label>
+              <input 
+                  type="checkbox" 
+                  checked={isRequired} 
+                  onChange={handleIsRequiredChange} 
+              />
+              Required
+          </label>
+      </div>
         <div className='flex flex-col gap-y-3'>
           <InputLabel className='text-xl text-slate-500'>Custom Filed Type:</InputLabel>
           <div className="mb-4 flex gap-3">

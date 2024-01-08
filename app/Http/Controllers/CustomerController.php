@@ -202,33 +202,46 @@ class CustomerController extends Controller
     }
 
 
-        private function prepareValidationRules(array $customFields)
-        {
-            $validationRules = [];
-            foreach ($customFields as $fieldId => $value) {
-                $fieldDefinition = CustomerCustomField::findOrFail($fieldId);
+    private function prepareValidationRules(array $customFields)
+    {
+        $validationRules = [];
+        foreach ($customFields as $fieldId => $value) {
+            $fieldDefinition = CustomerCustomField::findOrFail($fieldId);
 
-                // Set validation rules based on the field's type
-                switch ($fieldDefinition->field_type) {
-                    case 'string':
-                        $validationRules["custom_fields.$fieldId"] = 'required|string';
-                        break;
-                    case 'integer':
-                        $validationRules["custom_fields.$fieldId"] = 'required|numeric';
-                        break;
-                    case 'date':
-                        $validationRules["custom_fields.$fieldId"] = 'required|date';
-                        break;
-                    case 'boolean':
-                        $validationRules["custom_fields.$fieldId"] = 'required|boolean';
-                        break;
-                    // ... add other cases as needed
-                    default:
-                        $validationRules["custom_fields.$fieldId"] = 'required|string';
-                }
+            // Start with a base rule depending on the field type
+            $baseRule = '';
+            switch ($fieldDefinition->field_type) {
+                case 'string':
+                    $baseRule = 'string';
+                    break;
+                case 'integer':
+                    $baseRule = 'numeric';
+                    break;
+                case 'date':
+                    $baseRule = 'date';
+                    break;
+                case 'boolean':
+                    $baseRule = 'boolean';
+                    break;
+                // ... add other cases as needed
+                default:
+                    $baseRule = 'string';
             }
-            return $validationRules;
+
+            // Append 'required' or 'nullable' based on the is_required attribute
+            if ($fieldDefinition->is_required) {
+                $baseRule = 'required|' . $baseRule;
+            } else {
+                $baseRule .= '|nullable';
+            }
+
+            // Apply the rule to the custom field
+            $validationRules["custom_fields.$fieldId"] = $baseRule;
         }
+        return $validationRules;
+    }
+
+    
 
 
         // Remove the specified customer from storage

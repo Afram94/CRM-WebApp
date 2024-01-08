@@ -20,6 +20,7 @@ class CustomerCustomFieldController extends Controller
         $customField = new CustomerCustomField([
             'field_name' => $request->input('field_name'),
             'field_type' => $request->input('field_type'),
+            'is_required' => $request->input('is_required'),
             'user_id' => auth()->id(),
         ]);
 
