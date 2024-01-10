@@ -3,6 +3,10 @@ import axios from 'axios';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import  InputLabel  from '@/Components/InputLabel';
+import Checkbox from '@/Components/Checkbox';
+import Tooltip from '@/Components/Tooltip';
+
+import '../../../../css/global.css';
 
 type CreateCustomerCustomFiledsProps = {
   closeModal: () => void;
@@ -54,25 +58,48 @@ const CreateCustomerCustomFieldForm: React.FC<CreateCustomerCustomFiledsProps> =
       <div className='grid grid-cols-1 gap-2'>
 
         {/* <InputLabel>Custom Filed Name:</InputLabel> */}
-        <div className="mb-4">
-          <TextInput
-            type="text"
-            placeholder="Field Name"
-            value={fieldName}
-            onChange={handleFieldChange}
-            className="w-full p-2 border rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label>
-              <input 
-                  type="checkbox" 
-                  checked={isRequired} 
-                  onChange={handleIsRequiredChange} 
+        <div className="mb-4 grid grid-cols-2 gap-2">
+
+          <div>
+              <InputLabel 
+                value="Field Name"
+                className='text-md m-1 text-slate-600'
+                />
+              <TextInput
+                  type="text"
+                  placeholder="..."
+                  value={fieldName}
+                  onChange={handleFieldChange}
+                  className="w-full p-2 border rounded-md"
               />
-              Required
-          </label>
+          </div>
+
+          <div>
+          
+            
+        
+            <div className={`flex justify-start items-center border-2 rounded-lg h-10 mt-7 ${isRequired ? "bg-green-100" : "bg-slate-100"}`}>
+              <label className={`text-lg font-semibold font-mono ${isRequired ? "text-slate-600" : "text-slate-400"}`}>
+                  <Checkbox
+                      className='mx-2 w-5 h-5'
+                      checked={isRequired} 
+                      onChange={handleIsRequiredChange} 
+                  />
+                  Required
+              </label>
+            </div>
+            <div className='flex justify-start mt-1'>
+            <Tooltip 
+                content="This button makes the input required. You can change this at any time by clicking the update button in the table and toggling this checkbox."
+                positionClasses="md:left-0 md:ml-[-100%]" // Use responsive classes if needed
+            />
+
+
+            </div>
+          
+          </div>
       </div>
+        
         <div className='flex flex-col gap-y-3'>
           <InputLabel className='text-xl text-slate-500'>Custom Filed Type:</InputLabel>
           <div className="mb-4 flex gap-3">
