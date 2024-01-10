@@ -26,7 +26,7 @@ class ProductController extends Controller
                    ->pluck('id')->toArray();
     }
 
-    private function prepareValidationRulesForProduct(array $customFields)
+    /* private function prepareValidationRulesForProduct(array $customFields)
     {
         $validationRules = [];
         foreach ($customFields as $fieldId => $value) {
@@ -50,6 +50,45 @@ class ProductController extends Controller
                 default:
                     $validationRules["custom_fields.$fieldId"] = 'required|string';
             }
+        }
+        return $validationRules;
+    } */
+
+    private function prepareValidationRulesForProduct(array $customFields)
+    {
+        $validationRules = [];
+        foreach ($customFields as $fieldId => $value) {
+            $fieldDefinition = ProductCustomField::findOrFail($fieldId);
+
+            // Start with a base rule depending on the field type
+            $baseRule = '';
+            switch ($fieldDefinition->field_type) {
+                case 'string':
+                    $baseRule = 'string';
+                    break;
+                case 'integer':
+                    $baseRule = 'numeric';
+                    break;
+                case 'date':
+                    $baseRule = 'date';
+                    break;
+                case 'boolean':
+                    $baseRule = 'boolean';
+                    break;
+                // ... add other cases as needed
+                default:
+                    $baseRule = 'string';
+            }
+
+            // Append 'required' or 'nullable' based on the is_required attribute
+            if ($fieldDefinition->is_required) {
+                $baseRule = 'required|' . $baseRule;
+            } else {
+                $baseRule .= '|nullable';
+            }
+
+            // Apply the rule to the custom field
+            $validationRules["custom_fields.$fieldId"] = $baseRule;
         }
         return $validationRules;
     }
