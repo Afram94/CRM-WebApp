@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('field_name');
-            $table->string('field_type');  // New field
+            $table->string('field_type');
+            $table->boolean('is_required')->default(false);
             $table->timestamps();
     
             $table->foreign('user_id')->references('id')->on('users');
