@@ -89,45 +89,39 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
         setSearchTerm('');   
     }
 
-    /**
-       * This function is called when a new product is created.
-       * It updates the state to include the new product at the beginning of the list.
-       * Because the UI displays a maximum of 5 products per page (due to pagination),
-       * we need to ensure that adding a new product doesn't increase the count beyond 20.
-       * If it does, we slice the array to remove the last product,
-       * effectively maintaining the correct number of products on the current page.
-       * This approach resolves an issue where the list displayed 21 products after
-       * a new product was created until the page was refreshed.
-       *
-       * @param {Product} newProduct - The new product to be added to the list.
-       */
+        /**
+         * This function is called when a new product is created.
+         * It updates the state to include the new product at the beginning of the list.
+         * Because the UI displays a maximum of 5 products per page (due to pagination),
+         * we need to ensure that adding a new product doesn't increase the count beyond 20.
+         * If it does, we slice the array to remove the last product,
+         * effectively maintaining the correct number of products on the current page.
+         * This approach resolves an issue where the list displayed 21 products after
+         * a new product was created until the page was refreshed.
+         *
+         * @param {Product} newProduct - The new product received from the WebSocket event.
+         */
         const handleNewProduct = (newProduct: Product) => {
-            // Log to console whenever this function is triggered
             console.log("New product event triggered");
 
-            // Update state with a function to ensure we have the most current state
             setFilteredProducts((prevProducts) => {
-            // Check if the new product object has an ID property
-            if (newProduct.id) {
-                // If it does, add the new product to the start of the product array
-                const updatedProducts = [newProduct, ...prevProducts];
+                // Check if the new product already exists in the current state
+                const isExistingProduct = prevProducts.some(product => product.id === newProduct.id);
 
-                // After adding the new product, check if we have more than 20 products
-                if (updatedProducts.length > 20) {
-                // If we do, return only the first 20 products to stay within page limits
-                return updatedProducts.slice(0, 20);
+                // Add the new product to the state only if it doesn't exist already
+                if (!isExistingProduct) {
+                    // Prepend the new product to the start of the product array
+                    const updatedProducts = [newProduct, ...prevProducts];
+
+                    // Maintain a maximum of 20 products for display, adjusting as needed
+                    return updatedProducts.slice(0, 20);
                 }
 
-                // If we have 20 or fewer products, return the updated list as is
-                return updatedProducts;
-            } else {
-                // If the new product object lacks an ID, log an error for debugging
-                console.error('New product is missing an ID:', newProduct);
-                // Return the previous product array unchanged
+                // Return the previous state if the product already exists
                 return prevProducts;
-            }
             });
         };
+    
 
         const handleUpdatedProduct = (updatedProduct: Product) => {
             // Log to console whenever this function is triggered

@@ -247,7 +247,7 @@ class CustomerController extends Controller
         // Remove the specified customer from storage
     public function destroy($id)
     {
-        $customer = Customer::findOrFail($id);
+        $customer = Customer::find($id);
     
         // Ensure the user owns this customer
         /* if ($customer->user_id !== auth()->id()) {
