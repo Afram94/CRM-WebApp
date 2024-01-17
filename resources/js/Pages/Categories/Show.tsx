@@ -7,25 +7,50 @@ import EditCategoryModal from './Components/EditCategoryModal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { FaTrashRestore } from 'react-icons/fa';
 import axios from 'axios';
+import TextInput from '@/Components/TextInput';
+import DangerButton from '@/Components/DangerButton';
 
 const CategoryIndex: React.FC<PageProps> = ({ auth }) => {
 
-    console.log(auth.categories);
+    /* console.log(auth.categories); */
 
     const [filteredCategories, setFilteredCategories] = useState<Category[]>(auth.categories || []);
+    const [searchTerm, setSearchTerm] = useState('');
+      
 
-    /* const handleNewProduct = (newProduct: Product) => {
-        console.log("handleNewNote Work!!")
-        setFilteredCategories((prevNotes) => {
-          if (newProduct.id) {  // Ensure the new note has a user name
-            return [...prevNotes, newProduct];
-          } else {
-            // Handle this case, e.g., provide a default name or fetch additional data
-            console.error('New note does not have a user_name:', newProduct);
-            return prevNotes;  // For now, keep the old notes as they were
-          }
-        });
-      }; */
+      useEffect(() => {
+        if (searchTerm === '') {
+            setFilteredCategories(auth.categories);
+            return;
+        }
+    
+        // Only search if searchTerm length is 3 or more
+        if (searchTerm.length >= 3) {
+            
+            const fetchFilteredCategories = async () => {
+                try {
+                    const response = await axios.get(`/categories?search=${searchTerm}`);
+                    if (response.data && response.data.auth && response.data.auth.categories) {
+                        console.log("Debug: ", response.data.auth.categories);
+                        setFilteredCategories(response.data.auth.categories);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch filtered categories:', error);
+                }
+            };
+    
+            fetchFilteredCategories();
+    
+        } else {
+            // If searchTerm is between 1 and 2 characters, reset to the original list
+            setFilteredCategories(auth.categories);
+        }
+    }, [searchTerm, auth.categories]);
+
+
+    const handleReset = () => {
+        setSearchTerm('');
+    };
 
       const deleteCategory = async (categoryId: number) => {
         try {
@@ -38,18 +63,30 @@ const CategoryIndex: React.FC<PageProps> = ({ auth }) => {
         }
     };  
 
-      useEffect(() => {
+      /* useEffect(() => {
         // Check if auth.products is not null or undefined
         if (auth.categories) {
             setFilteredCategories(auth.categories);
         }
-    }, [auth.categories]); // Dependency array to re-run this effect if auth.products changes
+    }, [auth.categories]); // Dependency array to re-run this effect if auth.products changes */
     
       
 
     return (
         <MainLayout title='categories'>
             <CreateCategoriesModal/>
+            <div className="w-full flex justify-between my-4">
+            <div className="flex gap-2">
+                            <TextInput 
+                                type="text"
+                                placeholder="Search..."
+                                className='h-9'
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                            <DangerButton onClick={handleReset}>Reset</DangerButton>
+                        </div>
+            </div>
         <div className="container mx-auto p-4">
             <table className="min-w-full table-auto border-collapse border border-gray-300">
                 <thead>
