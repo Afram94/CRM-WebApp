@@ -6,6 +6,8 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import DropdownSelect from '@/Components/DropdownSelect';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
+import Checkbox from '@/Components/Checkbox';
+import Tooltip from '@/Components/Tooltip';
 
 type CreateProductCustomFiledsProps = {
     closeModal: () => void;
@@ -58,33 +60,43 @@ const CreateProductCustomFieldForm: React.FC<CreateProductCustomFiledsProps> = (
 
   return (
     <>
-      {/* <h1 className="text-2xl mb-6 flex justify-center border-b-2 font-thin mx-48">Add a Custom Field</h1> */}
       <div className='grid grid-cols-1 gap-2'>
-
-        {/* <InputLabel>Custom Filed Name:</InputLabel> */}
-        <div className="mb-4">
-          <TextInput
-            type="text"
-            placeholder="Field Name"
-            value={fieldName}
-            onChange={handleFieldChange}
-            className="w-full p-2 border rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label>
-              <input 
-                  type="checkbox" 
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <div>
+            <InputLabel 
+              value="Field Name"
+              className='text-md m-1 text-slate-600'
+            />
+            <TextInput
+              type="text"
+              placeholder="..."
+              value={fieldName}
+              onChange={handleFieldChange}
+              className="w-full p-2 border rounded-md"
+            />
+          </div>
+          <div>
+            <div className={`flex justify-start items-center border-2 rounded-lg h-10 mt-7 ${isRequired ? "bg-green-100" : "bg-slate-100"}`}>
+              <label className={`text-lg font-semibold font-mono ${isRequired ? "text-slate-600" : "text-slate-400"}`}>
+                <Checkbox
+                  className='mx-2 w-5 h-5'
                   checked={isRequired} 
                   onChange={handleIsRequiredChange} 
+                />
+                Required
+              </label>
+            </div>
+            <div className='flex justify-start mt-1'>
+              <Tooltip
+                content="This button makes the input required. You can change this at any time by clicking the update button in the table and toggling this checkbox."
+                positionClasses="md:left-0 md:ml-[-100%]"
               />
-              Required
-          </label>
-      </div>
+            </div>
+          </div>
+        </div>
         <div className='flex flex-col gap-y-3'>
-          <InputLabel className='text-xl text-slate-500'>Custom Filed Type:</InputLabel>
+          <InputLabel className='text-xl text-slate-500'>Custom Field Type:</InputLabel>
           <div className="mb-4 flex gap-3">
-            {/* Render field type options as checkbox-like buttons */}
             {fieldTypes.map((type) => (
               <div 
                 key={type.value}
@@ -96,8 +108,6 @@ const CreateProductCustomFieldForm: React.FC<CreateProductCustomFiledsProps> = (
             ))}
           </div>
         </div>
-          
-          
       </div>
       <div className="flex justify-end">
         <PrimaryButton onClick={handleButtonClick} className="bg-blue-500 hover:bg-blue-600 text-white rounded-md p-2">
@@ -106,6 +116,7 @@ const CreateProductCustomFieldForm: React.FC<CreateProductCustomFiledsProps> = (
       </div>
     </>
   );
+  
 };
 
 export default CreateProductCustomFieldForm;
