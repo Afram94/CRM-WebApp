@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
+use App\Events\UserPermissionsUpdated;
 
 class UserController extends Controller
 {
@@ -77,6 +78,10 @@ class UserController extends Controller
 
         $user->givePermissionTo($permissions);
 
+        $updatedPermissions = $user->permissions->pluck('name');
+    
+        broadcast(new UserPermissionsUpdated($userId, $updatedPermissions));
+
         return response()->json(['message' => 'Permissions updated']);
     }
 
@@ -91,6 +96,10 @@ class UserController extends Controller
         } else {
             $user->givePermissionTo($permission);
         }
+
+        $updatedPermissions = $user->permissions->pluck('name');
+
+        broadcast(new UserPermissionsUpdated($userId, $updatedPermissions));
     
         return response()->json(['message' => 'Permission toggled']);
     }

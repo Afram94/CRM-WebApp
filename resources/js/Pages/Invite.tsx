@@ -36,21 +36,19 @@ const Invite: React.FC = () => {
             </div>
 
                 <div className='flex flex-col justify-center items-center mt-12 gap-2'>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <TextInput 
-                            type="email" 
-                            name="email" 
-                            value={email} 
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Email to invite.."
-                            isFocused={true}
-                        />
-                    </form>
-                    <div>
-                        <PrimaryButton type="submit" className='w-44 text-center flex justify-center'>
-                            Send Invite
-                        </PrimaryButton>
-                    </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <TextInput 
+                        type="email" 
+                        name="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Email to invite.."
+                        isFocused={true}
+                    />
+                    <PrimaryButton type="submit" className='w-44 text-center flex justify-center'>
+                        Send Invite
+                    </PrimaryButton>
+                </form>
                 </div>
                 {message && <p className="mt-4">{message}</p>}
             </MainLayout>
