@@ -3,9 +3,38 @@ import { PageProps, Inventory } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateInventoriesModal from './Components/CreateInventoriesModal';
+import axios from 'axios';
+import TextInput from '@/Components/TextInput';
+import DangerButton from '@/Components/DangerButton';
 
 const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
     const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories || []);
+
+    const [searchTerm, setSearchTerm] = useState('');
+
+
+    const fetchFilteredInventories = async () => {
+        try {
+            const response = await axios.get(`/inventories?search=${searchTerm}`);
+            console.log(response.data);
+            if (response.data && response.data.auth && response.data.auth.inventories) {
+                setFilteredInventories(response.data.auth.inventories);
+            }
+        } catch (error) {
+            console.error('Failed to fetch filtered inventories:', error);
+        }
+    };
+
+    // Fetch inventories when search term changes
+    useEffect(() => {
+        if (searchTerm.length >= 3 || searchTerm === '') {
+            fetchFilteredInventories();
+        }
+    }, [searchTerm]);
+
+    const handleReset = () => {
+        setSearchTerm('');
+    };
 
     useEffect(() => {
         if (auth.inventories) {
@@ -13,10 +42,20 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
         }
     }, [auth.inventories]);
 
-    console.log(auth.inventories);
+    /* console.log(filteredInventories); */
 
     return (
         <MainLayout title='Inventories'>
+            <div className="flex gap-2">
+                <TextInput
+                    type="text" 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                    placeholder="Search..."
+                    className='flex gap-2'
+                />
+                <DangerButton onClick={handleReset}>Reset</DangerButton>
+            </div>
             <CreateInventoriesModal />
             <div className="container mx-auto p-4">
                 <table className="min-w-full table-auto border-collapse border border-gray-300">

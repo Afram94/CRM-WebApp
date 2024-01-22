@@ -93,6 +93,7 @@ export interface Inventory {
     quantity: number;
     stock_status: string;
     restock_date?: string | null;
+    product: Product;
 }
 
 type PaginatedResponse<T> = {

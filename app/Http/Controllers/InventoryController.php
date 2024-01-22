@@ -16,11 +16,11 @@ class InventoryController extends Controller
         return inertia('Inventories/Create');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-
         $user = auth()->user();
         $parentUserId = $user->user_id ? $user->user_id : $user->id;
+        $search = $request->input('search');
 
         // Fetch all users that have the same parent_user_id (including the parent)
         $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
@@ -29,6 +29,17 @@ class InventoryController extends Controller
 
         // Retrieve products only for users who share the same parent_user_id.
         $productsQuery = Inventory::whereIn('user_id', $allUserIdsUnderSameParent);
+
+        if ($search) {
+            $productsQuery->where(function($query) use ($search) {
+                $query->where('quantity', 'LIKE', '%' . $search . '%')
+                ->orWhere('stock_status', 'LIKE', '%' . $search . '%');
+            })
+                ->orWhereHas('product', function($query) use ($search) {
+                    $query->where('name', 'LIKE', '%' . $search . '%');
+                });
+            
+        }
 
         $inventories = $productsQuery->get()->transform(function ($inventory) {
             return [
@@ -41,6 +52,15 @@ class InventoryController extends Controller
                 // Add or transform other fields as needed
             ];
         });
+
+        // If the request is an AJAX call, return the products as JSON.
+        if ($request->wantsJson()) {
+            return response()->json([
+                'auth' => [
+                    'inventories' => $inventories
+                ]
+            ]);
+        }
 
         return inertia('Inventories/Show', [
             'auth' => [
