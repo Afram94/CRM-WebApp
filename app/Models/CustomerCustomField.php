@@ -48,6 +48,7 @@ class CustomerCustomField extends Model
         'user_id',
         'field_name',
         'field_type',
+        'is_required',
     ];
 
     /**

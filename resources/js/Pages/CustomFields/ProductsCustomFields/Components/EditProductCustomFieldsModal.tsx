@@ -2,16 +2,16 @@
 import React, { useState } from 'react';
 import Modal from '@/Components/Modal';
 import { FaEdit } from 'react-icons/fa';
-import EditCustomerCustomFields from '../EditCustomerCustomFields';
-import { CustomerCustomField } from '@/types';
+import EditProductCustomFieldsForm from '../EditProductCustomFieldsForm';
+import { ProductCustomField } from '@/types';
 
 
 interface EditModalProps {
-    customerCustomField: CustomerCustomField;
+    productCustomField: ProductCustomField;
     onClose: () => void; // new prop for closing the modal
 }
 
-const EditCustomerCustomFieldsModal: React.FC<EditModalProps> = ({ customerCustomField, onClose }) => {
+const EditProductCustomFieldsModal: React.FC<EditModalProps> = ({ productCustomField, onClose }) => {
     const [isModalOpen, setModalOpen] = useState(false);
 
     return (
@@ -24,11 +24,11 @@ const EditCustomerCustomFieldsModal: React.FC<EditModalProps> = ({ customerCusto
             <Modal show={isModalOpen} onClose={() => setModalOpen(false)}>
                 <div className="p-4">
                     <h2 className="text-lg font-medium mb-4 flex justify-center">Edit Custom Filed</h2>
-                    <EditCustomerCustomFields customerCustomField={customerCustomField} closeModal={()=> setModalOpen(false)} /> {/* Place EditCustomer inside the modal */}
+                    <EditProductCustomFieldsForm productCustomField={productCustomField} closeModal={()=> setModalOpen(false)} /> {/* Place EditProduct inside the modal */}
                 </div>
             </Modal>
         </div>
     );
 }
 
-export default EditCustomerCustomFieldsModal;
+export default EditProductCustomFieldsModal;

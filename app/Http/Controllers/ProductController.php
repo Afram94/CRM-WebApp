@@ -10,6 +10,8 @@ use App\Models\ProductCustomField;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use App\Events\ProductCreated;
+use App\Events\ProductUpdated;
+use App\Events\ProductDeleted;
 
 class ProductController extends Controller
 {
@@ -24,7 +26,7 @@ class ProductController extends Controller
                    ->pluck('id')->toArray();
     }
 
-    private function prepareValidationRulesForProduct(array $customFields)
+    /* private function prepareValidationRulesForProduct(array $customFields)
     {
         $validationRules = [];
         foreach ($customFields as $fieldId => $value) {
@@ -48,6 +50,45 @@ class ProductController extends Controller
                 default:
                     $validationRules["custom_fields.$fieldId"] = 'required|string';
             }
+        }
+        return $validationRules;
+    } */
+
+    private function prepareValidationRulesForProduct(array $customFields)
+    {
+        $validationRules = [];
+        foreach ($customFields as $fieldId => $value) {
+            $fieldDefinition = ProductCustomField::findOrFail($fieldId);
+
+            // Start with a base rule depending on the field type
+            $baseRule = '';
+            switch ($fieldDefinition->field_type) {
+                case 'string':
+                    $baseRule = 'string';
+                    break;
+                case 'integer':
+                    $baseRule = 'numeric';
+                    break;
+                case 'date':
+                    $baseRule = 'date';
+                    break;
+                case 'boolean':
+                    $baseRule = 'boolean';
+                    break;
+                // ... add other cases as needed
+                default:
+                    $baseRule = 'string';
+            }
+
+            // Append 'required' or 'nullable' based on the is_required attribute
+            if ($fieldDefinition->is_required) {
+                $baseRule = 'required|' . $baseRule;
+            } else {
+                $baseRule .= '|nullable';
+            }
+
+            // Apply the rule to the custom field
+            $validationRules["custom_fields.$fieldId"] = $baseRule;
         }
         return $validationRules;
     }
@@ -148,80 +189,61 @@ class ProductController extends Controller
         $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
         $search = $request->input('search');
     
-        // Retrieve products only for users who share the same parent_user_id.
+        // Build the query
         $productsQuery = Product::with(['category', 'customFieldsValues', 'customFieldsValues.customField'])
                                 ->whereIn('user_id', $allUserIdsUnderSameParent);
     
-        // Apply search filter if search term is present
+        // Apply search filters
         if ($search) {
             $productsQuery->where(function($query) use ($search) {
                 $query->where('name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('description', 'LIKE', '%' . $search . '%')
-                    ->orWhereHas('category', function($query) use ($search) {
-                        $query->where('name', 'LIKE', '%' . $search . '%');
-                    })
-                    ->orWhereHas('customFieldsValues', function($query) use ($search) {
-                        // Assuming 'value' is the field in the 'customFieldsValues' table where the actual value is stored
-                        $query->where('value', 'LIKE', '%' . $search . '%');
-                    });
+                      ->orWhere('description', 'LIKE', '%' . $search . '%')
+                      ->orWhereHas('category', function($query) use ($search) {
+                          $query->where('name', 'LIKE', '%' . $search . '%');
+                      })
+                      ->orWhereHas('customFieldsValues', function($query) use ($search) {
+                          $query->where('value', 'LIKE', '%' . $search . '%');
+                      });
             });
         }
     
-        // Fetch all products
-        /* $products = $productsQuery->latest()->get(); */
-
-        /* $products = $productsQuery->latest()->get()->map(function ($product) {
+        // Paginate the results
+        $products = $productsQuery->latest()->paginate(20);
+    
+        // Transform the paginated result
+        $products->getCollection()->transform(function ($product) {
+            $customFields = $product->customFieldsValues->map(function ($customFieldValue) {
+                return [
+                    'id' => $customFieldValue->id,
+                    'value' => $customFieldValue->value,
+                    'field_id' => $customFieldValue->field_id,
+                    'product_id' => $customFieldValue->product_id,
+                    'created_at' => $customFieldValue->created_at ? $customFieldValue->created_at->toDateTimeString() : null,
+                    'updated_at' => $customFieldValue->updated_at ? $customFieldValue->updated_at->toDateTimeString() : null,
+                    'custom_field' => [
+                        'id' => $customFieldValue->customField->id,
+                        'user_id' => $customFieldValue->customField->user_id,
+                        'field_name' => $customFieldValue->customField->field_name,
+                        'field_type' => $customFieldValue->customField->field_type,
+                        'created_at' => $customFieldValue->customField->created_at ? $customFieldValue->customField->created_at->toDateTimeString() : null,
+                        'updated_at' => $customFieldValue->customField->updated_at ? $customFieldValue->customField->updated_at->toDateTimeString() : null,
+                    ],
+                ];
+            });
+    
             return [
                 'id' => $product->id,
                 'name' => $product->name,
+                'category_name' => $product->category ? $product->category->name : 'Uncategorized',
+                'category_id' => $product->category_id,
                 'description' => $product->description,
                 'price' => $product->price,
                 'sku' => $product->sku,
-                'category_name' => $product->category ? $product->category->name : 'Uncategorized',
-                // ...other fields...
-            ];
-        }); */
-
-     // Fetch all products
-    $products = $productsQuery->latest()->get()->map(function ($product) {
-        $customFields = $product->customFieldsValues->map(function ($customFieldValue) {
-            return [
-                'id' => $customFieldValue->id,
-                'value' => $customFieldValue->value,
-                'field_id' => $customFieldValue->field_id,
-                'product_id' => $customFieldValue->product_id,
-                'created_at' => $customFieldValue->created_at ? $customFieldValue->created_at->toDateTimeString() : null,
-                'updated_at' => $customFieldValue->updated_at ? $customFieldValue->updated_at->toDateTimeString() : null,
-                'custom_field' => [
-                    'id' => $customFieldValue->customField->id,
-                    'user_id' => $customFieldValue->customField->user_id,
-                    'field_name' => $customFieldValue->customField->field_name,
-                    'field_type' => $customFieldValue->customField->field_type,
-                    'created_at' => $customFieldValue->customField->created_at ? $customFieldValue->customField->created_at->toDateTimeString() : null,
-                    'updated_at' => $customFieldValue->customField->updated_at ? $customFieldValue->customField->updated_at->toDateTimeString() : null,
-                    // Add other relevant fields from the customField if needed
-                ],
+                'created_at' => $product->created_at ? $product->created_at->toDateTimeString() : null,
+                'updated_at' => $product->updated_at ? $product->updated_at->toDateTimeString() : null,
+                'custom_fields_values' => $customFields,
             ];
         });
-
-        return [
-            'id' => $product->id,
-            'name' => $product->name,
-            'category_name' => $product->category ? $product->category->name : 'Uncategorized',
-            'category_id' => $product->category->id,
-            'description' => $product->description,
-            'price' => $product->price,
-            'sku' => $product->sku,
-            'created_at' => $product->created_at ? $product->created_at->toDateTimeString() : null,
-            'updated_at' => $product->updated_at ? $product->updated_at->toDateTimeString() : null,
-            /* 'category' => [
-                'id' => $product->category->id,
-                'name' => $product->category->name,
-            ], */
-            'custom_fields_values' => $customFields,
-            // Add other necessary fields from the product if needed
-        ];
-    });
 
         
     
@@ -369,7 +391,9 @@ class ProductController extends Controller
 
             // Optionally load relations
             // Replace 'customFieldsValues.customField' with the appropriate relation for the product
-            $product->load('customFieldsValues.customField');
+            /* $product->load('customFieldsValues.customField'); */
+
+            broadcast(new ProductUpdated($product->load('customFieldsValues.customField')));
 
             return response()->json($product, Response::HTTP_OK);
 
@@ -394,6 +418,8 @@ class ProductController extends Controller
         if (!$product || !in_array($product->user_id, $allUserIdsUnderSameParent)) {
             return response()->json(['error' => 'Product not found or not authorized'], 403);
         }
+
+        broadcast(new ProductDeleted($product->id, $product->user_id));
 
         $product->delete();
 

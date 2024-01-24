@@ -32,6 +32,8 @@ export interface Customer {
     phone_number: string;
     custom_fields_values: CustomerCustomFieldValue[];
     notes: Note[];
+    products: Product[]; // Add this line
+
     // ... any other fields for Customer
 }
 
@@ -80,6 +82,7 @@ export interface Product {
     inventory_count: number;
     category_id?: number; // Add this line if category_id exists for a product
     custom_fields_values: ProductCustomFieldValue[];
+    category: Category;
 }
 
 export interface Inventory {
@@ -88,8 +91,11 @@ export interface Inventory {
     product_id: number;
     product_name: string;
     quantity: number;
+    min_stock_level: number;
+    max_stock_level: number;
     stock_status: string;
     restock_date?: string | null;
+    product: Product;
 }
 
 type PaginatedResponse<T> = {
@@ -117,10 +123,11 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         allUserIdsUnderSameParent: User[];
         user: User;
         customers: PaginatedResponse<Customer>;
+        products: PaginatedResponse<Product>;
         notes: Note[];
         customer_notes:Note[];
         customer_profile:Customer[];
-        products:Product[];
+        /* products:Product[]; */
         categories:Category[];
         inventories:Inventory[];
         customer_custom_fields: CustomerCustomField[];

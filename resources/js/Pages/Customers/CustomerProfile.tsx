@@ -12,10 +12,12 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
 
   const tabCategories = [
     { name: 'Overview', Icon: FaUser },
-    { name: 'Security', Icon: FaUser },
+    { name: 'Products', Icon: FaUser },
     { name: 'Address & Billing', Icon: FaUser },
     { name: 'Notifications', Icon: FaUser },
   ];
+
+  console.log(auth.customer_profile);
 
   return (
     <MainLayout title="">
@@ -103,25 +105,82 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
                                     <p className='text-gray-500'>Account balance for next purchase</p>
                                 </div>
                                 {auth.customer_profile.map((profile) => (
-                                    <div key={profile.id}>
-                                        {profile.notes && profile.notes.length > 0 ? (
-                                            profile.notes.map((note) => (
-                                                <div key={note.id} className='w-full p-3 h-44 shadow-md bg-white rounded-lg'>
-                                                    <p className="text-sm font-semibold text-gray-800">{note.title}</p>
-                                                    <p className="text-sm text-gray-600">{note.content}</p>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className='w-full p-3 h-44 shadow-md items-center flex justify-center bg-white rounded-lg'>
-                                                <p className="text-xl text-gray-500">No notes available</p>
-                                            </div>
-                                        )}
+                                  <div key={profile.id} className="mb-6">
+                                    <div className='w-full p-3 shadow-md bg-white rounded-lg'>
+                                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Notes</h3>
+                                      {profile.notes && profile.notes.length > 0 ? (
+                                        profile.notes.map((note) => (
+                                          <div key={note.id} className='mb-4'>
+                                            <p className="text-sm font-semibold text-gray-800">{note.title}</p>
+                                            <p className="text-sm text-gray-600">{note.content}</p>
+                                          </div>
+                                        ))
+                                      ) : (
+                                        <p className="text-xl text-gray-500">No notes available</p>
+                                      )}
                                     </div>
+                                  </div>
                                 ))}
+
+                                {auth.customer_profile.map((profile) => (
+                                <div key={profile.id} className="mb-6">
+                                  {profile.products && profile.products.length > 0 ? (
+                                    <div className="w-full p-3 shadow-md bg-white rounded-lg">
+                                      <h3 className="text-lg font-semibold text-gray-800 mb-3">Products</h3>
+                                      {profile.products.map((product) => (
+                                        <div key={product.id} className="mb-2">
+                                          {/* Render product details */}
+                                          <p className="text-sm text-gray-600">{product.name}</p>
+                                          {/* More product details */}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="w-full p-3 h-44 shadow-md items-center flex justify-center bg-white rounded-lg">
+                                      <p className="text-xl text-gray-500">No products available</p>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+
                             </div>
                     </div>
                 </div>
             )}
+            {selectedTab === 'Products' && (
+            <div className="p-4">
+              <div className="overflow-x-auto">
+                <table className="min-w-full leading-normal">
+                  <thead>
+                    <tr>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Product Name
+                      </th>
+                      {/* Add more headers for additional product details */}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auth.customer_profile[0].products.map((product) => (
+                      <tr key={product.id}>
+                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                          <p className="text-gray-900 whitespace-no-wrap">{product.category ? product.category.name : 'No category'}</p>
+                        </td>
+                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                          <p className="text-gray-900 whitespace-no-wrap">{product.name}</p>
+                        </td>
+                        {/* Render more product details in additional <td> elements */}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+
           </div>
         </div>
       </div>

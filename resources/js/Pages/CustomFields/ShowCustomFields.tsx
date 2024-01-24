@@ -5,6 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
 import CreateCustomerCustomFieldsModal from '../../Pages/CustomFields/CustomersCustomFields/Components/CreateCustomerCustomFieldsModal'
 import EditCustomerCustomFieldsModal from '../../Pages/CustomFields/CustomersCustomFields/Components/EditCustomerCustomFieldsModal'
+
+import CreateProductCustomFieldFormModal from '../../Pages/CustomFields/ProductsCustomFields/Components/CreateProductCustomFieldFormModal'
+import EditProductCustomFieldsModal from './ProductsCustomFields/Components/EditProductCustomFieldsModal';
 import axios from 'axios';
 
 const Show = ({ auth }: PageProps) => {
@@ -23,7 +26,7 @@ const Show = ({ auth }: PageProps) => {
 
     const deleteProduct = async (productId: number) => {
       try {
-          const response = await axios.delete(`/products/${productId}`);
+          const response = await axios.delete(`/product-custom-fields/${productId}`);
           console.log(response.data);
           // Update UI or redirect as needed
       } catch (error) {
@@ -82,7 +85,7 @@ const Show = ({ auth }: PageProps) => {
             <div className='flex justify-between bg-indigo-100 dark:bg-slate-800 py-2'>
             <h2 className="text-2xl p-2 ml-3 cursor-pointer flex justify-start items-start text-start rounded-t-md text-indigo-400 font-semibold"> Product Custom Fields </h2>
                 <span className='flex items-center'>
-                    <CreateCustomerCustomFieldsModal />
+                    <CreateProductCustomFieldFormModal />
                 </span>
               </div>
             
@@ -102,10 +105,11 @@ const Show = ({ auth }: PageProps) => {
                                     <td className="py-2 px-6">{field.field_type}</td>
                                     <td className="py-2 px-6">{new Date(field.created_at).toLocaleDateString()}</td>
                                     <td className="py-2 px-6 flex gap-3">
-                                      <span className="w-7 h-7 flex justify-center items-center bg-blue-100 rounded-full cursor-pointer">
-                                          <FaEdit size={17} color="#00A2F3"/>
+                                      <span className="w-7 h-7 flex justify-center items-center bg-blue-100 rounded-full cursor-pointer hover:scale-125 transition-transform duration-300 ease-in-out">
+                                          {/* <FaEdit size={17} color="#00A2F3"/> */}
+                                          <EditProductCustomFieldsModal productCustomField={field} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
                                       </span>
-                                      <span className="w-7 h-7 flex justify-center items-center bg-red-100 rounded-full cursor-pointer">
+                                      <span onClick={()=>deleteProduct(field.id)} className="w-7 h-7 flex justify-center items-center bg-blue-100 rounded-full cursor-pointer hover:scale-125 transition-transform duration-300 ease-in-out">
                                           <FaTrash size={17} color="#FF5C5C"/>
                                       </span>
                                     </td>

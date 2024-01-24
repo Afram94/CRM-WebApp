@@ -26,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { name: 'Inventory', path: '/inventories', icon: MdOutlineInventory2 },
     { name: 'Orders', path: '/orders', icon: FaShoppingCart },
     { name: 'Custom Fields', path: '/custom-fields', icon: FaThList },
+    { name: 'Invite', path: '/generate-invite', icon: FaThList },
     { name: 'Settings', path: '/settings', icon: FaCog }
     // Add more pages as needed
   ];
