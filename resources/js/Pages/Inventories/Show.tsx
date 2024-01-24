@@ -6,6 +6,7 @@ import CreateInventoriesModal from './Components/CreateInventoriesModal';
 import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
+import EditInventoriesModal from './Components/EditInventoriesModal';
 
 const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
     const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories || []);
@@ -77,6 +78,9 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
                                 <td className="border border-gray-300 p-2">{inventory.quantity}</td>
                                 <td className="border border-gray-300 p-2">{inventory.stock_status}</td>
                                 <td className="border border-gray-300 p-2">{inventory.restock_date ?? 'N/A'}</td>
+                                <td className="py-2 px-6">
+                                    <EditInventoriesModal inventory={inventory} onClose={() => {/* Operations after closing modal */}}/>
+                                </td>
                                 {/* Add more inventory details as needed */}
                             </tr>
                         ))}
