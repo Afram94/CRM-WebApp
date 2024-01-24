@@ -88,6 +88,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('inventories', [InventoryController::class, 'index']);
     Route::post('inventories', [InventoryController::class, 'store']);
     Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
+    Route::put('/inventories/{inventory}', [InventoryController::class, 'update']);
 
 
     // Category

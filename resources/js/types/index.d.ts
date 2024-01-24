@@ -91,6 +91,8 @@ export interface Inventory {
     product_id: number;
     product_name: string;
     quantity: number;
+    min_stock_level: number;
+    max_stock_level: number;
     stock_status: string;
     restock_date?: string | null;
     product: Product;
