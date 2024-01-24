@@ -74,30 +74,26 @@ class CustomerController extends Controller
     public function customerProfile($id)
     {
         $user = auth()->user();
-
-        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
         $parentUserId = $user->user_id ? $user->user_id : $user->id;
-
-        // Fetch all users that have the same parent_user_id (including the parent)
         $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
                                         ->orWhere('id', $parentUserId)
                                         ->pluck('id')->toArray();
 
-        // Retrieve the customer by ID and also filter by user IDs who share the same parent_user_id
-        $customer = Customer::with(['notes']) // Assume you have relations defined for notes and orders
+        $customer = Customer::with(['notes', 'products.category']) // Include 'products' in the eager load
                     ->where('id', $id)
                     ->whereIn('user_id', $allUserIdsUnderSameParent)
                     ->firstOrFail();
 
-        // You might want to transform customer data similarly as notes if needed
+        // Additional data transformation if necessary
         // ...
 
         return inertia('Customers/CustomerProfile', [
             'auth' => [
-                'customer_profile' => [$customer] // Wrap $customer in an array
+                'customer_profile' => [$customer] // The customer object now includes products
             ]
         ]);
     }
+
 
     public function store(Request $request)
     {
@@ -206,39 +202,52 @@ class CustomerController extends Controller
     }
 
 
-        private function prepareValidationRules(array $customFields)
-        {
-            $validationRules = [];
-            foreach ($customFields as $fieldId => $value) {
-                $fieldDefinition = CustomerCustomField::findOrFail($fieldId);
+    private function prepareValidationRules(array $customFields)
+    {
+        $validationRules = [];
+        foreach ($customFields as $fieldId => $value) {
+            $fieldDefinition = CustomerCustomField::findOrFail($fieldId);
 
-                // Set validation rules based on the field's type
-                switch ($fieldDefinition->field_type) {
-                    case 'string':
-                        $validationRules["custom_fields.$fieldId"] = 'required|string';
-                        break;
-                    case 'integer':
-                        $validationRules["custom_fields.$fieldId"] = 'required|numeric';
-                        break;
-                    case 'date':
-                        $validationRules["custom_fields.$fieldId"] = 'required|date';
-                        break;
-                    case 'boolean':
-                        $validationRules["custom_fields.$fieldId"] = 'required|boolean';
-                        break;
-                    // ... add other cases as needed
-                    default:
-                        $validationRules["custom_fields.$fieldId"] = 'required|string';
-                }
+            // Start with a base rule depending on the field type
+            $baseRule = '';
+            switch ($fieldDefinition->field_type) {
+                case 'string':
+                    $baseRule = 'string';
+                    break;
+                case 'integer':
+                    $baseRule = 'numeric';
+                    break;
+                case 'date':
+                    $baseRule = 'date';
+                    break;
+                case 'boolean':
+                    $baseRule = 'boolean';
+                    break;
+                // ... add other cases as needed
+                default:
+                    $baseRule = 'string';
             }
-            return $validationRules;
+
+            // Append 'required' or 'nullable' based on the is_required attribute
+            if ($fieldDefinition->is_required) {
+                $baseRule = 'required|' . $baseRule;
+            } else {
+                $baseRule .= '|nullable';
+            }
+
+            // Apply the rule to the custom field
+            $validationRules["custom_fields.$fieldId"] = $baseRule;
         }
+        return $validationRules;
+    }
+
+    
 
 
         // Remove the specified customer from storage
     public function destroy($id)
     {
-        $customer = Customer::findOrFail($id);
+        $customer = Customer::find($id);
     
         // Ensure the user owns this customer
         /* if ($customer->user_id !== auth()->id()) {

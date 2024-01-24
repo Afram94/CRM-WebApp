@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios'; // or your preferred way of making HTTP requests
+import axios from 'axios';
+import { useEcho } from './WebSocketContext'; // Adjust this import path as needed
 
 interface Permission {
   name: string;
@@ -7,13 +8,13 @@ interface Permission {
 }
 
 interface PermissionsContextProps {
-  userPermissions: Permission[]; // Note the change here
-  setUserPermissions: React.Dispatch<React.SetStateAction<Permission[]>>; // And here
+  userPermissions: Permission[];
+  setUserPermissions: React.Dispatch<React.SetStateAction<Permission[]>>;
 }
 
 interface PermissionsProviderProps {
-    children: React.ReactNode;
-  }
+  children: React.ReactNode;
+}
 
 const PermissionsContext = createContext<PermissionsContextProps | undefined>(undefined);
 
@@ -25,16 +26,13 @@ export const usePermissions = () => {
   return context;
 };
 
-
-
-
 export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ children }) => {
   const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
-
-  const [userId, setUserId] = useState(null)
+  const [userId, setUserId] = useState<number | null>(null);
+  const echo = useEcho();
 
   useEffect(() => {
-    // Moved this useEffect inside the functional component
+    // Fetch current user
     const fetchUser = async () => {
       try {
         const response = await axios.get('/current-user');
@@ -49,13 +47,26 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
   }, []);
 
   useEffect(() => {
-    if (userId) { // Check if userId is available
+    if (userId && echo) {
       axios.get(`http://127.0.0.1:8000/users/${userId}/permissions`)
         .then(response => {
           setUserPermissions(response.data);
         });
+  
+      console.log("Setting up WebSocket listener for user:", userId);
+      const permissionsChannel = echo.private(`permissions-for-user.${userId}`);
+  
+      permissionsChannel.listen('.UserPermissionsUpdated', (e: { permissions: Permission[] }) => {
+        console.log("UserPermissionsUpdated event received:", e.permissions);
+        setUserPermissions(e.permissions);
+      });
+  
+      return () => {
+        console.log("Stopping WebSocket listener for user:", userId);
+        permissionsChannel.stopListening('.UserPermissionsUpdated');
+      };
     }
-  }, [userId]);
+  }, [echo, userId]);
 
   return (
     <PermissionsContext.Provider value={{ userPermissions, setUserPermissions }}>
@@ -63,3 +74,5 @@ export const PermissionsProvider: React.FC<PermissionsProviderProps> = ({ childr
     </PermissionsContext.Provider>
   );
 };
+
+export default PermissionsProvider;

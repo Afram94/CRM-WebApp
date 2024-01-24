@@ -24,6 +24,7 @@ import { usePermissions } from '../../../providers/permissionsContext';
 import CustomerCustomFieldForm from '../CustomFields/CustomersCustomFields/CreateCustomerCustomFieldForm';
 import CustomerChannelsHandler from './CustomerChannelsHandler';
 import Modal from '@/Components/Modal';
+import AddProductModal from './Components/AddProductModal';
 
 interface Permission {
     name: string;
@@ -179,45 +180,36 @@ const Show = ({ auth }: PageProps) => {
         });
       }; */
 
-      /**
-       * This function is called when a new customer is created.
-       * It updates the state to include the new customer at the beginning of the list.
-       * Because the UI displays a maximum of 5 customers per page (due to pagination),
-       * we need to ensure that adding a new customer doesn't increase the count beyond 20.
-       * If it does, we slice the array to remove the last customer,
-       * effectively maintaining the correct number of customers on the current page.
-       * This approach resolves an issue where the list displayed 21 customers after
-       * a new customer was created until the page was refreshed.
-       *
-       * @param {Customer} newCustomer - The new customer to be added to the list.
-       */
-      const handleNewCustomer = (newCustomer: Customer) => {
-        // Log to console whenever this function is triggered
-        console.log("New customer event triggered");
+        /**
+         * This function is called when a new customer is created.
+         * It updates the state to include the new customer at the beginning of the list.
+         * Because the UI displays a maximum of 5 customers per page (due to pagination),
+         * we need to ensure that adding a new customer doesn't increase the count beyond 20.
+         * If it does, we slice the array to remove the last customer,
+         * effectively maintaining the correct number of customers on the current page.
+         * This approach resolves an issue where the list displayed 21 customers after
+         * a new customer was created until the page was refreshed.
+         *
+         * @param {Customer} newCustomer - The new customer to be added to the list.
+         */
+        const handleNewCustomer = (newCustomer: Customer) => {
+            setFilteredCustomers(prevCustomers => {
+                // Check if the new customer already exists in the current state
+                const isExistingCustomer = prevCustomers.some(customer => customer.id === newCustomer.id);
 
-        // Update state with a function to ensure we have the most current state
-        setFilteredCustomers((prevCustomers) => {
-          // Check if the new customer object has an ID property
-          if (newCustomer.id) {
-            // If it does, add the new customer to the start of the customer array
-            const updatedCustomers = [newCustomer, ...prevCustomers];
+                // Add the new customer to the state only if it doesn't exist already
+                if (!isExistingCustomer) {
+                    // Prepend the new customer to the start of the customer array
+                    const updatedCustomers = [newCustomer, ...prevCustomers];
 
-            // After adding the new customer, check if we have more than 20 customers
-            if (updatedCustomers.length > 20) {
-              // If we do, return only the first 20 customers to stay within page limits
-              return updatedCustomers.slice(0, 20);
-            }
+                    // Maintain a maximum of 20 customers for display, adjusting as needed
+                    return updatedCustomers.slice(0, 20);
+                }
 
-            // If we have 20 or fewer customers, return the updated list as is
-            return updatedCustomers;
-          } else {
-            // If the new customer object lacks an ID, log an error for debugging
-            console.error('New customer is missing an ID:', newCustomer);
-            // Return the previous customer array unchanged
-            return prevCustomers;
-          }
-        });
-      };
+                // Return the previous state if the customer already exists
+                return prevCustomers;
+            });
+        };
 
       const handleUpdatedCustomer = (updatedCustomer: Customer) => {
         // Log to console whenever this function is triggered
@@ -421,8 +413,16 @@ const Show = ({ auth }: PageProps) => {
                                                     <CreateModalNotes customerId={customer.id} />
                                                 </div>
 
+                                                
+
                                             </Dropdown.Content>
                                         </Dropdown>
+                                    </td>
+
+                                    <td>
+                                    <div className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
+                                                    <AddProductModal customerId={customer.id} />
+                                                </div>
                                     </td>
                                     
 

@@ -19,6 +19,8 @@ use App\Http\Controllers\CustomerCustomFieldValueController;
 
 use App\Http\Controllers\ProductCustomFieldController;
 
+use App\Http\Controllers\CustomerProductController;
+
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
 
@@ -86,6 +88,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('inventories', [InventoryController::class, 'index']);
     Route::post('inventories', [InventoryController::class, 'store']);
     Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
+    Route::put('/inventories/{inventory}', [InventoryController::class, 'update']);
+    Route::delete('/inventories/{id}', [InventoryController::class, 'destroy']);
 
 
     // Category
@@ -129,6 +133,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Products Custom fields
     Route::post('/add-product-custom-field', [ProductCustomFieldController::class, 'store']);
     Route::get('/product-custom-fields', [ProductCustomFieldController::class, 'index']);
+
+    Route::put('/product-custom-fields/{id}', [ProductCustomFieldController::class, 'update']);
+    Route::delete('/product-custom-fields/{id}', [ProductCustomFieldController::class, 'destroy']);
     
     WebSocketsRouter::webSocket('/app', \App\WebSocketHandlers\NoteWebSocketHandler::class);
     
@@ -140,6 +147,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 
 });
+
+// Customer-Product-Controller
+Route::post('/customers/{customerId}/addProduct', [CustomerProductController::class, 'addProductToCustomer']);
+
 
 
 

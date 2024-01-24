@@ -26,38 +26,48 @@ class CategoryController extends Controller
         return inertia('Categories/Create');
     }
 
-    public function index()
-    {
+    // Path: app/Http/Controllers/CategoryController.php
 
+    public function index(Request $request)
+    {
         $user = auth()->user();
         $parentUserId = $user->user_id ? $user->user_id : $user->id;
+        $search = $request->input('search');
 
         // Fetch all users that have the same parent_user_id (including the parent)
         $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
                                         ->orWhere('id', $parentUserId)
                                         ->pluck('id')->toArray();
 
-        // Retrieve categories only for users who share the same parent_user_id.
+        // Start the query
         $categoriesQuery = Category::whereIn('user_id', $allUserIdsUnderSameParent);
 
-        $categories = $categoriesQuery->get()->transform(function ($categorie) {
+        // If there's a search term, filter the categories by it.
+        if ($search) {
+            $categoriesQuery->where(function($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('description', 'LIKE', '%' . $search . '%');
+                // Add more fields as necessary
+            });
+        }
+
+        $categories = $categoriesQuery->get()->transform(function ($category) {
             return [
-                'id' => $categorie->id,
-                'name' => $categorie->name,
-                'description' => $categorie->description,
+                'id' => $category->id,
+                'name' => $category->name,
+                'description' => $category->description,
                 // Add or transform other fields as needed
             ];
         });
 
-        /* $categories = Category::all()->transform(function ($categorie) {
-            // Modify the categorie object as needed
-            return [
-                'id' => $categorie->id,
-                'name' => $categorie->name,
-                'description' => $categorie->description,
-                // Add or transform other fields as needed
-            ];
-        }); */
+        // Determine response type
+        if ($request->wantsJson()) {
+            return response()->json([
+                'auth' => [
+                    'categories' => $categories
+                ]
+            ]);
+        }
 
         return inertia('Categories/Show', [
             'auth' => [
@@ -65,6 +75,7 @@ class CategoryController extends Controller
             ]
         ]);
     }
+
 
     public function getCategories()
     {
