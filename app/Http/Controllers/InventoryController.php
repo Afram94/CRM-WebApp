@@ -138,4 +138,22 @@ class InventoryController extends Controller
                    ->orWhere('id', $parentUserId)
                    ->pluck('id')->toArray();
     }
+
+    public function destroy($id)
+    {
+        $inventory = Inventory::findOrFail($id);
+
+        $user = auth()->user();
+        // Determine the parent user ID (it's either the user's own ID or their parent's ID)
+        $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
+
+        // Check if product exists and belongs to the authenticated user or to the users under the same parent
+        if (!$inventory || !in_array($inventory->user_id, $allUserIdsUnderSameParent)) {
+            return response()->json(['error' => 'inventory not found or not authorized'], 403);
+        }
+
+        $inventory->delete();
+
+        return response()->json(['message' => 'inventory deleted successfully'], 200);
+    }
 }

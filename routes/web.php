@@ -89,6 +89,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('inventories', [InventoryController::class, 'store']);
     Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
     Route::put('/inventories/{inventory}', [InventoryController::class, 'update']);
+    Route::delete('/inventories/{id}', [InventoryController::class, 'destroy']);
 
 
     // Category

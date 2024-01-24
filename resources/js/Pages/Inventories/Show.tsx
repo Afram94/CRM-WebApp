@@ -7,6 +7,8 @@ import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
 import EditInventoriesModal from './Components/EditInventoriesModal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import { FaTrashRestore } from 'react-icons/fa';
 
 const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
     const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories || []);
@@ -42,6 +44,17 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
             setFilteredInventories(auth.inventories);
         }
     }, [auth.inventories]);
+
+    const deleteInventory = async (inventoryId: number) => {
+        try {
+            const response = await axios.delete(`/inventories/${inventoryId}`);
+            console.log(response.data);
+            // Update UI or redirect as needed
+        } catch (error) {
+            console.error('Error deleting inventory', error);
+            // Handle errors
+        }
+    }
 
     /* console.log(filteredInventories); */
 
@@ -81,6 +94,12 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
                                 <td className="py-2 px-6">
                                     <EditInventoriesModal inventory={inventory} onClose={() => {/* Operations after closing modal */}}/>
                                 </td>
+
+                                <td className="py-2 px-6">
+                                        <PrimaryButton onClick={() => deleteInventory(inventory.id)}>
+                                            <FaTrashRestore />
+                                        </PrimaryButton>
+                                    </td>
                                 {/* Add more inventory details as needed */}
                             </tr>
                         ))}
