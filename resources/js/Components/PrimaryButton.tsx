@@ -9,7 +9,7 @@ export default function PrimaryButton({ className = '', disabled, children, ...p
                     disabled ? 'opacity-25' : ''
                 } ${
                     // Light mode styles
-                    'bg-gray-800 text-white hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:ring-indigo-500 ' +
+                    'bg-blue-600 text-white hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:ring-indigo-500 ' +
                     // Dark mode styles
                     'dark:bg-blue-600 dark:hover:bg-blue-500 dark:focus:bg-blue-500 dark:active:bg-blue-700 dark:focus:ring-blue-300'
                 } ` + className
