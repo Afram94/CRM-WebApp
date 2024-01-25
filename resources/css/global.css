@@ -3,6 +3,9 @@
 .global-container {
     @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }
+.global-container-w-full {
+    @apply mx-auto max-w-full px-4 sm:px-6 lg:px-8;
+  }
 
   .transition-max-height {
     transition: max-height 0.5s ease-in-out;
@@ -38,6 +41,60 @@
   -webkit-animation: gradientWave 20s ease infinite;
   -moz-animation: gradientWave 20s ease infinite;
   animation: gradientWave 20s ease infinite;
+}
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Define your base custom class */
+.animated-gradient_2 {
+  background: linear-gradient(270deg, #6675b3, #8869a9, #6378a4, #ad7070);
+  background-size: 400% 400%;
+  -webkit-animation: gradientWave 20s ease infinite;
+  -moz-animation: gradientWave 20s ease infinite;
+  animation: gradientWave 20s ease infinite;
+}
+
+/* Define the dark mode variant */
+@layer utilities {
+  .dark .animated-gradient_2 {
+    /* Define your dark mode gradient here */
+    background: linear-gradient(270deg, #181c32, #2a1d3c, #192336, #211212);
+    background-size: 400% 400%;
+    -webkit-animation: gradientWave 20s ease infinite;
+    -moz-animation: gradientWave 20s ease infinite;
+    animation: gradientWave 20s ease infinite;
+  }
+}
+
+.animated-gradient_sideBar {
+  background: linear-gradient(270deg, #42475a, #544762, #4b5468, #614e4e);
+  background-size: 400% 400%;
+  -webkit-animation: gradientWave 20s ease infinite;
+  -moz-animation: gradientWave 20s ease infinite;
+  animation: gradientWave 20s ease infinite;
+}
+
+/* Define the dark mode variant */
+@layer utilities {
+  .dark .animated-gradient_sideBar {
+    /* Define your dark mode gradient here */
+    background: linear-gradient(270deg, #171b31, #261a38, #152033, #200f0f);
+    background-size: 400% 400%;
+    -webkit-animation: gradientWave 20s ease infinite;
+    -moz-animation: gradientWave 20s ease infinite;
+    animation: gradientWave 20s ease infinite;
+  }
+}
+
+
+.animated-gradient_3 {
+  background: linear-gradient(270deg, #909ace, #b594d8, #93a4c9, #bd9999);
+  background-size: 400% 400%;
+  -webkit-animation: gradientWave 5s ease infinite;
+  -moz-animation: gradientWave 5s ease infinite;
+  animation: gradientWave 5s ease infinite;
 }
 
 

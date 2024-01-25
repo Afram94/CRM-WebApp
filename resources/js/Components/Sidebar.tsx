@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   return (
     <div 
       // Dynamic class assignment for the sidebar. If isOpen is true, it's wider; otherwise, it's narrower.
-      className={`transition-all duration-700 ease-in-out ${isOpen ? 'w-64' : 'w-20'} bg-gray-700 h-full p-4`}
+      className={`transition-all duration-700 ease-in-out ${isOpen ? 'w-64' : 'w-20'} animated-gradient_sideBar  h-full p-4`}
       >
       <div onClick={toggleSidebar} className='flex justify-center cursor-pointer'>
         <FaBars size={24} className='text-white' />
@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <Link key={page.name} href={page.path}>
             <div className={`mb-4 flex items-center w-full 
                 ${isOpen ? '' : 'justify-center'} 
-                ${page.path === currentPath ? 'bg-gray-200 text-gray-800' : 'text-white hover:bg-gray-500 transition-bg duration-500 ease-in-out'} 
+                ${page.path === currentPath ? 'animated-gradient_3 text-gray-800 font-bold' : 'text-white hover:bg-gray-500 transition-bg duration-500 ease-in-out'} 
                 rounded-lg p-2
               `}>
               <page.icon className="" size={26}/>

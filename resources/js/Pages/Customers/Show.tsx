@@ -271,7 +271,7 @@ const Show = ({ auth }: PageProps) => {
             
             {auth.customers?.data && auth.customers.data.length > 0 ? (
                 
-                <div className="bg-white dark:bg-gray-800 p-4">
+                <div className="bg-white bg-opacity-75 dark:bg-gray-800 dark:bg-opacity-75 p-4">
             <CustomerChannelsHandler
               userId={auth.user?.id ?? null}
               parentId={auth.user?.user_id ?? null}
@@ -307,7 +307,7 @@ const Show = ({ auth }: PageProps) => {
                     <table className="min-w-full table-auto">
                         <thead>
                         <tr className="text-gray-600 dark:text-gray-300 uppercase text-sm leading-normal border-y-2">
-                                <th className="py-2 px-6 text-center sm:hidden"></th>
+                                <th className="py-2 px-6 text-center "></th> {/* sm:hidden */}
                                 <th className="py-2 px-6 text-left">Customer</th>
                                 {/* <th className="py-2 px-6 text-left">Email</th>
                                 <th className="hidden sm:table-cell py-2 px-6 text-left">Phone Number</th> */}
@@ -321,12 +321,12 @@ const Show = ({ auth }: PageProps) => {
                                 <th className="hidden sm:table-cell py-2 px-6">Other</th>
                             </tr>
                         </thead>
-                        <tbody className="text-gray-600 dark:text-gray-400 text-sm font-light">
+                        <tbody className="text-gray-600 dark:text-gray-300 font-semibold text-sm">
                             {filteredCustomers.map((customer) => (
                                 
                                 <tr className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700" key={customer.id}>
 
-                                    <td className="py-2 px-6 text-center sm:hidden"> {/* Hidden on small and up, shown on extra small */}
+                                    <td className="py-2 px-6 text-center "> {/* sm:hidden */}   {/* Hidden on small and up, shown on extra small */}
                                         <PrimaryButton onClick={() => openModal(customer)}>
                                             <FaPlus /> {/* Plus icon */}
                                         </PrimaryButton>
@@ -336,9 +336,9 @@ const Show = ({ auth }: PageProps) => {
                                     <Link href={`/customer-profile/${customer.id}`}>
                                         <div className='flex gap-1'>
                                             <p className='font-semibold text-indigo-500 text-[17px]'>{customer.name}</p>
-                                            <p className='text-gray-400 py-[2px]'>Tel:{customer.phone_number}</p>
+                                            <p className='text-gray-400 dark:text-gray-300 py-[2px]'>Tel:{customer.phone_number}</p>
                                         </div>
-                                            <p className='text-gray-500 mt-1'>Email:{customer.email}</p>
+                                            <p className='text-gray-500 dark:text-gray-300 mt-1'>Email:{customer.email}</p>
                                         
                                     </Link>
                                     </td>
@@ -451,23 +451,30 @@ const Show = ({ auth }: PageProps) => {
                 </div>   
             )}
 
-        <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <div className='w-[550px] h-[450px] overflow-auto p-4'>
-                <h2 className="text-lg font-bold mb-4">Customer Details</h2>
-                <div>
-                    <div><strong>Name:</strong> {selectedCustomer?.name}</div>
-                    <div><strong>Email:</strong> {selectedCustomer?.email}</div>
-                    <div><strong>Phone Number:</strong> {selectedCustomer?.phone_number}</div>
-
-                    <h3 className="text-md font-semibold mt-3">Custom Fields:</h3>
-                    {selectedCustomer?.custom_fields_values?.map((field, index) => (
-                        <div key={index}>
-                            <strong>{field.custom_field.field_name}:</strong> {field.value}
+            <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <div className='overflow-auto p-4 bg-white dark:bg-gray-300 rounded-lg shadow-md'>
+                    <h2 className="flex text-lg font-bold mb-4 border-b pb-2 text-gray-500 gap-2">Details for customer <p className='text-indigo-500'>{selectedCustomer?.name}</p></h2>
+                    <div className="space-y-2">
+                        <div className="border-b pb-2">
+                            <strong className='text-gray-500'>Name:</strong> {selectedCustomer?.name}
                         </div>
-                    ))}
+                        <div className="border-b pb-2">
+                            <strong className='text-gray-500'>Email:</strong> {selectedCustomer?.email}
+                        </div>
+                        <div className="border-b pb-2">
+                            <strong className='text-gray-500'>Phone Number:</strong> {selectedCustomer?.phone_number}
+                        </div>
+
+                        <h3 className="text-md font-semibold mt-3 mb-2">Custom Fields:</h3>
+                        {selectedCustomer?.custom_fields_values?.map((field, index) => (
+                            <div key={index} className="border-b pb-2">
+                                <strong>{field.custom_field.field_name}:</strong> {field.value}
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
-        </Modal>
+            </Modal>
+
         </MainLayout>
     );
 };
