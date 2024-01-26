@@ -1,5 +1,6 @@
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
+import WidthToggle from './WidthToggle';
 
 const Header = () => {
   return (
@@ -7,6 +8,7 @@ const Header = () => {
       {/* Existing elements like button and ThemeToggle */}
       <h1 className='text-gray-500 dark:text-gray-300'>Search here...</h1>
       <ThemeToggle/>
+      <WidthToggle/>
     </div>
   );
 };

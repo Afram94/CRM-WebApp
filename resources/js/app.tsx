@@ -10,6 +10,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 import { PermissionsProvider } from '../providers/permissionsContext';
 import { EchoProvider } from '../providers/WebSocketContext';
+import { WidthProvider } from '../providers/WidthContext';
 
 declare global {
   interface Window {
@@ -32,7 +33,9 @@ createInertiaApp({
         root.render(
           <EchoProvider>
             <PermissionsProvider>
-              <App {...props} />
+              <WidthProvider>
+                <App {...props} />
+              </WidthProvider>
             </PermissionsProvider>
           </EchoProvider>
         );
