@@ -1,11 +1,17 @@
 /* Global Css Here */
 
+.global-container, .global-container-w-full {
+  @apply mx-auto px-4 sm:px-6 lg:px-8;
+  transition: max-width 0.8s ease-in-out; /* This will apply the transition */
+}
+
 .global-container {
-    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
-  }
+  @apply max-w-7xl;
+}
+
 .global-container-w-full {
-    @apply mx-auto max-w-full px-4 sm:px-6 lg:px-8;
-  }
+  @apply max-w-full;
+}
 
   .transition-max-height {
     transition: max-height 0.5s ease-in-out;

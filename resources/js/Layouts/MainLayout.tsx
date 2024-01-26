@@ -4,6 +4,8 @@ import Sidebar from '@/Components/Sidebar';
 import Header from '@/Components/Header';
 import '../../css/global.css';
 
+import { useWidth } from '../../providers/WidthContext';
+
 
 // Type definition for the MainLayout props
 type MainLayoutProps = {
@@ -12,6 +14,7 @@ type MainLayoutProps = {
 };
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
+    const { isFullWidth } = useWidth();
     // Try to get the sidebar's state (open or closed) from localStorage
     const initialIsOpen = localStorage.getItem('sidebarIsOpen') === 'true';
     // Set the sidebar's initial state based on the value retrieved from localStorage
@@ -33,7 +36,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
             {/* // Render the Sidebar component and pass down its state and the toggle function as props */}
             <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
-            <div className="flex-1 flex flex-col overflow-hidden my-2 global-container gap-y-4">
+            {/* <div className="flex-1 flex flex-col overflow-hidden my-2 global-container gap-y-4"> */}
+            <div className={`flex-1 flex flex-col overflow-hidden my-2 ${isFullWidth ? 'global-container-w-full' : 'global-container'} gap-y-4`}>
+
                 {/* // Render the Header component */}
                 <Header />
 
