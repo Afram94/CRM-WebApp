@@ -11,6 +11,8 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { PermissionsProvider } from '../providers/permissionsContext';
 import { EchoProvider } from '../providers/WebSocketContext';
 import { WidthProvider } from '../providers/WidthContext';
+import { ButtonColorProvider } from '../providers/ButtonColorContext';
+
 
 declare global {
   interface Window {
@@ -34,7 +36,9 @@ createInertiaApp({
           <EchoProvider>
             <PermissionsProvider>
               <WidthProvider>
-                <App {...props} />
+                <ButtonColorProvider>
+                  <App {...props} />
+                </ButtonColorProvider>
               </WidthProvider>
             </PermissionsProvider>
           </EchoProvider>
