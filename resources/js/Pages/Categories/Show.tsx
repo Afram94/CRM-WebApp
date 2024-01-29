@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PageProps, Product, Category } from '@/types';
+import { PageProps, Category } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateCategoriesModal from './Components/CreateCategoriesModal';
@@ -9,117 +9,95 @@ import { FaTrashRestore } from 'react-icons/fa';
 import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
+import PaginationComponent from '@/Components/Pagination'; // If you have pagination
 
 const CategoryIndex: React.FC<PageProps> = ({ auth }) => {
-
-    /* console.log(auth.categories); */
-
-    const [filteredCategories, setFilteredCategories] = useState<Category[]>(auth.categories || []);
     const [searchTerm, setSearchTerm] = useState('');
-      
+    const [filteredCategories, setFilteredCategories] = useState<Category[]>(auth.categories || []);
 
-      useEffect(() => {
-        if (searchTerm === '') {
-            setFilteredCategories(auth.categories);
-            return;
-        }
-    
-        // Only search if searchTerm length is 3 or more
-        if (searchTerm.length >= 3) {
-            
-            const fetchFilteredCategories = async () => {
-                try {
-                    const response = await axios.get(`/categories?search=${searchTerm}`);
-                    if (response.data && response.data.auth && response.data.auth.categories) {
-                        console.log("Debug: ", response.data.auth.categories);
-                        setFilteredCategories(response.data.auth.categories);
-                    }
-                } catch (error) {
-                    console.error('Failed to fetch filtered categories:', error);
+    useEffect(() => {
+        const fetchFilteredCategories = async () => {
+            try {
+                const response = await axios.get(`/categories?search=${searchTerm}`);
+                if (response.data && response.data.auth && response.data.auth.categories) {
+                    setFilteredCategories(response.data.auth.categories);
                 }
-            };
-    
-            fetchFilteredCategories();
-    
-        } else {
-            // If searchTerm is between 1 and 2 characters, reset to the original list
-            setFilteredCategories(auth.categories);
-        }
-    }, [searchTerm, auth.categories]);
+            } catch (error) {
+                console.error('Failed to fetch filtered categories:', error);
+                // Handle errors
+            }
+        };
 
+        if (searchTerm.length >= 3 || searchTerm === '') {
+            fetchFilteredCategories();
+        }
+    }, [searchTerm]);
 
     const handleReset = () => {
         setSearchTerm('');
     };
 
-      const deleteCategory = async (categoryId: number) => {
+    const deleteCategory = async (categoryId: number) => {
         try {
             const response = await axios.delete(`/categories/${categoryId}`);
-            console.log(response.data);
             // Update UI or redirect as needed
         } catch (error) {
-            console.error('Error deleting product', error);
+            console.error('Error deleting category', error);
             // Handle errors
         }
-    };  
-
-      /* useEffect(() => {
-        // Check if auth.products is not null or undefined
-        if (auth.categories) {
-            setFilteredCategories(auth.categories);
-        }
-    }, [auth.categories]); // Dependency array to re-run this effect if auth.products changes */
-    
-      
+    };
 
     return (
-        <MainLayout title='categories'>
-            <CreateCategoriesModal/>
-            <div className="w-full flex justify-between my-4">
-            <div className="flex gap-2">
-                            <TextInput 
-                                type="text"
-                                placeholder="Search..."
-                                className='h-9'
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                            />
-                            <DangerButton onClick={handleReset}>Reset</DangerButton>
-                        </div>
+        <MainLayout title='Categories'>
+            <div className='bg-white dark:bg-gray-800 p-4 rounded-xl'>
+                <div className='w-full flex justify-between my-4'>
+                    <div className="flex gap-2">
+                        <TextInput
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search..."
+                            className='flex gap-2'
+                        />
+                        <DangerButton onClick={handleReset}>Reset</DangerButton>
+                    </div>
+                    <CreateCategoriesModal />
+                </div>
+
+                <div className='overflow-x-auto'>
+                    <table className="min-w-full table-auto">
+                        <thead>
+                            <tr className="text-gray-600 dark:text-gray-300 uppercase text-sm leading-normal border-y-2">
+                                <th className="py-2 px-6 text-left">Name</th>
+                                <th className="py-2 px-6 text-left">Description</th>
+                                <th className="py-2 px-6">Edit</th>
+                                <th className="py-2 px-6">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-gray-600 dark:text-gray-400 text-sm font-light">
+                            {filteredCategories.map((category) => (
+                                <tr key={category.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <td className="py-2 px-6">
+                                        <Link href={`/categories/${category.id}`}>{category.name}</Link>
+                                    </td>
+                                    <td className="py-2 px-6">{category.description}</td>
+                                    <td className="py-2 px-6">
+                                        <EditCategoryModal category={category} onClose={() => {/* Operations after closing modal */}} />
+                                    </td>
+                                    <td className="py-2 px-6">
+                                        <PrimaryButton onClick={() => deleteCategory(category.id)}>
+                                            <FaTrashRestore />
+                                        </PrimaryButton>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {/* PaginationComponent, if needed */}
+                {/* <PaginationComponent links={auth.categories.links} /> */}
             </div>
-        <div className="container mx-auto p-4">
-            <table className="min-w-full table-auto border-collapse border border-gray-300">
-                <thead>
-                    <tr className="bg-gray-200">
-                        <th className="border border-gray-300 p-2">Name</th>
-                        <th className="border border-gray-300 p-2">Description</th>
-                        {/* Add more headers as needed */}
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredCategories?.map(category => (
-                        <tr key={category.id} className="hover:bg-gray-100">
-                            <td className="border border-gray-300 p-2">
-                                <Link href={`/products/${category.id}`} className="text-blue-600 hover:text-blue-800">
-                                    {category.name}
-                                </Link>
-                            </td>
-                            <td className="border border-gray-300 p-2">{category.description}</td>
-                            <td>
-                                <EditCategoryModal category={category} onClose={() => {/* Operations after closing modal */}} />
-                            </td>
-                            <td>
-                                <PrimaryButton onClick={() => deleteCategory(category.id)}>
-                                    <FaTrashRestore />
-                                </PrimaryButton>
-                            </td>
-                            {/* Add more product details as needed */}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    </MainLayout>
+        </MainLayout>
     );
 };
 
