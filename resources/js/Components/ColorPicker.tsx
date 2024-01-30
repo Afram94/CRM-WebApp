@@ -10,9 +10,10 @@ interface OptionType {
 const ColorPicker = () => {
     const { buttonColor, setButtonColor } = useButtonColor();
     const colors: OptionType[] = [
-        { label: 'Blue', value: 'blue-600' },
-        { label: 'Red', value: 'red-600' },
+        { label: 'Blue', value: 'blue-500' },
+        { label: 'Red', value: 'red-500' },
         { label: 'Green', value: 'green-400' },
+        { label: 'Indigo', value: 'indigo-500' },
         { label: 'Black', value: 'black' },
     ];
 

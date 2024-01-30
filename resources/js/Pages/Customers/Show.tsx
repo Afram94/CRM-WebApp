@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { Inertia } from '@inertiajs/inertia';
-import { FaTrash, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaDownload, FaUser, FaEllipsisV } from 'react-icons/fa';
 
 import { Customer, PageProps } from '@/types';
 import MainLayout from '@/Layouts/MainLayout';
@@ -211,29 +211,27 @@ const Show = ({ auth }: PageProps) => {
             });
         };
 
-      const handleUpdatedCustomer = (updatedCustomer: Customer) => {
-        // Log to console whenever this function is triggered
-        console.log("Updated customer event triggered");
-    
-        // Update state with a function to ensure we have the most current state
-        setFilteredCustomers((prevCustomers) => {
-            // Check if the updated customer object has an ID property
+        const handleUpdatedCustomer = (updatedCustomer: Customer) => {
+            console.log("Updated customer event triggered");
+        
+            // Ensure the updatedCustomer has a valid ID
             if (updatedCustomer.id) {
-                // Map over the existing customers
-                const updatedCustomers = prevCustomers.map(customer => 
-                    customer.id === updatedCustomer.id ? updatedCustomer : customer
-                );
-    
-                // Return the updated customers array
-                return updatedCustomers;
+                // Update the filtered customers list
+                setFilteredCustomers(prevCustomers => {
+                    return prevCustomers.map(customer => 
+                        customer.id === updatedCustomer.id ? updatedCustomer : customer
+                    );
+                });
+        
+                // Additionally, update the selectedCustomer if it's the one being edited
+                if (selectedCustomer && selectedCustomer.id === updatedCustomer.id) {
+                    setSelectedCustomer(updatedCustomer);
+                }
             } else {
-                // If the updated customer object lacks an ID, log an error for debugging
                 console.error('Updated customer is missing an ID:', updatedCustomer);
-                // Return the previous customer array unchanged
-                return prevCustomers;
             }
-        });
-    };
+        };
+        
 
     const handleDeleteCustomer = (deletedCustomerId: number) => {
       console.log("handleDeleteNote Work!!", deletedCustomerId);
@@ -451,27 +449,107 @@ const Show = ({ auth }: PageProps) => {
                 </div>   
             )}
 
-            <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            {/* <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <div className='overflow-auto p-4 bg-white dark:bg-gray-300 rounded-lg shadow-md'>
                     <h2 className="flex text-lg font-bold mb-4 border-b pb-2 text-gray-500 gap-2">Details for customer <p className='text-indigo-500'>{selectedCustomer?.name}</p></h2>
                     <div className="space-y-2">
-                        <div className="border-b pb-2">
-                            <strong className='text-gray-500'>Name:</strong> {selectedCustomer?.name}
+                        <div className="border-b pb-2 flex gap-3">
+                            <strong className='text-gray-500'>Name:</strong> <p className='text-gray-700'>{selectedCustomer?.name}</p>
                         </div>
-                        <div className="border-b pb-2">
-                            <strong className='text-gray-500'>Email:</strong> {selectedCustomer?.email}
+                        <div className="border-b pb-2 flex gap-3">
+                            <strong className='text-gray-500'>Email:</strong> <p className='text-gray-700'>{selectedCustomer?.email}</p>
                         </div>
-                        <div className="border-b pb-2">
-                            <strong className='text-gray-500'>Phone Number:</strong> {selectedCustomer?.phone_number}
+                        <div className="border-b pb-2 flex gap-3">
+                            <strong className='text-gray-500'>Phone Number:</strong> <p className='text-gray-700'>{selectedCustomer?.phone_number}</p>
                         </div>
 
-                        <h3 className="text-md font-semibold mt-3 mb-2">Custom Fields:</h3>
+                        <h3 className="text-md font-semibold mt-3 mb-2 text-indigo-500 border-b p-1">More details:</h3>
                         {selectedCustomer?.custom_fields_values?.map((field, index) => (
-                            <div key={index} className="border-b pb-2">
-                                <strong>{field.custom_field.field_name}:</strong> {field.value}
+                            <div key={index} className="border-b pb-2 flex gap-3">
+                                <strong className='text-gray-500 '>{field.custom_field.field_name}:</strong> <p className='text-gray-700'>{field.value}</p>
                             </div>
                         ))}
                     </div>
+                </div>
+            </Modal> */}
+
+            <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                <div className='overflow-auto p-4 py-8 bg-white dark:bg-gray-800 rounded-lg shadow-md'>
+                    {selectedCustomer && (
+                        <div>
+                            <div className='grid grid-cols-2 items-center'>
+
+                                <div className='flex justify-start mb-2'>
+                                    <h2 className="flex text-lg font-bold text-gray-500 gap-2 dark:text-gray-300 dark:bg-slate-700 bg-slate-200 rounded-md p-2">
+                                        Details for customer <p className='text-indigo-500'>{selectedCustomer.name}</p>
+                                    </h2>
+
+                                </div>
+
+                                <div className='flex justify-end gap-2'>
+
+                                    <div className="sm:table-cell py-2">
+                                    <PrimaryButton onClick={() => downloadSingleCustomerCsv(selectedCustomer.id)} className="flex items-center justify-center">
+                                        <FaDownload /> {/* Download Icon */}
+                                    </PrimaryButton>
+                                    </div>
+
+                                    <div className="sm:table-cell py-2">
+                                        <CreateModalNotes customerId={selectedCustomer.id} />
+                                    </div>
+
+                                    <div className="sm:table-cell py-2">
+                                        <EditModal customer={selectedCustomer} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>    
+                                    </div>
+
+                                    <div className="sm:table-cell py-2">
+                                        <Link href={`/customer-profile/${selectedCustomer.id}`}>
+                                            <PrimaryButton>
+                                                <FaUser />
+                                            </PrimaryButton>
+                                        </Link>    
+                                    </div>
+
+                                    {/* <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <PrimaryButton >
+                                                ...
+                                            </PrimaryButton>
+                                        </Dropdown.Trigger>
+                                        <Dropdown.Content align="right" width="48" contentClasses="py-1 bg-white">
+                                            <AddProductModal customerId={selectedCustomer.id} />
+                                            <CreateModalNotes customerId={selectedCustomer.id} />
+                                        </Dropdown.Content>
+                                    </Dropdown> */}
+
+
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 ml-1">
+                                <div className="border-b pb-1 flex gap-3 border-gray-700">
+                                    <strong className='text-gray-500 dark:text-gray-300'>Name:</strong>
+                                    <p className='text-gray-700 dark:text-gray-400'>{selectedCustomer.name}</p>
+                                </div>
+                                <div className="border-b pb-2 flex gap-3 border-gray-700">
+                                    <strong className='text-gray-500 dark:text-gray-300'>Email:</strong>
+                                    <p className='text-gray-700 dark:text-gray-400'>{selectedCustomer.email}</p>
+                                </div>
+                                <div className="border-b pb-2 flex gap-3 border-gray-700">
+                                    <strong className='text-gray-500 dark:text-gray-300'>Phone Number:</strong>
+                                    <p className='text-gray-700 dark:text-gray-400'>{selectedCustomer.phone_number}</p>
+                                </div>
+                                <h3 className="text-md font-semibold mt-3 mb-2 text-indigo-500 border-b border-gray-400 p-1">More details:</h3>
+                                    {selectedCustomer?.custom_fields_values?.map((field, index) => (
+                                        <div key={index} className="border-b pb-1 flex gap-3 border-gray-700">
+                                            <strong className='text-gray-600 dark:text-gray-300 '>{field.custom_field.field_name}:</strong>
+                                             <p className='text-gray-700 dark:text-gray-400'>{field.value}</p>
+                                        </div>
+                                    ))}
+                            </div>
+                            
+                        </div>
+                    )}
                 </div>
             </Modal>
 
