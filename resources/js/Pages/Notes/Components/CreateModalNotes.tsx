@@ -3,6 +3,7 @@ import Modal from '@/Components/Modal';
 import Create from '@/Pages/Notes/Create';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Customer } from '@/types';
+import { FaStickyNote } from 'react-icons/fa';
 
 type CreateModalNotesProps = {
     customerId: number;
@@ -20,7 +21,7 @@ const CreateModalNotes: React.FC<CreateModalNotesProps> = ({ customerId }) => {
 
     return (
         <div>
-            <PrimaryButton onClick={handleButtonClick}>Create New Note</PrimaryButton>
+            <PrimaryButton onClick={handleButtonClick}><FaStickyNote /></PrimaryButton>
             <Modal show={isModalOpen} onClose={() => setModalOpen(false)}>
                 <div className="p-4">
                     <h2 className="text-lg font-medium mb-4 flex justify-center">Create New Note</h2>
