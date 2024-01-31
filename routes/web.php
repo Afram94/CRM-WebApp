@@ -21,6 +21,8 @@ use App\Http\Controllers\ProductCustomFieldController;
 
 use App\Http\Controllers\CustomerProductController;
 
+use App\Http\Controllers\EventController;
+
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
 
@@ -101,6 +103,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
 
+    Route::Resource('events', EventController::class);
     
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');

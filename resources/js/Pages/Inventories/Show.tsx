@@ -67,7 +67,7 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
                     <CreateInventoriesModal />
                 </div>
 
-                <div className=''>
+                <div className='overflow-x-auto'>
                     <table className="min-w-full table-auto">
                         <thead>
                             <tr className="text-gray-600 dark:text-gray-300 uppercase text-sm leading-normal border-y-2">
@@ -79,7 +79,7 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
                                 <th className="py-2 px-6">Delete</th>
                             </tr>
                         </thead>
-                        <tbody className="text-gray-600 dark:text-gray-400 text-sm font-light ">
+                        <tbody className="text-gray-600 dark:text-gray-400 text-sm font-light">
                             {filteredInventories.map((inventory) => (
                                 <tr key={inventory.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <td className="py-2 px-6">{inventory.product_name}</td>
