@@ -29,6 +29,7 @@ class EventController extends Controller
         'description' => 'nullable|string',
         'start' => 'required|date',
         'end' => 'required|date',
+        'color' => 'nullable|string',
     ]);
 
     $event = Event::create($validatedData);

@@ -101,9 +101,10 @@ export interface Inventory {
 interface CalendarEvent {
     id: number;
     title: string;
-    description: string;
-    start: Date;
-    end: Date;
+    description?: string;
+    start: Date | string;
+    end: Date | string;
+    color?: string;
   }
   
   
