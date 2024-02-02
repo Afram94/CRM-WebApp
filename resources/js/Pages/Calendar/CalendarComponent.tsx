@@ -91,7 +91,14 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
   
     // If the time is not in the past, proceed as normal
     setSelectedDate(slotInfo.start);
-    setEnd(moment(slotInfo.end).format('YYYY-MM-DDTHH:mm'));
+
+    // Ensure the end date is the same day as the start date
+    // Here we're setting the end time to the end of the day
+    const endOfDay = moment(slotInfo.start).endOf('day');
+    // Format the end date to include the end of the selected day
+    setEnd(endOfDay.format('YYYY-MM-DDTHH:mm'));
+    
+    /* setEnd(moment(slotInfo.end).format('YYYY-MM-DDTHH:mm')); */
     setModalShow(true);
     setTitle('');
     setDescription('');
