@@ -98,6 +98,17 @@ export interface Inventory {
     product: Product;
 }
 
+interface CalendarEvent {
+    id: number;
+    title: string;
+    description?: string;
+    start: Date | string;
+    end: Date | string;
+    color?: string;
+  }
+  
+  
+
 type PaginatedResponse<T> = {
     current_page: number;
     data: T[];
@@ -132,5 +143,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         inventories:Inventory[];
         customer_custom_fields: CustomerCustomField[];
         product_custom_fields: ProductCustomField[];
+        calendar: CalendarEvent[];
     };
 };

@@ -4,6 +4,8 @@ import Sidebar from '@/Components/Sidebar';
 import Header from '@/Components/Header';
 import '../../css/global.css';
 
+import { useWidth } from '../../providers/WidthContext';
+
 
 // Type definition for the MainLayout props
 type MainLayoutProps = {
@@ -12,6 +14,7 @@ type MainLayoutProps = {
 };
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
+    const { isFullWidth } = useWidth();
     // Try to get the sidebar's state (open or closed) from localStorage
     const initialIsOpen = localStorage.getItem('sidebarIsOpen') === 'true';
     // Set the sidebar's initial state based on the value retrieved from localStorage
@@ -29,15 +32,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     }, [isOpen]);  // The effect will re-run if and only if 'isOpen' changes
 
     return (
-        <div className="flex h-screen bg-[#F3F3FA] dark:bg-[#1A202C]">
+        <div className="flex h-screen animated-gradient_2 "> {/* bg-[#F3F3FA] dark:bg-[#1A202C] */}
             {/* // Render the Sidebar component and pass down its state and the toggle function as props */}
             <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} />
 
-            <div className="flex-1 flex flex-col overflow-hidden my-2 global-container gap-y-4">
+            {/* <div className="flex-1 flex flex-col overflow-hidden my-2 global-container gap-y-4"> */}
+            <div className={`flex-1 flex flex-col overflow-hidden my-2 ${isFullWidth ? 'global-container-w-full' : 'global-container'} gap-y-4`}>
+
                 {/* // Render the Header component */}
                 <Header />
 
-                <h1 className='text-2xl text-gray-500 dark:text-gray-300'>{title}</h1>
+                <h1 className='text-2xl text-white dark:text-gray-300'>{title}</h1>
 
                 {/* // This is where child components (passed to MainLayout) will be rendered */}
                 <main className="flex-1 overflow-x-hidden overflow-y-auto dark:bg-gray-800"> {/* bg-gray-200 */}

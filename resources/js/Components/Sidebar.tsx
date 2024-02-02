@@ -20,21 +20,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { name: 'Home', path: '/dashboard', icon: FaHome },
     { name: 'Customers', path: '/customers', icon: FaUserTie },
     { name: 'Notes', path: '/notes', icon: FaStickyNote },
-    { name: 'Users', path: '/users', icon: FaUsers },
     { name: 'Categories', path: '/categories', icon: MdCategory },
     { name: 'Products', path: '/products', icon: FaTags },
     { name: 'Inventory', path: '/inventories', icon: MdOutlineInventory2 },
-    { name: 'Orders', path: '/orders', icon: FaShoppingCart },
+    /* { name: 'Orders', path: '/orders', icon: FaShoppingCart }, */
     { name: 'Custom Fields', path: '/custom-fields', icon: FaThList },
     { name: 'Invite', path: '/generate-invite', icon: FaThList },
-    { name: 'Settings', path: '/settings', icon: FaCog }
+    { name: 'Users', path: '/users', icon: FaUsers },
+    /* { name: 'Settings', path: '/settings', icon: FaCog } */
     // Add more pages as needed
   ];
 
   return (
     <div 
       // Dynamic class assignment for the sidebar. If isOpen is true, it's wider; otherwise, it's narrower.
-      className={`transition-all duration-700 ease-in-out ${isOpen ? 'w-64' : 'w-20'} bg-gray-700 h-full p-4`}
+      className={`transition-all duration-700 ease-in-out ${isOpen ? 'w-64' : 'w-20'} animated-gradient_sideBar  h-full p-4`}
       >
       <div onClick={toggleSidebar} className='flex justify-center cursor-pointer'>
         <FaBars size={24} className='text-white' />
@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <Link key={page.name} href={page.path}>
             <div className={`mb-4 flex items-center w-full 
                 ${isOpen ? '' : 'justify-center'} 
-                ${page.path === currentPath ? 'bg-gray-200 text-gray-800' : 'text-white hover:bg-gray-500 transition-bg duration-500 ease-in-out'} 
+                ${page.path === currentPath ? 'animated-gradient_3 text-gray-800 font-bold' : 'text-white hover:bg-gray-500 transition-bg duration-500 ease-in-out'} 
                 rounded-lg p-2
               `}>
               <page.icon className="" size={26}/>

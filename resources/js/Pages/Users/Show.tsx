@@ -44,38 +44,41 @@ const Show: React.FC<PageProps> = ({ auth }) => {
 
   return (
     <MainLayout title='Show all users'>
-      <div className="container mx-auto p-4">
+      <div className='bg-white dark:bg-gray-800 p-4 rounded-xl'>
         <h1 className="text-2xl font-semibold mb-4">User List</h1>
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border">ID</th>
-              <th className="py-2 px-4 border">Name</th>
-              <th className="py-2 px-4 border">Email</th>
-            </tr>
-          </thead>
-          <tbody>
-            {auth.allUserIdsUnderSameParent.map((user, index) => (
-              <tr key={index}>
-                <td className="py-2 px-4 border">{user.id}</td>
-                <td className="py-2 px-4 border">{user.name}</td>
-                <td className="py-2 px-4 border">{user.email}</td>
-                {Array.isArray(userRoles) && userRoles.find(role => role === 'admin') && (
-                  <td className='py-2 px-4 border'>
-                    <PrimaryButton onClick={() => openPermissionModal(user.id)}>Set Permissions</PrimaryButton>
-                  </td>
-                )}
+        <div className='overflow-x-auto'>
+          <table className="min-w-full table-auto">
+            <thead>
+              <tr className="text-gray-600 dark:text-gray-300 uppercase text-sm leading-normal border-y-2">
+                <th className="py-2 px-6 text-left">ID</th>
+                <th className="py-2 px-6 text-left">Name</th>
+                <th className="py-2 px-6 text-left">Email</th>
+                <th className="py-2 px-6">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="text-gray-600 dark:text-gray-400 text-sm font-light">
+              {auth.allUserIdsUnderSameParent.map((user, index) => (
+                <tr key={index} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <td className="py-2 px-6">{user.id}</td>
+                  <td className="py-2 px-6">{user.name}</td>
+                  <td className="py-2 px-6">{user.email}</td>
+                  {Array.isArray(userRoles) && userRoles.find(role => role === 'admin') && (
+                    <td className='py-2 px-6'>
+                      <PrimaryButton onClick={() => openPermissionModal(user.id)}>Set Permissions</PrimaryButton>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <PermissionModal
+          show={showPermissionModal}
+          onClose={closePermissionModal}
+          selectedUserId={selectedUserId}
+          onPermissionsUpdate={handlePermissionsUpdate}
+        />
       </div>
-      <PermissionModal
-        show={showPermissionModal}
-        onClose={closePermissionModal}
-        selectedUserId={selectedUserId}
-        onPermissionsUpdate={handlePermissionsUpdate} // Use the function to update permissions
-      />
     </MainLayout>
   );
 };

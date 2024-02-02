@@ -8,81 +8,89 @@ type CreateInventoryProps = {
     closeModal: () => void;
 };
 
-const Create: React.FC<CreateInventoryProps> = ({ closeModal }) => {
-    /* const [userId, setUserId] = useState<number>(0); */
+const CreateInventory: React.FC<CreateInventoryProps> = ({ closeModal }) => {
     const [productId, setProductId] = useState<number>();
     const [quantity, setQuantity] = useState<number>();
     const [stockStatus, setStockStatus] = useState<string>('');
     const [restockDate, setRestockDate] = useState<string>('');
     const [products, setProducts] = useState<Product[]>([]);
+    // Placeholder for future custom fields
+    const [customFields, setCustomFields] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 const response = await axios.get('/get-products');
-                console.log(response.data); // Log to inspect the structure
                 setProducts(response.data);
             } catch (error) {
                 console.error('Error fetching products:', error);
-                // Handle error
             }
         };
 
         fetchProducts();
+        // Fetch custom fields when implemented
     }, []);
 
     const handleSubmit = async () => {
         try {
             const response = await axios.post("/inventories", {
-                /* user_id: userId, */
                 product_id: productId,
                 quantity,
                 stock_status: stockStatus,
                 restock_date: restockDate,
+                // Include custom fields when implemented
             });
-            console.log('Inventory Created:', response.data);
             closeModal();
         } catch (error) {
-            console.log('Error Creating inventory:', error);
+            console.error('Error creating inventory:', error);
         }
     };
 
     return (
-        <div>
-            {/* Dropdown for selecting product */}
-            <select 
-                value={productId}
-                onChange={(e) => setProductId(Number(e.target.value))}
-                className='border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm'
-            >
-                <option value="">Select a Product</option>
-                {products.map((product) => (
-                    <option key={product.id} value={product.id}>
-                        {product.name}
-                    </option>
+        <>
+            <div className='grid grid-cols-2 gap-2'>
+                <select 
+                    value={productId}
+                    onChange={(e) => setProductId(Number(e.target.value))}
+                    className='border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm col-span-2'
+                >
+                    <option value="">Select a Product</option>
+                    {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                            {product.name}
+                        </option>
+                    ))}
+                </select>
+                <TextInput 
+                    type="number" 
+                    placeholder="Quantity" 
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                />
+                <TextInput 
+                    type="text" 
+                    placeholder="Stock Status" 
+                    value={stockStatus}
+                    onChange={(e) => setStockStatus(e.target.value)}
+                />
+                <TextInput 
+                    type="date" 
+                    placeholder="Restock Date" 
+                    value={restockDate}
+                    onChange={(e) => setRestockDate(e.target.value)}
+                />
+                {/* Placeholder for future custom fields */}
+                {customFields.map((field, index) => (
+                    <div key={index}>
+                        {/* Custom field implementation here */}
+                    </div>
                 ))}
-            </select>
-            <TextInput 
-                type="number" 
-                placeholder="Quantity" 
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-            />
-            <TextInput 
-                type="text" 
-                placeholder="Stock Status" 
-                value={stockStatus}
-                onChange={(e) => setStockStatus(e.target.value)}
-            />
-            <TextInput 
-                type="date" 
-                placeholder="Restock Date" 
-                value={restockDate}
-                onChange={(e) => setRestockDate(e.target.value)}
-            />
-            <PrimaryButton onClick={handleSubmit}>Create Inventory</PrimaryButton>
-        </div>
-    )
+            </div>
+            <div className='mt-3 flex justify-end'>
+                <PrimaryButton onClick={handleSubmit}>Create Inventory</PrimaryButton>
+            </div>
+        </>
+    );
 };
 
-export default Create;
+export default CreateInventory;
