@@ -92,13 +92,17 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
     // If the time is not in the past, proceed as normal
     setSelectedDate(slotInfo.start);
 
-    // Ensure the end date is the same day as the start date
-    // Here we're setting the end time to the end of the day
-    const endOfDay = moment(slotInfo.start).endOf('day');
-    // Format the end date to include the end of the selected day
-    setEnd(endOfDay.format('YYYY-MM-DDTHH:mm'));
-    
-    /* setEnd(moment(slotInfo.end).format('YYYY-MM-DDTHH:mm')); */
+    if (view === 'month') {
+        // Ensure the end date is the same day as the start date
+        // Here we're setting the end time to the end of the day
+        const endOfDay = moment(slotInfo.start).endOf('day');
+        // Format the end date to include the end of the selected day
+        setEnd(endOfDay.format('YYYY-MM-DDTHH:mm'));
+    }
+    else{
+        
+        setEnd(moment(slotInfo.end).format('YYYY-MM-DDTHH:mm'));
+    }
     setModalShow(true);
     setTitle('');
     setDescription('');
@@ -113,40 +117,44 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        
+        // Since your backend is configured for 'Europe/Stockholm', 
+        // you should send the times as they are without converting them to any other timezone.
+        const formattedStart = selectedDate ? moment(selectedDate).format('YYYY-MM-DDTHH:mm:ss') : '';
+        const formattedEnd = end ? moment(end).format('YYYY-MM-DDTHH:mm:ss') : '';
+        
+        console.log('Selected start (local):', formattedStart);
+        console.log('Selected end (local):', formattedEnd);
     
-        // Use the time zone for Sweden
-        const timeZone = 'Europe/Stockholm';
-        const formattedStart = selectedDate ? moment(selectedDate).tz(timeZone).format('YYYY-MM-DD HH:mm:ss') : '';
-        const formattedEnd = end ? moment(end).tz(timeZone).format('YYYY-MM-DD HH:mm:ss') : '';
+        if (!formattedStart || !formattedEnd) {
+          console.error('Start or end date is missing.');
+          return;
+        }
     
-        console.log('Selected start (local):', selectedDate);
-        console.log('Selected end (local):', end);
-        console.log('Formatted start (timezone):', formattedStart);
-        console.log('Formatted end (timezone):', formattedEnd);
-
-
-    if (!formattedStart || !formattedEnd) {
-      console.error('Start or end date is missing.');
-      return;
-    }
-
-    try {
-        const eventData = {
-            title,
-            description,
-            start: new Date(formattedStart),
-            end: new Date(formattedEnd),
-            color,
-          };
-      
-      const response = await axios.post('/events', eventData);
-      const newEvent = { ...response.data, start: new Date(response.data.start), end: new Date(response.data.end) };
-      setEvents((prevEvents) => [...prevEvents, newEvent]);
-      closeModal();
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+        try {
+            const eventData = {
+                title,
+                description,
+                // Use the ISO string directly
+                start: formattedStart,
+                end: formattedEnd,
+                color,
+            };
+    
+            console.log('Event data being sent to server:', eventData);
+            
+            const response = await axios.post('/events', eventData);
+            const newEvent = {
+                ...response.data,
+                start: moment(response.data.start).toDate(),
+                end: moment(response.data.end).toDate(),
+            };
+            setEvents((prevEvents) => [...prevEvents, newEvent]);
+            closeModal();
+        } catch (error) {
+          console.error('Error:', error);
+        }
+    };
 
   
   
