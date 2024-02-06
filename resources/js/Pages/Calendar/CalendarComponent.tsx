@@ -11,6 +11,8 @@ import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputLabel from '@/Components/InputLabel';
 
+import CustomAgendaEvent from './Components/CustomAgendaEvent';
+
 import EditEventModal from '@/Pages/Calendar/EditEventModal'
 
 import moment from 'moment-timezone';
@@ -20,7 +22,7 @@ import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'; // Impo
 // Import styles specifically for drag and drop
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 
-import './CustomCalendarStyles.css'; // Adjust the path to where your CSS file is located
+import './CustomCalendarStyles.css';
 
 
 const DnDCalendar = withDragAndDrop(Calendar);
@@ -257,9 +259,10 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
         const style = {
           backgroundColor: event.color || '#3174ad', // Use the event's color or a default
           borderRadius: '5px',
-          opacity: 0.8,
+          /* opacity: 0.8, */
           color: 'white',
           border: '0px',
+          borderRadius: '8px',
           display: 'block',
         };
       
@@ -283,6 +286,12 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
             style={{ height: 1000 }}
             eventPropGetter={eventStyleGetter}
 
+            /* components={{
+                agenda: {
+                  event: CustomAgendaEvent, // your custom agenda event component
+                },
+              }} */
+
             view={view}
             onView={handleViewChange}
 
@@ -301,13 +310,14 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
           />
 
           {/* TODO: Fix the design to the modal */}
-        {editModalShow && selectedEvent && (
-            <EditEventModal 
-                event={selectedEvent}
-                onClose={() => setEditModalShow(false)}
-                onSave={updateEvent} // Pass the updateEvent function directly
-            />
-        )}
+          {editModalShow && selectedEvent && (
+                <EditEventModal 
+                    event={selectedEvent}
+                    onClose={() => setEditModalShow(false)}
+                    onSave={updateEvent} // Pass the updateEvent function directly
+                    showModal={editModalShow} // Pass the showModal prop correctly
+                />
+            )}
         </div>
       </MainLayout>
       <Modal show={modalShow} onClose={closeModal}>

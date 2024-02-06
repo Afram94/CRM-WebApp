@@ -16,4 +16,29 @@
     font-size: 16px;
     text-align: center;
   }
+
+  /* CustomCalendarStyles.css */
+
+/* Event styles */
+.rbc-event {
+    background-color: var(--rbc-event-bg-color, #3174ad); /* Fallback for light mode */
+    color: var(--rbc-event-text-color, #fff); /* Fallback for light mode */
+    border-radius: 8px; /* Rounded corners for a modern look */
+    border: none; /* Remove borders from events */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center the content */
+    padding: 4px 8px; /* Padding inside events */
+    overflow: hidden; /* Ensures content does not overflow event container */
+    font-size: 0.75rem; /* Smaller font size for the text */
+  }
+  
+  /* Time range on the event */
+  .rbc-event-label {
+    font-size: 0.75rem; /* Smaller font size for the time */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   
