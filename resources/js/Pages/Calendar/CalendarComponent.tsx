@@ -24,6 +24,9 @@ import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 
 import './CustomCalendarStyles.css';
 
+import swal from 'sweetalert2';
+
+
 
 const DnDCalendar = withDragAndDrop(Calendar);
 
@@ -87,7 +90,7 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
     // Check if the selected slot's start time is before the current time
     if (slotInfo.start.getTime() < now.getTime()) {
       // Optionally, you can alert the user or handle this case differently
-      alert("Cannot create an event in the past.");
+      swal.fire("Oops!", "Cannot create an event to the past.", "error");
       return; // Do not proceed to show the modal or set state
     }
   
@@ -216,7 +219,7 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
     
         // Check if the new start or end time is in the past
         if (start < now || end < now) {
-            alert("Cannot move an event to the past.");
+            swal.fire("Oops!", "Cannot move an event to the past.", "error");
             return; // Exit the function without updating the event
         }
     
@@ -230,7 +233,7 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
     
         // Check if the new start or end time is in the past
         if (start < now || end < now) {
-            alert("Cannot resize an event to the past.");
+            swal.fire("Oops!", "Cannot move an event to the past.", "error");
             return; // Exit the function without updating the event
         }
     
@@ -255,21 +258,29 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
       
 
 
-    const eventStyleGetter = (event: any, start: Date, end: Date, isSelected: boolean) => {
-        const style = {
-          backgroundColor: event.color || '#3174ad', // Use the event's color or a default
-          borderRadius: '5px',
-          /* opacity: 0.8, */
-          color: 'white',
-          border: '0px',
-          borderRadius: '8px',
-          display: 'block',
-        };
-      
-        return {
-          style: style
-        };
-      }
+          const eventStyleGetter = (event: any, start: Date, end: Date, isSelected: boolean) => {
+            // Default styles for month and week view
+            let style = {
+              backgroundColor: event.color || '#3174ad', // Use the event's color or a default
+              borderRadius: '5px',
+              color: 'white',
+              display: 'block',
+              /* border: '1px solid #F8FAFD', */
+              border: 'none',
+            };
+        
+            // Override styles for the agenda view
+            if (view === 'agenda') {
+              style = {
+                ...style,
+                backgroundColor: '#f3f3f3', // Change the background color for agenda view
+                borderRadius: '0px', // Change the border radius for agenda view
+                // Other style changes for the agenda view can go here
+              };
+            }
+        
+            return { style };
+          };
 
   return (
     <>
@@ -286,11 +297,11 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
             style={{ height: 1000 }}
             eventPropGetter={eventStyleGetter}
 
-            /* components={{
+            components={{
                 agenda: {
-                  event: CustomAgendaEvent, // your custom agenda event component
+                  event: CustomAgendaEvent,
                 },
-              }} */
+              }}
 
             view={view}
             onView={handleViewChange}
@@ -320,6 +331,36 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
             )}
         </div>
       </MainLayout>
+      {/* <div className="rbc-btn-group">
+        <button
+        value={"Delete"}
+          onClick={() => handleViewChange('month')}
+          className=""
+        >
+          Month
+        </button>
+        <button
+        value={""}
+          onClick={() => handleViewChange('week')}
+          className=""
+        >
+          Week
+        </button>
+        <button
+        value={""}
+          onClick={() => handleViewChange('day')}
+          className=""
+        >
+          Day
+        </button>
+        <button
+        value={""}
+          onClick={() => handleViewChange('agenda')}
+          className=""
+        >
+          Agenda
+        </button>
+      </div> */}
       <Modal show={modalShow} onClose={closeModal}>
         <form className='p-5 grid grid-cols-2 gap-2' onSubmit={handleSubmit}>
             <TextInput
