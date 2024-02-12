@@ -53,24 +53,40 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
         return openCategories.includes(categoryName);
     }; */
 
-    // Fetch filtered products based on search term
-    const fetchFilteredProducts = async () => {
-        try {
-            const response = await axios.get(`/products?search=${searchTerm}`);
-            if (response.data && response.data.auth && response.data.auth.products) {
-                setFilteredProducts(response.data.auth.products.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch filtered products:', error);
+    useEffect(() => {
+        if (searchTerm === '') {
+            setFilteredProducts(auth.products.data);
+            return;
         }
-    };
 
-    // Fetch products when search term changes
+    if (searchTerm.length >= 3) {
+
+        // Fetch filtered products based on search term
+        const fetchFilteredProducts = async () => {
+            try {
+                const response = await axios.get(`/products?search=${searchTerm}`);
+                if (response.data && response.data.auth && response.data.auth.products) {
+                    setFilteredProducts(response.data.auth.products.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch filtered products:', error);
+            }
+        };
+
+        fetchFilteredProducts();
+
+    } else {
+        setFilteredProducts(auth.products.data);
+    }
+    }, [searchTerm, auth.products.data]);
+
+
+    /* // Fetch products when search term changes
     useEffect(() => {
         if (searchTerm.length >= 3 || searchTerm === '') {
             fetchFilteredProducts();
         }
-    }, [searchTerm]);
+    }, [searchTerm]); */
 
     
 
