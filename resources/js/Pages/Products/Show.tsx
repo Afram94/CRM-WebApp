@@ -101,49 +101,48 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
          *
          * @param {Product} newProduct - The new product received from the WebSocket event.
          */
-        const handleNewProduct = (newProduct: Product) => {
+        const handleNewProduct = (newProduct : Product) => {
             console.log("New product event triggered");
-
+        
             setFilteredProducts((prevProducts) => {
                 // Check if the new product already exists in the current state
                 const isExistingProduct = prevProducts.some(product => product.id === newProduct.id);
-
-                // Add the new product to the state only if it doesn't exist already
+        
                 if (!isExistingProduct) {
+                    // Explicitly handle the category name for the new product
+                    // Assuming newProduct includes a category object with its name
+                    // If newProduct does not include this directly, adjust according to how you receive the category information
+                    let productToAdd = {
+                        ...newProduct,
+                        category_name: newProduct.category ? newProduct.category.name : 'Uncategorized', // Adjust if your data structure differs
+                    };
+        
                     // Prepend the new product to the start of the product array
-                    const updatedProducts = [newProduct, ...prevProducts];
-
+                    const updatedProducts = [productToAdd, ...prevProducts];
+        
                     // Maintain a maximum of 20 products for display, adjusting as needed
                     return updatedProducts.slice(0, 20);
                 }
-
+        
                 // Return the previous state if the product already exists
                 return prevProducts;
             });
         };
+        
     
 
-        const handleUpdatedProduct = (updatedProduct: Product) => {
-            // Log to console whenever this function is triggered
+        const handleUpdatedProduct = (updatedProduct : Product) => {
             console.log("Updated product event triggered");
         
-            // Update state with a function to ensure we have the most current state
-            setFilteredProducts((prevProduct) => {
-                // Check if the updated product object has an ID property
-                if (updatedProduct.id) {
-                    // Map over the existing products
-                    const updatedProducts = prevProduct.map(product => 
-                        product.id === updatedProduct.id ? updatedProduct : product
-                    );
-        
-                    // Return the updated products array
-                    return updatedProducts;
-                } else {
-                    // If the updated product object lacks an ID, log an error for debugging
-                    console.error('Updated product is missing an ID:', updatedProduct);
-                    // Return the previous product array unchanged
-                    return prevProduct;
-                }
+            setFilteredProducts((prevProducts) => {
+                return prevProducts.map(product => {
+                    if (product.id === updatedProduct.id) {
+                        // If the updated category name is nested, adjust accordingly
+                        const updatedCategoryName = updatedProduct.category ? updatedProduct.category.name : product.category_name;
+                        return { ...product, ...updatedProduct, category_name: updatedCategoryName };
+                    }
+                    return product;
+                });
             });
         };
 
