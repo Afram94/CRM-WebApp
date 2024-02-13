@@ -11,6 +11,8 @@ import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputLabel from '@/Components/InputLabel';
 
+import CustomAgendaEvent from './Components/CustomAgendaEvent';
+
 import EditEventModal from '@/Pages/Calendar/EditEventModal'
 
 import moment from 'moment-timezone';
@@ -20,7 +22,10 @@ import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'; // Impo
 // Import styles specifically for drag and drop
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 
-import './CustomCalendarStyles.css'; // Adjust the path to where your CSS file is located
+import './CustomCalendarStyles.css';
+
+import swal from 'sweetalert2';
+
 
 
 const DnDCalendar = withDragAndDrop(Calendar);
@@ -85,20 +90,24 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
     // Check if the selected slot's start time is before the current time
     if (slotInfo.start.getTime() < now.getTime()) {
       // Optionally, you can alert the user or handle this case differently
-      alert("Cannot create an event in the past.");
+      swal.fire("Oops!", "Cannot create an event to the past.", "error");
       return; // Do not proceed to show the modal or set state
     }
   
     // If the time is not in the past, proceed as normal
     setSelectedDate(slotInfo.start);
 
-    // Ensure the end date is the same day as the start date
-    // Here we're setting the end time to the end of the day
-    const endOfDay = moment(slotInfo.start).endOf('day');
-    // Format the end date to include the end of the selected day
-    setEnd(endOfDay.format('YYYY-MM-DDTHH:mm'));
-    
-    /* setEnd(moment(slotInfo.end).format('YYYY-MM-DDTHH:mm')); */
+    if (view === 'month') {
+        // Ensure the end date is the same day as the start date
+        // Here we're setting the end time to the end of the day
+        const endOfDay = moment(slotInfo.start).endOf('day');
+        // Format the end date to include the end of the selected day
+        setEnd(endOfDay.format('YYYY-MM-DDTHH:mm'));
+    }
+    else{
+        
+        setEnd(moment(slotInfo.end).format('YYYY-MM-DDTHH:mm'));
+    }
     setModalShow(true);
     setTitle('');
     setDescription('');
@@ -113,40 +122,44 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        
+        // Since your backend is configured for 'Europe/Stockholm', 
+        // you should send the times as they are without converting them to any other timezone.
+        const formattedStart = selectedDate ? moment(selectedDate).format('YYYY-MM-DDTHH:mm:ss') : '';
+        const formattedEnd = end ? moment(end).format('YYYY-MM-DDTHH:mm:ss') : '';
+        
+        console.log('Selected start (local):', formattedStart);
+        console.log('Selected end (local):', formattedEnd);
     
-        // Use the time zone for Sweden
-        const timeZone = 'Europe/Stockholm';
-        const formattedStart = selectedDate ? moment(selectedDate).tz(timeZone).format('YYYY-MM-DD HH:mm:ss') : '';
-        const formattedEnd = end ? moment(end).tz(timeZone).format('YYYY-MM-DD HH:mm:ss') : '';
+        if (!formattedStart || !formattedEnd) {
+          console.error('Start or end date is missing.');
+          return;
+        }
     
-        console.log('Selected start (local):', selectedDate);
-        console.log('Selected end (local):', end);
-        console.log('Formatted start (timezone):', formattedStart);
-        console.log('Formatted end (timezone):', formattedEnd);
-
-
-    if (!formattedStart || !formattedEnd) {
-      console.error('Start or end date is missing.');
-      return;
-    }
-
-    try {
-        const eventData = {
-            title,
-            description,
-            start: new Date(formattedStart),
-            end: new Date(formattedEnd),
-            color,
-          };
-      
-      const response = await axios.post('/events', eventData);
-      const newEvent = { ...response.data, start: new Date(response.data.start), end: new Date(response.data.end) };
-      setEvents((prevEvents) => [...prevEvents, newEvent]);
-      closeModal();
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+        try {
+            const eventData = {
+                title,
+                description,
+                // Use the ISO string directly
+                start: formattedStart,
+                end: formattedEnd,
+                color,
+            };
+    
+            console.log('Event data being sent to server:', eventData);
+            
+            const response = await axios.post('/events', eventData);
+            const newEvent = {
+                ...response.data,
+                start: moment(response.data.start).toDate(),
+                end: moment(response.data.end).toDate(),
+            };
+            setEvents((prevEvents) => [...prevEvents, newEvent]);
+            closeModal();
+        } catch (error) {
+          console.error('Error:', error);
+        }
+    };
 
   
   
@@ -206,7 +219,7 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
     
         // Check if the new start or end time is in the past
         if (start < now || end < now) {
-            alert("Cannot move an event to the past.");
+            swal.fire("Oops!", "Cannot move an event to the past.", "error");
             return; // Exit the function without updating the event
         }
     
@@ -220,7 +233,7 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
     
         // Check if the new start or end time is in the past
         if (start < now || end < now) {
-            alert("Cannot resize an event to the past.");
+            swal.fire("Oops!", "Cannot move an event to the past.", "error");
             return; // Exit the function without updating the event
         }
     
@@ -245,20 +258,29 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
       
 
 
-    const eventStyleGetter = (event: any, start: Date, end: Date, isSelected: boolean) => {
-        const style = {
-          backgroundColor: event.color || '#3174ad', // Use the event's color or a default
-          borderRadius: '5px',
-          opacity: 0.8,
-          color: 'white',
-          border: '0px',
-          display: 'block',
-        };
-      
-        return {
-          style: style
-        };
-      }
+          const eventStyleGetter = (event: any, start: Date, end: Date, isSelected: boolean) => {
+            // Default styles for month and week view
+            let style = {
+              backgroundColor: event.color || '#3174ad', // Use the event's color or a default
+              borderRadius: '5px',
+              color: 'white',
+              display: 'block',
+              /* border: '1px solid #F8FAFD', */
+              border: 'none',
+            };
+        
+            // Override styles for the agenda view
+            if (view === 'agenda') {
+              style = {
+                ...style,
+                backgroundColor: '#f3f3f3', // Change the background color for agenda view
+                borderRadius: '0px', // Change the border radius for agenda view
+                // Other style changes for the agenda view can go here
+              };
+            }
+        
+            return { style };
+          };
 
   return (
     <>
@@ -274,6 +296,12 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
             resizable
             style={{ height: 1000 }}
             eventPropGetter={eventStyleGetter}
+
+            components={{
+                agenda: {
+                  event: CustomAgendaEvent,
+                },
+              }}
 
             view={view}
             onView={handleViewChange}
@@ -293,15 +321,46 @@ const CalendarComponent: React.FC<PageProps> = ({ auth }) => {
           />
 
           {/* TODO: Fix the design to the modal */}
-        {editModalShow && selectedEvent && (
-            <EditEventModal 
-                event={selectedEvent}
-                onClose={() => setEditModalShow(false)}
-                onSave={updateEvent} // Pass the updateEvent function directly
-            />
-        )}
+          {editModalShow && selectedEvent && (
+                <EditEventModal 
+                    event={selectedEvent}
+                    onClose={() => setEditModalShow(false)}
+                    onSave={updateEvent} // Pass the updateEvent function directly
+                    showModal={editModalShow} // Pass the showModal prop correctly
+                />
+            )}
         </div>
       </MainLayout>
+      {/* <div className="rbc-btn-group">
+        <button
+        value={"Delete"}
+          onClick={() => handleViewChange('month')}
+          className=""
+        >
+          Month
+        </button>
+        <button
+        value={""}
+          onClick={() => handleViewChange('week')}
+          className=""
+        >
+          Week
+        </button>
+        <button
+        value={""}
+          onClick={() => handleViewChange('day')}
+          className=""
+        >
+          Day
+        </button>
+        <button
+        value={""}
+          onClick={() => handleViewChange('agenda')}
+          className=""
+        >
+          Agenda
+        </button>
+      </div> */}
       <Modal show={modalShow} onClose={closeModal}>
         <form className='p-5 grid grid-cols-2 gap-2' onSubmit={handleSubmit}>
             <TextInput
