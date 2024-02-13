@@ -25,6 +25,10 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // create roles and assign created permissions
 
+        // Super Admin role with all permissions
+        $admin = Role::create(['name' => 'superadmin']);
+        $admin->givePermissionTo(Permission::all());
+
         // Admin role with all permissions
         $admin = Role::create(['name' => 'admin']);
         $admin->givePermissionTo(Permission::all());
