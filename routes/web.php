@@ -23,6 +23,8 @@ use App\Http\Controllers\CustomerProductController;
 
 use App\Http\Controllers\EventController;
 
+use App\Http\Controllers\SuperAdminController;
+
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
 
@@ -45,6 +47,14 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+
+Route::middleware(['auth', 'superadmin'])->group(function () {
+    Route::get('/superadmin/dashboard', [SuperAdminController::class, 'index'])->name('superadmin.dashboard');
+    // Other Super Admin specific routes...
+});
+
+
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
