@@ -6,6 +6,15 @@ export interface User {
     email_verified_at: string | null;
 }
 
+export interface SuperAdminUsers {
+    id: number;
+    user_id: number | null;
+    name: string;
+    email: string;
+    email_verified_at: string | null;
+    children?: User[];
+}
+
 export interface CustomerCustomFieldValue {
     id?: number;  // Making it optional
     customer_id?: number;  // Making it optional
@@ -144,5 +153,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         customer_custom_fields: CustomerCustomField[];
         product_custom_fields: ProductCustomField[];
         calendar: CalendarEvent[];
+
+
+        superadminusers: SuperAdminUsers[];
     };
 };
