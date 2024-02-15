@@ -181,4 +181,10 @@ Route::middleware('auth')->group(function () {
 
 });
 
+
+// Catch-all route for unmatched routes
+Route::get('/{any}', function () {
+    return Inertia::render('NotFound404');
+})->where('any', '.*')->middleware('auth');
+
 require __DIR__.'/auth.php';
