@@ -41,22 +41,22 @@ const SuperAdminDashboard: React.FC<PageProps> = ({ auth }) => {
                             <tbody>
                                
                             {admins.map((admin: SuperAdminUsers) => (
-<tr key={admin.id} className="border-b">
-<td className="px-4 py-2">{admin.name}</td>
-<td className="px-4 py-2">
-<ul>
-{admin.children && admin.children.map((child: User) => (
-<li key={child.id}>{child.name}</li>
-))}
-</ul>
-</td>
-</tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
-</div>
+                                <tr key={admin.id} className="border-b">
+                                    <td className="px-4 py-2">{admin.name}</td>
+                                    <td className="px-4 py-2">
+                                        <ul>
+                                        {admin.children && admin.children.map((child: User) => (
+                                            <li key={child.id}>{child.name}</li>
+                                            ))}
+                                        </ul>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 </SuperAdminLayout>
 
 
