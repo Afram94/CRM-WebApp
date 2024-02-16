@@ -181,10 +181,20 @@ Route::middleware('auth')->group(function () {
 
 });
 
+// Define all specific web routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+// Define other specific routes here...
 
+// SPA catch-all route
+Route::get('/{any}', function () {
+    return Inertia::render('NotFound404');
+})->where('any', '.*')->middleware('auth')->name('spa.catchall');
+
+/* 
 // Catch-all route for unmatched routes
 Route::get('/{any}', function () {
     return Inertia::render('NotFound404');
-})->where('any', '.*')->middleware('auth');
+})->where('any', '.*')->middleware('auth'); */
 
 require __DIR__.'/auth.php';
