@@ -13,6 +13,8 @@ export interface SuperAdminUsers {
     email: string;
     email_verified_at: string | null;
     children?: User[];
+    customers_count?: number;
+    products_count?: number;
 }
 
 export interface CustomerCustomFieldValue {
