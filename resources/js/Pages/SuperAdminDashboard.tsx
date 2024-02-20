@@ -1,11 +1,15 @@
 // resources/js/components/SuperAdminDashboard.tsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
 import { PageProps, SuperAdminUsers, User } from '@/types'; // Assuming your types are exported and can be imported
+import axios from 'axios';
+import UserSwitch from '@/Components/UserSwitch';
 
 const SuperAdminDashboard: React.FC<PageProps> = ({ auth }) => {
     const { superadminusers } = auth;
+
+    const [users, setUsers] = useState<SuperAdminUsers[]>([]);
 
     console.log(superadminusers);
 
@@ -17,6 +21,24 @@ const SuperAdminDashboard: React.FC<PageProps> = ({ auth }) => {
     admins.forEach(admin => {
         admin.children = superadminusers.filter(user => user.user_id === admin.id);
     });
+
+    const toggleUserActive = (userId: number) => {
+        axios.post(`/users/${userId}/toggle-active`)
+            .then(response => {
+                /* alert(response.data.message); // Show success message */
+                // Refresh user list or update state here
+                const updatedUsers = users.map(user => {
+                    if (user.id === userId) {
+                        return { ...user, is_active: !user.is_active };
+                    }
+                    return user;
+                });
+                setUsers(updatedUsers);
+            })
+            .catch(error => {
+                console.error("Error toggling user's status", error);
+            });
+    };
 
     return (
         <SuperAdminLayout>
@@ -52,6 +74,10 @@ const SuperAdminDashboard: React.FC<PageProps> = ({ auth }) => {
                                             <td className="border border-slate-300 px-4 py-2">{child.email}</td>
                                             <td className="border border-slate-300 px-4 py-2">{child.customers_count}</td>
                                             <td className="border border-slate-300 px-4 py-2">{child.products_count}</td>
+                                            <UserSwitch
+                                                isActive={child.is_active}
+                                                onChange={() => toggleUserActive(child.id)}
+                                            />
                                         </tr>
                                     ))}
                                 </tbody>

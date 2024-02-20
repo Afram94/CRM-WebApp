@@ -103,4 +103,15 @@ class UserController extends Controller
     
         return response()->json(['message' => 'Permission toggled']);
     }
+
+
+    public function toggleUserActive(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return response()->json(['message' => 'User status updated successfully!', 'isActive' => $user->is_active]);
+    }
+
 }

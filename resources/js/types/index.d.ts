@@ -4,6 +4,7 @@ export interface User {
     name: string;
     email: string;
     email_verified_at: string | null;
+    is_active: boolean;
 }
 
 export interface SuperAdminUsers {
@@ -15,6 +16,7 @@ export interface SuperAdminUsers {
     children?: User[];
     customers_count?: number;
     products_count?: number;
+    is_active: boolean;
 }
 
 export interface CustomerCustomFieldValue {

@@ -125,6 +125,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/user-roles', [UserController::class, 'getRoles']);
     Route::get('users/{id}/permissions', [UserController::class, 'getPermissions']);
     Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
+    Route::post('/users/{userId}/toggle-active', [UserController::class, 'toggleUserActive'])->name('users.toggle-active');
+
 
 
     //Customers Custom fields
@@ -140,6 +142,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
     Route::get('/get-customer-custom-fields', [CustomerCustomFieldController::class, 'getCustomerCustomFields']);
+
+    Route::post('/customers/{customerId}/addProduct', [CustomerProductController::class, 'addProductToCustomer']);
 
 
 
@@ -162,7 +166,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Customer-Product-Controller
-Route::post('/customers/{customerId}/addProduct', [CustomerProductController::class, 'addProductToCustomer']);
+
 
 
 

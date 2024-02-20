@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
-import { PageProps } from '@/types';
+import { PageProps, SuperAdminUsers } from '@/types';
 import PermissionModal from './PermissionModal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import axios from 'axios';
 import { usePermissions } from '../../../providers/permissionsContext'; // Adjust the import path
+
+import { Switch } from '@headlessui/react';
+import UserSwitch from '@/Components/UserSwitch';
 
 interface Permission {
   name: string;
@@ -16,6 +19,12 @@ const Show: React.FC<PageProps> = ({ auth }) => {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const { setUserPermissions } = usePermissions(); // Using the usePermissions hook
   const [userRoles, setUserRoles] = useState<string[]>([]);
+
+  const [users, setUsers] = useState<SuperAdminUsers[]>([]);
+
+  /* const [forceUpdate, setForceUpdate] = useState(false);
+
+  setForceUpdate(f => !f); // Toggle the flag */
 
   useEffect(() => {
     axios.get('user-roles') // Replace with your actual API endpoint
@@ -42,6 +51,30 @@ const Show: React.FC<PageProps> = ({ auth }) => {
     setUserPermissions(newPermissions);
   };
 
+  const toggleUserActive = (userId:number) => {
+    axios.post(`/users/${userId}/toggle-active`)
+      .then(response => {
+        const updatedUsers = users.map(user => {
+          if (user.id === userId) {
+            // Assuming the response includes the updated user state
+            return { ...user, is_active: !user.is_active };
+          }
+          return user;
+        });
+        setUsers(updatedUsers);
+        console.log(updatedUsers); // Debugging
+      })
+      .catch(error => {
+        console.error("Error toggling user's status", error);
+      });
+  };
+
+  useEffect(() => {
+    // Perform side effects here
+    console.log('Users state changed.', users);
+  }, [users]); // Dependency array includes `users` to run the effect on its change
+  
+
   return (
     <MainLayout title='Show all users'>
       <div className='bg-white dark:bg-gray-800 p-4 rounded-xl'>
@@ -67,6 +100,10 @@ const Show: React.FC<PageProps> = ({ auth }) => {
                       <PrimaryButton onClick={() => openPermissionModal(user.id)}>Set Permissions</PrimaryButton>
                     </td>
                   )}
+                  <UserSwitch
+                    isActive={user.is_active}
+                    onChange={() => toggleUserActive(user.id)}
+                  />
                 </tr>
               ))}
             </tbody>
