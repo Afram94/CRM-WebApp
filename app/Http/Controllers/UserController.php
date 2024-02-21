@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use App\Events\UserPermissionsUpdated;
+use App\Events\UserUpdated;
 
 class UserController extends Controller
 {
@@ -25,6 +26,7 @@ class UserController extends Controller
             'auth' => [
                 'allUserIdsUnderSameParent' => $allUserIdsUnderSameParent,
                 /* 'customers' => $customers */
+                'user' => $user
             ],
         ]);
     }
@@ -103,4 +105,39 @@ class UserController extends Controller
     
         return response()->json(['message' => 'Permission toggled']);
     }
+
+
+    public function toggleUserActive(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return response()->json(['message' => 'User status updated successfully!', 'isActive' => $user->is_active]);
+    }
+
+    // In App\Http\Controllers\UserController.php
+
+    public function updateUser(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
+
+        // Validate request data
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|max:255|unique:users,email,' . $userId,
+            'is_active' => 'sometimes|boolean',
+            // Add other fields as needed
+        ]);
+
+        // Update user details
+        $user->update($validated);
+
+        // Broadcast the update
+        broadcast(new UserUpdated($user));
+
+        return response()->json(['message' => 'User updated successfully!', 'user' => $user]);
+    }
+
+
 }
