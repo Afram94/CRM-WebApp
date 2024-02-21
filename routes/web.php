@@ -127,6 +127,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
     Route::post('/users/{userId}/toggle-active', [UserController::class, 'toggleUserActive'])->name('users.toggle-active');
 
+    Route::post('/users/{userId}/update-details', [UserController::class, 'updateUser']);
+
+
 
 
     //Customers Custom fields
