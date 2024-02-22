@@ -4,7 +4,7 @@ import { PageProps, SuperAdminUsers, User } from '@/types';
 import PermissionModal from './PermissionModal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import axios from 'axios';
-import { usePermissions } from '../../../providers/permissionsContext'; // Adjust the import path
+import { usePermissions } from '../../../providers/permissionsContext';
 
 import { Switch } from '@headlessui/react';
 import UserSwitch from '@/Components/UserSwitch';
@@ -12,6 +12,8 @@ import ProductChannelsHandler from '../Products/ProductChannelsHandler';
 import UserChannelsHandler from './UserChannelsHandler';
 
 import EditUserModal from './Components/EditUserModal';
+import TextInput from '@/Components/TextInput';
+import DangerButton from '@/Components/DangerButton';
 
 interface Permission {
   name: string;
@@ -27,6 +29,8 @@ const Show: React.FC<PageProps> = ({ auth }) => {
   const [users, setUsers] = useState<User[]>([]);
 
   const [filteredUsers, setFilteredUsers] = useState(auth.allUserIdsUnderSameParent);
+
+  const [searchTerm, setSearchTerm] = useState('');
 
   /* const [forceUpdate, setForceUpdate] = useState(false);
 
@@ -57,6 +61,38 @@ const Show: React.FC<PageProps> = ({ auth }) => {
     setUserPermissions(newPermissions);
   };
 
+
+  useEffect(() => {
+    if (searchTerm === '') {
+        setFilteredUsers(auth.allUserIdsUnderSameParent);
+        return;
+    }
+
+    if (searchTerm.length >= 3) {
+
+        // Fetch filtered products based on search term
+        const fetchFilteredProducts = async () => {
+            try {
+                const response = await axios.get(`/users?search=${searchTerm}`);
+                if (response.data && response.data.auth && response.data.auth.allUserIdsUnderSameParent) {
+                    setFilteredUsers(response.data.auth.allUserIdsUnderSameParent);
+                }
+            } catch (error) {
+                console.error('Failed to fetch filtered users:', error);
+            }
+        };
+
+        fetchFilteredProducts();
+
+    } else {
+        setFilteredUsers(auth.allUserIdsUnderSameParent);
+    }
+  }, [searchTerm, auth.user]);
+
+  const handleReset = () => {
+    setSearchTerm('');   
+  }
+
   /* const toggleUserActive = (userId:number) => {
     axios.post(`/users/${userId}/toggle-active`)
       .then(response => {
@@ -82,7 +118,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
         const updatedUser = response.data.user;
   
         // Update the local state to reflect the change
-        setFilteredUsers(users.map(user => user.id === userId ? { ...user, ...updatedUser } : user));
+        setFilteredUsers(filteredUsers.map(user => user.id === userId ? { ...user, ...updatedUser } : user));
       })
       .catch(error => {
         console.error("Error updating user's status", error);
@@ -120,10 +156,23 @@ const Show: React.FC<PageProps> = ({ auth }) => {
 
       <UserChannelsHandler
           userId={auth.user?.id ?? null}
+          parentId={auth.user?.user_id ?? null}
           onUpdateUser={handleUpdatedUser}
       />
       <div className='bg-white dark:bg-gray-800 p-4 rounded-xl'>
         <h1 className="text-2xl font-semibold mb-4">User List</h1>
+
+        <div className="flex gap-2">
+                <TextInput
+                    type="text" 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                    placeholder="Search..."
+                    className='flex gap-2'
+                />
+                <DangerButton onClick={handleReset}>Reset</DangerButton>
+        </div>
+
         <div className='overflow-x-auto'>
           <table className="min-w-full table-auto">
             <thead>
@@ -149,11 +198,13 @@ const Show: React.FC<PageProps> = ({ auth }) => {
                     <td className='py-2 px-6'>
                       <EditUserModal user={user} onClose={() => {/* As mentioned, potential additional operations after closing */}}/>
                     </td>
-                  )}
-                  <UserSwitch
-                    isActive={user.is_active}
-                    onChange={() => toggleUserActive(user.id, user.is_active)}
-                  />
+                    )} 
+                    {Array.isArray(userRoles) && userRoles.find(role => role === 'admin') && (
+                      <UserSwitch
+                        isActive={user.is_active}
+                        onChange={() => toggleUserActive(user.id, user.is_active)}
+                      />
+                  )} 
                 </tr>
               ))}
             </tbody>
