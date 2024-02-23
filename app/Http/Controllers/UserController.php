@@ -32,6 +32,12 @@ class UserController extends Controller
         $user = auth()->user();
         $search = $request->input('search');
 
+        // Check if the user is a child user
+        if ($user->user_id) {
+            // Redirect or return an error response
+            return redirect('dashboard')->with('error', 'Access denied');
+        }
+
         $parentUserId = $user->user_id ? $user->user_id : $user->id;
 
         // Start the query to fetch all users under the same parent
