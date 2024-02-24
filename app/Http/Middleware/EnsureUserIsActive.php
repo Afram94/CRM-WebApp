@@ -18,7 +18,7 @@ class EnsureUserIsActive
         if (auth()->check() && !auth()->user()->is_active) {
             auth()->logout();
             /* return redirect('/account-paused')->withErrors('Your account is currently inactive.'); */
-            return redirect()->route('account.paused');
+            return redirect('/');
         }
         return $next($request);
     }

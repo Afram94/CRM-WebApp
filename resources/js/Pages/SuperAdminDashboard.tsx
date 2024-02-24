@@ -1,39 +1,58 @@
-// resources/js/components/SuperAdminDashboard.tsx
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
-import { PageProps, SuperAdminUsers, User } from '@/types'; // Assuming your types are exported and can be imported
+import { PageProps, SuperAdminUsers } from '@/types'; // Adjusted import
 import axios from 'axios';
 import UserSwitch from '@/Components/UserSwitch';
+import DangerButton from '@/Components/DangerButton';
+import TextInput from '@/Components/TextInput';
 
 const SuperAdminDashboard: React.FC<PageProps> = ({ auth }) => {
-    const { superadminusers } = auth;
+    // State for holding and filtering users
+    const [filteredUsers, setFilteredUsers] = useState<SuperAdminUsers[]>(auth.superadminusers);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const [users, setUsers] = useState<SuperAdminUsers[]>([]);
+    // No need to separate users here since all operations are on filteredUsers now
 
-    console.log(superadminusers);
+    useEffect(() => {
+        if (searchTerm === '') {
+            setFilteredUsers(auth.superadminusers); // Reset to original list if search is cleared
+            return;
+        }
 
-    // Separate the users into admins, their children, and the super admin
-    const admins = superadminusers.filter(user => user.user_id === null && user.email !== "afram.h@hotmail.com");
-    const superAdmin = superadminusers.find(user => user.email === "afram.h@hotmail.com");
+        if (searchTerm.length >= 3) {
+            // Fetch filtered users based on search term
+            const fetchFilteredUsers = async () => {
+                try {
+                    const response = await axios.get(`/superadmin/dashboard?search=${searchTerm}`);
+                    if (response.data && response.data.auth && response.data.auth.superadminusers) {
+                        setFilteredUsers(response.data.auth.superadminusers);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch filtered users:', error);
+                }
+            };
 
-    // Map children to their respective admins
-    admins.forEach(admin => {
-        admin.children = superadminusers.filter(user => user.user_id === admin.id);
-    });
+            fetchFilteredUsers();
+        } else {
+            setFilteredUsers(auth.superadminusers); // Reset to original list if searchTerm is less than 3 chars
+        }
+    }, [searchTerm, auth.superadminusers]);
+
+    const handleReset = () => {
+        setSearchTerm('');
+    };
 
     const toggleUserActive = (userId: number) => {
         axios.post(`/users/${userId}/toggle-active`)
             .then(response => {
-                /* alert(response.data.message); // Show success message */
-                // Refresh user list or update state here
-                const updatedUsers = users.map(user => {
+                // Upon successful toggle, refresh or update user list here
+                const updatedUsers = filteredUsers.map(user => {
                     if (user.id === userId) {
                         return { ...user, is_active: !user.is_active };
                     }
                     return user;
                 });
-                setUsers(updatedUsers);
+                setFilteredUsers(updatedUsers);
             })
             .catch(error => {
                 console.error("Error toggling user's status", error);
@@ -44,18 +63,25 @@ const SuperAdminDashboard: React.FC<PageProps> = ({ auth }) => {
         <SuperAdminLayout>
             <div className="p-8">
                 <h1 className="text-2xl font-semibold mb-6">Super Admin Dashboard</h1>
+
+                <TextInput
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search..."
+                    className='flex gap-2'
+                />
+                <DangerButton onClick={handleReset}>Reset</DangerButton>
                 
-                {superadminusers.filter(user => user.user_id === null).map((admin: SuperAdminUsers, index: number) => {
-                    // Calculate total records (customers + products) for admin and their children
+                {filteredUsers.filter(user => user.user_id === null).map((admin, index) => {
+                    const children = filteredUsers.filter(child => child.user_id === admin.id);
                     const totalRecordsForAdmin = (admin.customers_count ?? 0) + (admin.products_count ?? 0);
-                    const totalRecordsForChildren = admin.children?.reduce((acc, child) => acc + ((child as SuperAdminUsers).customers_count ?? 0) + ((child as SuperAdminUsers).products_count ?? 0), 0) ?? 0;
-
-
+                    const totalRecordsForChildren = children.reduce((acc, child) => acc + ((child.customers_count ?? 0) + (child.products_count ?? 0)), 0);
                     const totalRecords = totalRecordsForAdmin + totalRecordsForChildren;
 
                     return (
                         <div key={admin.id} className="mb-8">
-                            <h2 className="text-xl font-semibold">{admin.name} ({admin.email}) - Child Users: {admin.children?.length || 0}, Total Records: {totalRecords}</h2>
+                            <h2 className="text-xl font-semibold">{admin.name} ({admin.email}) - Child Users: {children.length}, Total Records: {totalRecords}</h2>
                             <table className="w-full text-left mt-4 table-auto border-collapse border border-slate-400">
                                 <thead className="bg-gray-200">
                                     <tr>
@@ -64,20 +90,23 @@ const SuperAdminDashboard: React.FC<PageProps> = ({ auth }) => {
                                         <th className="border border-slate-300 px-4 py-2">Email</th>
                                         <th className="border border-slate-300 px-4 py-2">Customers</th>
                                         <th className="border border-slate-300 px-4 py-2">Products</th>
+                                        <th className="border border-slate-300 px-4 py-2">Active</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {admin.children?.map((child: SuperAdminUsers, childIndex: number) => (
-                                        <tr key={child.id} className="border-b">
+                                    {children.map((child, childIndex) => (
+                                        <tr key={child.id}>
                                             <td className="border border-slate-300 px-4 py-2">{childIndex + 1}</td>
                                             <td className="border border-slate-300 px-4 py-2">{child.name}</td>
                                             <td className="border border-slate-300 px-4 py-2">{child.email}</td>
                                             <td className="border border-slate-300 px-4 py-2">{child.customers_count}</td>
                                             <td className="border border-slate-300 px-4 py-2">{child.products_count}</td>
-                                            <UserSwitch
-                                                isActive={child.is_active}
-                                                onChange={() => toggleUserActive(child.id)}
-                                            />
+                                            <td className="border border-slate-300 px-4 py-2">
+                                                <UserSwitch
+                                                    isActive={child.is_active}
+                                                    onChange={() => toggleUserActive(child.id)}
+                                                />
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
