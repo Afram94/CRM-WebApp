@@ -329,7 +329,7 @@ class ProductController extends Controller
         DB::commit();
 
         // Broadcast the event after the data has been persisted
-        broadcast(new ProductCreated($product->load('customFieldsValues.customField')));
+        broadcast(new ProductCreated($product->load(['customFieldsValues.customField', 'category'])));
 
         return response()->json($product, 200);
 
@@ -393,7 +393,8 @@ class ProductController extends Controller
             // Replace 'customFieldsValues.customField' with the appropriate relation for the product
             /* $product->load('customFieldsValues.customField'); */
 
-            broadcast(new ProductUpdated($product->load('customFieldsValues.customField')));
+            broadcast(new ProductUpdated($product->load(['customFieldsValues.customField', 'category'])));
+
 
             return response()->json($product, Response::HTTP_OK);
 

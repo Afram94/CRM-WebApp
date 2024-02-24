@@ -132,7 +132,7 @@ export default function Welcome({ auth }: PageProps) {
 
 
                 {/* Header */}
-                <header className="relative bg-cover bg-center py-20 animated-gradient" style={{ backgroundImage: "url('header-background.jpg')" }}>
+                <header className="relative bg-cover bg-center py-20 animated-gradient" /* style={{ backgroundImage: "url('header-background.jpg')" }} */>
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="animated-gradient-text text-4xl flex justify-center text-primary hero-title display-4 font-extrabold mb-4">Welcome to NexaCore System</h2>
                     <div className='font-extrabold text-8xl'>

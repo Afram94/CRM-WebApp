@@ -39,7 +39,7 @@ const Show = ({ auth }: PageProps) => {
     return (
         <MainLayout title="/Custom-Fields">
 
-          <div className='grid grid-cols-1 gap-4'>
+          <div className='grid grid-cols-1 gap-4 bg-white p-2 rounded-lg bg-opacity-75 dark:bg-gray-800 dark:bg-opacity-75 '>
 
             <div className='border dark:border-slate-500 border-slate-200 '>
               <div className='flex justify-between bg-indigo-100 dark:bg-slate-800 py-2'>

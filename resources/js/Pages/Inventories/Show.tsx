@@ -3,23 +3,20 @@ import { PageProps, Inventory } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateInventoriesModal from './Components/CreateInventoriesModal';
-import axios from 'axios';
-import TextInput from '@/Components/TextInput';
-import DangerButton from '@/Components/DangerButton';
 import EditInventoriesModal from './Components/EditInventoriesModal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { FaTrashRestore } from 'react-icons/fa';
+import axios from 'axios';
+import TextInput from '@/Components/TextInput';
+import DangerButton from '@/Components/DangerButton';
 
 const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
     const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories || []);
-
     const [searchTerm, setSearchTerm] = useState('');
-
 
     const fetchFilteredInventories = async () => {
         try {
             const response = await axios.get(`/inventories?search=${searchTerm}`);
-            console.log(response.data);
             if (response.data && response.data.auth && response.data.auth.inventories) {
                 setFilteredInventories(response.data.auth.inventories);
             }
@@ -28,7 +25,6 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
         }
     };
 
-    // Fetch inventories when search term changes
     useEffect(() => {
         if (searchTerm.length >= 3 || searchTerm === '') {
             fetchFilteredInventories();
@@ -48,63 +44,61 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
     const deleteInventory = async (inventoryId: number) => {
         try {
             const response = await axios.delete(`/inventories/${inventoryId}`);
-            console.log(response.data);
             // Update UI or redirect as needed
         } catch (error) {
             console.error('Error deleting inventory', error);
-            // Handle errors
         }
-    }
-
-    /* console.log(filteredInventories); */
+    };
 
     return (
         <MainLayout title='Inventories'>
-            <div className="flex gap-2">
-                <TextInput
-                    type="text" 
-                    value={searchTerm} 
-                    onChange={(e) => setSearchTerm(e.target.value)} 
-                    placeholder="Search..."
-                    className='flex gap-2'
-                />
-                <DangerButton onClick={handleReset}>Reset</DangerButton>
-            </div>
-            <CreateInventoriesModal />
-            <div className="container mx-auto p-4">
-                <table className="min-w-full table-auto border-collapse border border-gray-300">
-                    <thead>
-                        <tr className="bg-gray-200">
-                            {/* <th className="border border-gray-300 p-2">User ID</th> */}
-                            <th className="border border-gray-300 p-2">Product Name</th>
-                            <th className="border border-gray-300 p-2">Quantity</th>
-                            <th className="border border-gray-300 p-2">Stock Status</th>
-                            <th className="border border-gray-300 p-2">Restock Date</th>
-                            {/* Add more headers as needed */}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredInventories?.map(inventory => (
-                            <tr key={inventory.id} className="hover:bg-gray-100">
-                                {/* <td className="border border-gray-300 p-2">{inventory.user_id}</td> */}
-                                <td className="border border-gray-300 p-2">{inventory.product_name}</td>
-                                <td className="border border-gray-300 p-2">{inventory.quantity}</td>
-                                <td className="border border-gray-300 p-2">{inventory.stock_status}</td>
-                                <td className="border border-gray-300 p-2">{inventory.restock_date ?? 'N/A'}</td>
-                                <td className="py-2 px-6">
-                                    <EditInventoriesModal inventory={inventory} onClose={() => {/* Operations after closing modal */}}/>
-                                </td>
+            <div className='bg-white dark:bg-gray-800 p-4 rounded-xl'>
+                <div className='w-full flex justify-between my-4'>
+                    <div className="flex gap-2">
+                        <TextInput
+                            type="text" 
+                            value={searchTerm} 
+                            onChange={(e) => setSearchTerm(e.target.value)} 
+                            placeholder="Search..."
+                            className='flex gap-2'
+                        />
+                        <DangerButton onClick={handleReset}>Reset</DangerButton>
+                    </div>
+                    <CreateInventoriesModal />
+                </div>
 
-                                <td className="py-2 px-6">
+                <div className='overflow-x-auto'>
+                    <table className="min-w-full table-auto">
+                        <thead>
+                            <tr className="text-gray-600 dark:text-gray-300 uppercase text-sm leading-normal border-y-2">
+                                <th className="py-2 px-6 text-left">Product Name</th>
+                                <th className="py-2 px-6 text-left">Quantity</th>
+                                <th className="py-2 px-6 text-left">Stock Status</th>
+                                <th className="py-2 px-6 text-left">Restock Date</th>
+                                <th className="py-2 px-6">Edit</th>
+                                <th className="py-2 px-6">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-gray-600 dark:text-gray-400 text-sm font-light">
+                            {filteredInventories.map((inventory) => (
+                                <tr key={inventory.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <td className="py-2 px-6">{inventory.product_name}</td>
+                                    <td className="py-2 px-6">{inventory.quantity}</td>
+                                    <td className="py-2 px-6">{inventory.stock_status}</td>
+                                    <td className="py-2 px-6">{inventory.restock_date ?? 'N/A'}</td>
+                                    <td className="py-2 px-6">
+                                        <EditInventoriesModal inventory={inventory} onClose={() => {/* Operations after closing modal */}} />
+                                    </td>
+                                    <td className="py-2 px-6">
                                         <PrimaryButton onClick={() => deleteInventory(inventory.id)}>
                                             <FaTrashRestore />
                                         </PrimaryButton>
                                     </td>
-                                {/* Add more inventory details as needed */}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </MainLayout>
     );

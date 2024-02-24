@@ -38,6 +38,8 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+
+            \App\Http\Middleware\EnsureUserIsActive::class,
         ],
 
         'api' => [
@@ -67,4 +69,11 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
+
+    protected $routeMiddleware = [
+        // other middleware
+        'superadmin' => \App\Http\Middleware\EnsureUserIsSuperAdmin::class,
+        'is_active' => \App\Http\Middleware\EnsureUserIsActive::class,
+    ];
+    
 }

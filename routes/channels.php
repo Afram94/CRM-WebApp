@@ -30,9 +30,18 @@ Broadcast::channel('products-for-user-{userId}', function ($user, $userId) {
     return $user->id == $userId || $user->user_id == $userId;
 });
 
+Broadcast::channel('users-for-user-{userId}', function ($user, $userId) {
+    return $user->id == $userId || $user->user_id == $userId;
+});
+
 Broadcast::channel('permissions-for-user.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
+
+/* Broadcast::channel('all-users-updates', function ($user) {
+    // Check if the user has the 'superadmin' role
+    return $user->hasRole('superadmin');
+}); */
 /* Broadcast::channel('customer.{customerId}', function ($user, $userId) {
     return ture;
 }); */

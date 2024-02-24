@@ -21,6 +21,10 @@ use App\Http\Controllers\ProductCustomFieldController;
 
 use App\Http\Controllers\CustomerProductController;
 
+use App\Http\Controllers\EventController;
+
+use App\Http\Controllers\SuperAdminController;
+
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
 
@@ -43,6 +47,14 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+
+Route::middleware(['auth', 'superadmin'])->group(function () {
+    Route::get('/superadmin/dashboard', [SuperAdminController::class, 'index'])->name('superadmin.dashboard');
+    // Other Super Admin specific routes...
+});
+
+
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -101,6 +113,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
 
+    Route::Resource('events', EventController::class);
     
 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
@@ -112,6 +125,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/user-roles', [UserController::class, 'getRoles']);
     Route::get('users/{id}/permissions', [UserController::class, 'getPermissions']);
     Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
+    Route::post('/users/{userId}/toggle-active', [UserController::class, 'toggleUserActive'])->name('users.toggle-active');
+
+    Route::post('/users/{userId}/update-details', [UserController::class, 'updateUser']);
+
+
 
 
     //Customers Custom fields
@@ -127,6 +145,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
     Route::get('/get-customer-custom-fields', [CustomerCustomFieldController::class, 'getCustomerCustomFields']);
+
+    Route::post('/customers/{customerId}/addProduct', [CustomerProductController::class, 'addProductToCustomer']);
 
 
 
@@ -149,7 +169,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Customer-Product-Controller
-Route::post('/customers/{customerId}/addProduct', [CustomerProductController::class, 'addProductToCustomer']);
+
 
 
 
@@ -167,5 +187,21 @@ Route::middleware('auth')->group(function () {
     /* Route::get('/dashboard', [CustomerController::class, 'index'])->name('dashboard'); */
 
 });
+
+// Define all specific web routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+// Define other specific routes here...
+
+// SPA catch-all route
+Route::get('/{any}', function () {
+    return Inertia::render('NotFound404');
+})->where('any', '.*')->middleware('auth')->name('spa.catchall');
+
+/* 
+// Catch-all route for unmatched routes
+Route::get('/{any}', function () {
+    return Inertia::render('NotFound404');
+})->where('any', '.*')->middleware('auth'); */
 
 require __DIR__.'/auth.php';
