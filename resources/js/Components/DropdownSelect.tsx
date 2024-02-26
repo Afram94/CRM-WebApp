@@ -26,7 +26,7 @@ const ReusableListbox: React.FC<ReusableListboxProps> = ({ options, selected, on
           </span>
         </Listbox.Button>
         <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-          <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+          <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
             {options.map((option, idx) => (
               <Listbox.Option key={idx} className={({ active }) => `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-amber-100 dark:bg-amber-700 text-amber-900 dark:text-white' : 'text-gray-900 dark:text-gray-300'}`} value={option}>
                 {({ selected }) => (
