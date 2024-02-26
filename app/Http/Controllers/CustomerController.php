@@ -13,6 +13,7 @@ use App\Events\CustomerDeleted;
 use App\Jobs\ProcessNewCustomer;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\Response;
 
 
 class CustomerController extends Controller
@@ -292,10 +293,37 @@ class CustomerController extends Controller
         return Inertia::render('Customers/CreateCustomer');
     }
 
+
+
+
+    private function getUserIdsUnderSameParent()
+    {
+        $user = auth()->user();
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
     
+        return User::where('user_id', $parentUserId)
+                   ->orWhere('id', $parentUserId)
+                   ->pluck('id')->toArray();
+    }
 
 
-    
+    public function getCustomers()
+    {
+        $user = auth()->user();
+        $allUserIdsUnderSameParent = $this->getUserIdsUnderSameParent();
 
+        // Retrieve customers only for users who share the same parent_user_id.
+        $customersQuery = Customer::whereIn('user_id', $allUserIdsUnderSameParent);
+
+        $customers = $customersQuery->get()->transform(function ($customer) {
+            return [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                // Add or transform other fields as needed
+            ];
+        });
+
+        return response()->json($customers, Response::HTTP_OK);
+    }
 
 }

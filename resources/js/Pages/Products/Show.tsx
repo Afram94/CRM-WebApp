@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PageProps, Product } from '@/types';
+import { Customer, PageProps, Product } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateProductsModal from './Components/CreateProductsModal';
@@ -226,6 +226,48 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
         )
     ];
 
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [selectedCustomer, setSelectedCustomer] = useState('');
+    useEffect(() => {
+        axios.get('/get-customers') // Adjust the API endpoint as needed
+          .then(response => {
+            setCustomers(response.data);
+            /* setSelectedProduct(response.data[0]); // Default to the first product, adjust as needed */
+
+        })
+        .catch(error => console.error('Error fetching products:', error));
+    }, []);
+    console.log(customers);
+
+
+    const handleCheckout = async () => {
+        // Assuming selectedCustomer is a state that holds the currently selected customer ID
+        if (!selectedCustomer) {
+            alert("Please select a customer");
+            return;
+        }
+    
+        const productsArray = Object.keys(cart).map((productId : any) => ({
+            id: parseInt(productId, 10),
+            quantity: cart[productId],
+        }));
+    
+        try {
+            const response = await axios.post('/orders', { // Ensure the URL matches your API endpoint
+                customer_id: selectedCustomer,
+                products: productsArray,
+            });
+    
+            localStorage.removeItem('cart');
+            setCart({});
+            setIsCartModalOpen(false); // Close the cart modal
+            alert('Order created successfully');
+        } catch (error) {
+            console.error('Error creating order:', error);
+            alert('Failed to create the order');
+        }
+    };
+
     /* console.log(distinctCustomFieldNames);
     console.log(filteredProducts);
     console.log(auth.products); */
@@ -340,6 +382,13 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
                             );
                         })}
                     </ul>
+                    <select value={selectedCustomer} onChange={e => setSelectedCustomer(e.target.value)}>
+                        <option value="">Select a Customer</option>
+                        {customers.map(customer => (
+                            <option key={customer.id} value={customer.id}>{customer.name}</option>
+                        ))}
+                    </select>
+                    <button onClick={handleCheckout}>Checkout</button>
                 </div>
             </Modal>
         </MainLayout>
