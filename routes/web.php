@@ -10,6 +10,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\InventoryController;
 
@@ -87,6 +88,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/export-csv', [ExportController::class, 'exportCsv']);
     Route::get('/export-single-customer-csv/{customerId}', [ExportController::class, 'exportSingleCustomerCsv']);
 
+    Route::get('/get-customers', [CustomerController::class, 'getCustomers']);
+
     // Products
     /* Route::resource('products', ProductController::class); */
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
@@ -111,6 +114,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/categories/create', [CategoryController::class, 'create']);
     Route::put('/categories/{category}', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+
+    //Orders
+    Route::post('/orders', [OrderController::class, 'store']);
 
 
     Route::Resource('events', EventController::class);
