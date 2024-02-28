@@ -16,6 +16,8 @@ import Modal from '@/Components/Modal';
 import { MdAttachMoney } from 'react-icons/md';
 import { IoCart } from 'react-icons/io5';
 
+import SelectCustomer from './Components/SelectCustomer';
+
 type GroupedProducts = {
     [category: string]: Product[];
 };
@@ -69,6 +71,18 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
 
     const toggleCartModal = () => {
         setIsCartModalOpen(!isCartModalOpen);
+    };
+
+    // Function to completely remove a product from the cart
+    const deleteFromCart = (productId : number) => {
+        setCart((prevCart) => {
+            const newCart = { ...prevCart };
+            if (newCart[productId]) {
+                delete newCart[productId]; // Remove the item from the cart
+                localStorage.setItem('cart', JSON.stringify(newCart)); // Update local storage
+            }
+            return newCart;
+        });
     };
 
     // Function to group products by category
@@ -374,21 +388,30 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
                     <h2 className="font-bold text-lg mb-4">Cart Items</h2>
                     <ul>
                         {Object.entries(cart).map(([productId, quantity]) => {
-                            const product = filteredProducts.find(p => p.id === Number(productId));
+                            // Find the product details from your products state if needed for display
+                            const product = filteredProducts.find(p => p.id.toString() === productId);
+
                             return (
-                                <li key={productId} className="mb-2">
-                                    {product?.name} - Quantity: {quantity as number}
+                                <li key={productId} className="flex justify-between items-center">
+                                    <span>{product ? product.name : 'Product not found'}</span>
+                                    <span>Quantity: {quantity}</span>
+                                    <PrimaryButton className='border-2 border-slate-300 py-3 px-4 rounded-2xl dark:bg-gray-800 bg-slate-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors dark:text-slate-300' onClick={() => removeFromCart(parseInt(productId))}>-</PrimaryButton>
+                                    <PrimaryButton className='border-2 border-slate-300 py-3 px-4 rounded-2xl dark:bg-gray-800 bg-slate-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors dark:text-slate-300' onClick={() => addToCart(parseInt(productId))}>+</PrimaryButton>
+                                    <PrimaryButton className='border-2 border-slate-300 py-3 px-4 rounded-2xl dark:bg-gray-800 bg-slate-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors dark:text-slate-300' onClick={() => deleteFromCart(parseInt(productId))}>Delete</PrimaryButton>
                                 </li>
                             );
                         })}
                     </ul>
-                    <select value={selectedCustomer} onChange={e => setSelectedCustomer(e.target.value)}>
+                    {/* <select value={selectedCustomer} onChange={e => setSelectedCustomer(e.target.value)}>
                         <option value="">Select a Customer</option>
                         {customers.map(customer => (
                             <option key={customer.id} value={customer.id}>{customer.name}</option>
                         ))}
-                    </select>
-                    <button onClick={handleCheckout}>Checkout</button>
+                    </select> */}
+
+                        <SelectCustomer onCustomerSelect={(customerId) => setSelectedCustomer(customerId.toString())} />
+
+                    <PrimaryButton onClick={handleCheckout}>Checkout</PrimaryButton>
                 </div>
             </Modal>
         </MainLayout>
