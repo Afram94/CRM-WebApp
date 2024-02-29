@@ -46,6 +46,7 @@ export interface Customer {
     custom_fields_values: CustomerCustomFieldValue[];
     notes: Note[];
     products: Product[]; // Add this line
+    orders: Order[];
 
     // ... any other fields for Customer
 }
@@ -119,6 +120,24 @@ interface CalendarEvent {
     end: Date | string;
     color?: string;
   }
+
+  export interface Order {
+    id: number;
+    user_id: number; // Assuming this is the ID of the user who creates the order
+    customer_id: number;
+    total: number;
+    status: string; // Could be an enum or string type depending on how you manage status
+    order_items?: OrderItem[]; // Optional for when creating and not yet populated
+}
+
+export interface OrderItem {
+    id?: number; // Optional as it might not exist before creation
+    order_id: number;
+    product_id: number;
+    quantity: number;
+    price: number; // Assuming this is the price at the time of order
+    product?: Product; // Add this line to include product details
+}
   
   
 
@@ -157,6 +176,9 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         customer_custom_fields: CustomerCustomField[];
         product_custom_fields: ProductCustomField[];
         calendar: CalendarEvent[];
+
+        orders: Order[];
+        order_items: OrderItem[];
 
 
         superadminusers: SuperAdminUsers[];

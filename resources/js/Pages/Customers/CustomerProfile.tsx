@@ -1,10 +1,10 @@
 // CustomerProfiles.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { PageProps } from '@/types';
 import { TabComponent } from '@/Components/TabComponent';
 import { FaUser } from 'react-icons/fa';
-import { IoCart } from 'react-icons/io5';
+import { IoCart, IoListSharp } from 'react-icons/io5';
 import { MdAttachMoney } from 'react-icons/md';
 
 const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
@@ -13,11 +13,17 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
   const tabCategories = [
     { name: 'Overview', Icon: FaUser },
     { name: 'Products', Icon: FaUser },
+    { name: 'Orders', Icon: IoListSharp },
     { name: 'Address & Billing', Icon: FaUser },
     { name: 'Notifications', Icon: FaUser },
   ];
 
-  console.log(auth.customer_profile);
+  useEffect(() => {
+    console.log(auth);
+  }, [])
+  
+
+  
 
   return (
     <MainLayout title="">
@@ -183,6 +189,32 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
               </div>
             </div>
           )}
+
+            {selectedTab === 'Orders' && (
+              <div className="p-4">
+                {auth.customer_profile[0]?.orders?.map((order) => (
+                  <div key={order.id} className="mb-4 p-5 rounded-lg shadow-lg border border-gray-300">
+                    <h3 className="text-lg font-semibold mb-3 dark:text-gray-300">
+                      Order ID: {order.id}
+                    </h3>
+                    <p className="text-base dark:text-gray-300">Status: {order.status}</p>
+                    <p className="text-base dark:text-gray-300">Total: ${order.total}</p>
+                    <div className="mt-4">
+                      <h4 className="text-md font-semibold mb-2 dark:text-gray-300">Items:</h4>
+                      {order.order_items?.map((item) => (
+                        <div key={item.id} className="mb-2 flex justify-between">
+                          {/* Adjusted for direct access since there's no `product` key in the provided structure */}
+                          <p className="text-sm dark:text-gray-300">Product: {item.product?.name ?? 'Product not found'}</p>
+
+                          <p className="text-sm dark:text-gray-300">Qty: {item.quantity}</p>
+                          <p className="text-sm dark:text-gray-300">Price: ${item.price}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
 
           </div>

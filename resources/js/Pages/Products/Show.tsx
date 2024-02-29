@@ -383,37 +383,43 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
                     )}
             </div>
             
-            <Modal show={isCartModalOpen} onClose={toggleCartModal} maxWidth="md">
-                <div className="p-4">
+            <Modal show={isCartModalOpen} onClose={toggleCartModal}>
+                <div className="p-4 h-[700px] overflow-auto">
                     <h2 className="font-bold text-lg mb-4">Cart Items</h2>
-                    <ul>
-                        {Object.entries(cart).map(([productId, quantity]) => {
-                            // Find the product details from your products state if needed for display
-                            const product = filteredProducts.find(p => p.id.toString() === productId);
-
-                            return (
-                                <li key={productId} className="flex justify-between items-center">
-                                    <span>{product ? product.name : 'Product not found'}</span>
-                                    <span>Quantity: {quantity}</span>
-                                    <PrimaryButton className='border-2 border-slate-300 py-3 px-4 rounded-2xl dark:bg-gray-800 bg-slate-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors dark:text-slate-300' onClick={() => removeFromCart(parseInt(productId))}>-</PrimaryButton>
-                                    <PrimaryButton className='border-2 border-slate-300 py-3 px-4 rounded-2xl dark:bg-gray-800 bg-slate-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors dark:text-slate-300' onClick={() => addToCart(parseInt(productId))}>+</PrimaryButton>
-                                    <PrimaryButton className='border-2 border-slate-300 py-3 px-4 rounded-2xl dark:bg-gray-800 bg-slate-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors dark:text-slate-300' onClick={() => deleteFromCart(parseInt(productId))}>Delete</PrimaryButton>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                    {/* <select value={selectedCustomer} onChange={e => setSelectedCustomer(e.target.value)}>
-                        <option value="">Select a Customer</option>
-                        {customers.map(customer => (
-                            <option key={customer.id} value={customer.id}>{customer.name}</option>
-                        ))}
-                    </select> */}
-
-                        <SelectCustomer onCustomerSelect={(customerId) => setSelectedCustomer(customerId.toString())} />
-
+                    <table className="min-w-full leading-normal">
+                        <thead>
+                            <tr>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product Name</th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Quantity</th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.entries(cart).map(([productId, quantity]) => {
+                                const product = filteredProducts.find(p => p.id.toString() === productId);
+                                return (
+                                    <tr key={productId}>
+                                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                            {product ? product.name : 'Product not found'}
+                                        </td>
+                                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                            {quantity}
+                                        </td>
+                                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm flex justify-around">
+                                            <PrimaryButton className='...' onClick={() => removeFromCart(parseInt(productId))}>-</PrimaryButton>
+                                            <PrimaryButton className='...' onClick={() => addToCart(parseInt(productId))}>+</PrimaryButton>
+                                            <PrimaryButton className='...' onClick={() => deleteFromCart(parseInt(productId))}>Delete</PrimaryButton>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                    <SelectCustomer onCustomerSelect={(customerId) => setSelectedCustomer(customerId.toString())} />
                     <PrimaryButton onClick={handleCheckout}>Checkout</PrimaryButton>
                 </div>
             </Modal>
+
         </MainLayout>
     );
 };
