@@ -1,14 +1,21 @@
 // CustomerProfiles.tsx
 import React, { useEffect, useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
-import { PageProps } from '@/types';
+import { Order, PageProps } from '@/types';
 import { TabComponent } from '@/Components/TabComponent';
 import { FaUser } from 'react-icons/fa';
 import { IoCart, IoListSharp } from 'react-icons/io5';
 import { MdAttachMoney } from 'react-icons/md';
+import axios from 'axios';
+import ReusableListbox from '@/Components/DropdownSelect';
 
 const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
-  const [selectedTab, setSelectedTab] = useState('Overview');
+  /* const [selectedTab, setSelectedTab] = useState('Overview'); */
+
+  // Step 2: Read from local storage on component mount or use 'Overview' as default
+  const [selectedTab, setSelectedTab] = useState(() => {
+    return localStorage.getItem('selectedTab') || 'Overview';
+  });
 
   const tabCategories = [
     { name: 'Overview', Icon: FaUser },
@@ -18,50 +25,124 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
     { name: 'Notifications', Icon: FaUser },
   ];
 
-  useEffect(() => {
+  const orderStatusOptions = [
+    { label: 'Pending', value: 'pending' },
+    { label: 'Completed', value: 'completed' },
+    { label: 'Canceled', value: 'canceled' },
+  ];
+
+  const [filterStatus, setFilterStatus] = useState('all');
+  const filterOptions = [
+    { label: 'All', value: 'all' },
+    ...orderStatusOptions, // Assuming this includes 'pending', 'completed', 'canceled'
+  ];
+  
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+
+
+  /* useEffect(() => {
     console.log(auth);
-  }, [])
+  }, []) */
+
+  // Step 1: Save to local storage whenever selectedTab changes
+  useEffect(() => {
+    localStorage.setItem('selectedTab', selectedTab);
+  }, [selectedTab]);
+
+
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  // Defines an asynchronous function to update the status of an order.
+  const updateOrderStatus = async (orderId: number, newStatus: string) => {
+    try {
+      // Attempts to send a PUT request to update the status of an order on the server.
+      // The `orderId` determines which order to update, and `newStatus` is the new status value.
+      await axios.put(`/orders/${orderId}`, { status: newStatus });
+
+      // After a successful update on the server, iterates over the local orders state
+      // to find the order with the matching `orderId` and update its status.
+      const updatedOrders = orders.map(order => {
+        // Checks if the current order in the map operation matches the order we want to update.
+        if (order.id === orderId) {
+          // If it matches, returns a new object with the same properties as the current order,
+          // but with the `status` property updated to `newStatus`.
+          return { ...order, status: newStatus };
+        }
+        // If it doesn't match, returns the order unchanged.
+        return order;
+      });
+
+      // Sets the `orders` state to the newly created array of orders,
+      // which includes the updated order status. This triggers a re-render of the component
+      // with the updated orders data.
+      setOrders(updatedOrders);
+      console.log('Order status updated successfully');
+    } catch (error) {
+      // If the request fails (e.g., due to network issues or server errors),
+      // logs an error message to the console.
+      console.error('Failed to update order status:', error);
+    }
+  };
+
+  // Uses the `useEffect` hook to perform side effects in the component.
+  // In this case, it's used for initializing the `orders` state.
+  useEffect(() => {
+    setOrders(auth.customer_profile[0]?.orders || []);
+  }, [auth.customer_profile]);
   
 
-  
+  // At the beginning of your component, you can destructure the first customer profile
+  // if you're sure there will always be one in the auth object, otherwise, you might want to handle potential undefined values.
+  const customer = auth.customer_profile[0];
 
   return (
     <MainLayout title="">
-      <div className='m-5 bg-white p-2 rounded-lg bg-opacity-75 dark:bg-gray-800 dark:bg-opacity-75 xl:h-screen'>
-        <div className='text-gray-600 dark:text-gray-100 text-lg sm:text-xl md:text-2xl'>
-          Customer ID #3085d6
-        </div>
-        <div className='text-gray-500 dark:text-gray-100 text-sm sm:text-md md:text-lg mb-5'>
-          Aug 17, 2020, 5:48 (ET)
-        </div>
-        <div className='grid grid-cols-1 xl:grid-cols-3 gap-4'>
+      <div className='m-5 bg-white p-2 rounded-lg dark:bg-gray-800'> {/* dark:bg-opacity-75 bg-opacity-75 */} {/* xl:h-screen */}
+      {/* Replace hardcoded text with dynamic data */}
+      <div className='text-gray-600 dark:text-gray-100 text-lg sm:text-xl md:text-2xl'>
+        Customer ID #{customer?.id}
+      </div>
+      {/* Assuming you have a created_at field for customer and formatting it */}
+      <div className='text-gray-500 dark:text-gray-100 text-sm sm:text-md md:text-lg mb-5'>
+        {new Date(customer?.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
+      </div>
+      <div className='grid grid-cols-1 xl:grid-cols-3'>
 
-          <div className='shadow-md rounded-lg bg-slate-50 flex flex-col gap-y-1 mt-4 p-4 dark:bg-gray-700'>
-            <div className='flex justify-center mb-4'>
-              <FaUser className='bg-indigo-200 text-indigo-500 rounded-full p-3 h-16 w-16 sm:h-20 sm:w-20 md:h-28 md:w-28 mt-4' />
+        <div className='flex flex-col gap-y-1 mt-24 mx-5 p-4 shadow-md rounded-lg bg-slate-200 dark:bg-gray-700 h-1/3'> {/*   */}
+          <div className='flex justify-center mb-4'>
+            <FaUser className='bg-indigo-200 text-indigo-500 rounded-full p-3 h-16 w-16 sm:h-20 sm:w-20 md:h-28 md:w-28 mt-4 animate-pulse' />
+          </div>
+
+          {/* Use actual customer name */}
+          <div className='text-center text-gray-700 dark:text-gray-100 text-lg sm:text-xl md:text-2xl'>
+            {customer?.name}
+          </div>
+          {/* Use actual customer ID */}
+          <div className='text-center text-gray-600 dark:text-gray-100 text-sm sm:text-md'>
+            Customer ID #{customer?.id}
+          </div>
+          
+          {/* Assuming you have a way to calculate the total number of orders and amount spent */}
+          <div className='flex flex-col sm:flex-row justify-center sm:gap-10 text-gray-700 dark:text-gray-100 my-4'>
+            <div className='flex items-center justify-center my-2'>
+              <IoCart className="w-10 h-10 text-indigo-500 bg-indigo-200 rounded-md p-2"/>
+              <div className='mx-2'>
+                {/* Assuming `orders` is an array of orders */}
+                <p className='font-semibold '>{customer?.orders?.length ?? 0}</p>
+                <p>Orders</p>
+              </div>
             </div>
 
-            <div className='text-center text-gray-700 dark:text-gray-100 text-lg sm:text-xl md:text-2xl'>Afram Hanna</div>
-            <div className='text-center text-gray-600 dark:text-gray-100 text-sm sm:text-md'>Customer ID #3085d6</div>
-            
-            <div className='flex flex-col sm:flex-row justify-center sm:gap-10 text-gray-700 dark:text-gray-100 my-4'>
-              <div className='flex items-center justify-center my-2'>
-                <IoCart className="w-10 h-10 text-indigo-500 bg-indigo-200 rounded-md p-2"/>
-                <div className='mx-2'>
-                  <p className='font-semibold '>184</p>
-                  <p>Orders</p>
-                </div>
-              </div>
-
-              <div className='flex items-center justify-center my-2'>
-                <MdAttachMoney className="w-10 h-10 text-indigo-500 bg-indigo-200 rounded-md p-2" />
-                <div className='mx-2'>
-                  <p className='font-semibold'>$12,378</p>
-                  <p>Spent</p>
-                </div>
+            <div className='flex items-center justify-center my-2'>
+              <MdAttachMoney className="w-10 h-10 text-indigo-500 bg-indigo-200 rounded-md p-2" />
+              <div className='mx-2'>
+                {/* Calculate total spent, assuming `total` field in orders */}
+                  <p className='font-semibold'>${(customer?.orders?.reduce((acc, order) => acc + Number(order.total), 0) ?? 0).toFixed(2)}</p>
+                <p>Spent</p>
               </div>
             </div>
-            <div className='border-b-2 border-indigo-500 mx-2'></div>
+          </div>
+          <div className='border-b-2 border-indigo-500 mx-2'></div>
 
             <div className='mt-4'>
               <div className='text-gray-500 text-sm sm:text-md dark:text-gray-100'>DETAILS</div>
@@ -190,31 +271,78 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
             </div>
           )}
 
-            {selectedTab === 'Orders' && (
-              <div className="p-4">
-                {auth.customer_profile[0]?.orders?.map((order) => (
-                  <div key={order.id} className="mb-4 p-5 rounded-lg shadow-lg border border-gray-300">
-                    <h3 className="text-lg font-semibold mb-3 dark:text-gray-300">
-                      Order ID: {order.id}
-                    </h3>
-                    <p className="text-base dark:text-gray-300">Status: {order.status}</p>
-                    <p className="text-base dark:text-gray-300">Total: ${order.total}</p>
-                    <div className="mt-4">
-                      <h4 className="text-md font-semibold mb-2 dark:text-gray-300">Items:</h4>
-                      {order.order_items?.map((item) => (
-                        <div key={item.id} className="mb-2 flex justify-between">
-                          {/* Adjusted for direct access since there's no `product` key in the provided structure */}
-                          <p className="text-sm dark:text-gray-300">Product: {item.product?.name ?? 'Product not found'}</p>
+{selectedTab === 'Orders' && (
+  <div className="p-4">
+    {orders.map((order) => (
+      <div key={order.id} className={`mb-4 p-5 rounded-lg shadow-xl border border-gray-300 relative ${order.status === 'pending' ? 'bg-yellow-100' : order.status === 'completed' ? 'bg-green-100' : 'bg-red-100'}`}>
+        
+        {/* Accordion Toggle Button, Order Info, and Dropdown for Order Status */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-md font-semibold mb-3 text-slate-600">
+              Order ID: {order.id} <br />
+              {order.created_at && `${new Date(order.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}`}
+            </h3>
+          </div>
+          <div className="flex items-center">
+            {/* ReusableListbox for updating order status */}
+            <ReusableListbox
+              options={orderStatusOptions}
+              selected={orderStatusOptions.find(option => option.value === order.status) || orderStatusOptions[0]}
+              onChange={(selectedOption) => updateOrderStatus(order.id, selectedOption.value)}
+              className="mr-4"
+            />
+            <button 
+              onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)} 
+              className="text-sm font-semibold"
+            >
+              {expandedOrderId === order.id ? 'Hide Details' : 'Show Details'}
+            </button>
+          </div>
+        </div>
 
-                          <p className="text-sm dark:text-gray-300">Qty: {item.quantity}</p>
-                          <p className="text-sm dark:text-gray-300">Price: ${item.price}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Accordion Content */}
+        {expandedOrderId === order.id && (
+          <div>
+            <p className="text-base text-slate-600">Total: ${order.total}</p>
+            <div className="mt-4">
+              <h4 className="text-md font-semibold mb-2 text-slate-600">Items:</h4>
+              <table className="min-w-full">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                    <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {order.order_items?.map((item) => (
+                    <tr key={item.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.product?.name ?? 'Product not found'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.quantity * item.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+)}
+
+
+
+
+
 
 
           </div>

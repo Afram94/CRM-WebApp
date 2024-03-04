@@ -47,6 +47,7 @@ export interface Customer {
     notes: Note[];
     products: Product[]; // Add this line
     orders: Order[];
+    created_at: Date;
 
     // ... any other fields for Customer
 }
@@ -128,6 +129,7 @@ interface CalendarEvent {
     total: number;
     status: string; // Could be an enum or string type depending on how you manage status
     order_items?: OrderItem[]; // Optional for when creating and not yet populated
+    created_at?: Date;
 }
 
 export interface OrderItem {

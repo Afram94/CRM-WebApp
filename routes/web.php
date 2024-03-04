@@ -118,6 +118,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Orders
     Route::post('/orders', [OrderController::class, 'store']);
+    Route::put('/orders/{order}', [OrderController::class, 'update']);
 
 
     Route::Resource('events', EventController::class);
