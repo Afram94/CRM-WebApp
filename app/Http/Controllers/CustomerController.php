@@ -80,20 +80,18 @@ class CustomerController extends Controller
                                         ->orWhere('id', $parentUserId)
                                         ->pluck('id')->toArray();
 
-        $customer = Customer::with(['notes', 'products.category']) // Include 'products' in the eager load
+        $customer = Customer::with(['notes', 'products.category', 'orders.orderItems.product'])
                     ->where('id', $id)
                     ->whereIn('user_id', $allUserIdsUnderSameParent)
                     ->firstOrFail();
 
-        // Additional data transformation if necessary
-        // ...
-
         return inertia('Customers/CustomerProfile', [
             'auth' => [
-                'customer_profile' => [$customer] // The customer object now includes products
+                'customer_profile' => [$customer] // The customer object now includes products and orders
             ]
         ]);
     }
+
 
 
     public function store(Request $request)
