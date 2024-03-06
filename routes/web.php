@@ -24,6 +24,8 @@ use App\Http\Controllers\CustomerProductController;
 
 use App\Http\Controllers\EventController;
 
+use App\Http\Controllers\ChatController;
+
 use App\Http\Controllers\SuperAdminController;
 
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
@@ -55,6 +57,12 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
     // Other Super Admin specific routes...
 });
 
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::post('/chat/send-message', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::get('/chat/fetch-messages/{userId}', [ChatController::class, 'fetchMessages'])->name('chat.fetchMessages');
+});
 
 
 Route::get('/dashboard', function () {
@@ -119,6 +127,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Orders
     Route::post('/orders', [OrderController::class, 'store']);
     Route::put('/orders/{order}', [OrderController::class, 'update']);
+
+    //Chat
+    Route::post('/send-message', [ChatController::class, 'sendMessage']);
+    Route::get('/fetch-messages/{userId}', [ChatController::class, 'fetchMessages']);
 
 
     Route::Resource('events', EventController::class);
