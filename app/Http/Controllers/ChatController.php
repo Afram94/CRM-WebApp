@@ -9,29 +9,34 @@ use Illuminate\Http\Request;
 class ChatController extends Controller
 {
     public function sendMessage(Request $request)
-    {
-        $message = Message::create([
-            'from_user_id' => auth()->id(),
-            'to_user_id' => $request->to_user_id,
-            'message' => $request->message,
-        ]);
+{
+    $request->validate([
+        'to_user_id' => 'required|integer', // Ensure validation for to_user_id
+        'message' => 'required|string', // Validate message as well
+    ]);
 
-        // Broadcast the message using Laravel events
-        broadcast(new \App\Events\NewChatMessage($message));
-    
-        return response()->json(['message' => 'Message sent successfully', 'data' => $message]);
-    }
-    
-    public function fetchMessages(Request $request, $userId)
-    {
-        $messages = Message::where(function($query) use ($userId) {
-            $query->where('from_user_id', auth()->id())->where('to_user_id', $userId);
-        })->orWhere(function($query) use ($userId) {
-            $query->where('from_user_id', $userId)->where('to_user_id', auth()->id());
-        })->get();
-    
-        return response()->json(['messages' => $messages]);
-    }
+    $message = Message::create([
+        'from_user_id' => auth()->id(),
+        'to_user_id' => $request->to_user_id, // Extracting to_user_id from the request
+        'message' => $request->message,
+    ]);
+
+    broadcast(new \App\Events\NewChatMessage($message));
+
+    return response()->json(['message' => 'Message sent successfully', 'data' => $message]);
+}
+
+public function fetchMessages($userId)
+{
+    $user = auth()->user()->id;
+    $messages = Message::where(function($query) use ($user, $userId) {
+        $query->where('from_user_id', $user)->where('to_user_id', $userId);
+    })->orWhere(function($query) use ($user, $userId) {
+        $query->where('from_user_id', $userId)->where('to_user_id', $user);
+    })->get();
+
+    return response()->json(['messages' => $messages]);
+}
 
 
 
@@ -58,6 +63,22 @@ class ChatController extends Controller
                 'search' => $search
             ]
         ]);
+    }
+
+    public function listUsers(Request $request)
+    {
+        $currentUser = auth()->user();
+
+        // Assuming 'user_id' represents the admin ID for non-admin users
+        // and 'id' for the admin itself. Adjust the logic if your database schema differs.
+        $parentUserId = $currentUser->user_id ? $currentUser->user_id : $currentUser->id;
+
+        $users = User::where('user_id', $parentUserId)
+                    ->orWhere('id', $parentUserId)
+                    ->where('id', '!=', $currentUser->id) // Exclude the current user
+                    ->get(['id', 'name', 'email']); // Fetch only necessary fields
+
+        return response()->json($users);
     }
 
     // The rest of your methods...

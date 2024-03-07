@@ -62,6 +62,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat/send-message', [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::get('/chat/fetch-messages/{userId}', [ChatController::class, 'fetchMessages'])->name('chat.fetchMessages');
+    Route::get('/chat/list-users', [ChatController::class, 'listUsers'])->name('chat.listUsers');
+
 });
 
 
@@ -131,6 +133,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Chat
     Route::post('/send-message', [ChatController::class, 'sendMessage']);
     Route::get('/fetch-messages/{userId}', [ChatController::class, 'fetchMessages']);
+    Route::get('/chat/list-users', [ChatController::class, 'listUsers'])->middleware('auth');
 
 
     Route::Resource('events', EventController::class);
