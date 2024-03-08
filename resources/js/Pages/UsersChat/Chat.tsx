@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import MessageList from './MessageList'; // Your existing MessageList component
 import SendMessageForm from './SendMessageForm'; // Your existing SendMessageForm component
 import UserList from './UserList'; // Your modified UserList component
 import MainLayout from '@/Layouts/MainLayout'; // Your MainLayout component
 import { useEcho } from '../../../providers/WebSocketContext'; // Your WebSocket context
+import { Message } from '@/types';
 
 interface IMessage {
   id: number;
@@ -17,7 +18,38 @@ interface IMessage {
 const Chat = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [toUserId, setToUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null); // State to hold the current user's ID
   const echo = useEcho();
+
+  const messagesEndRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]); // Depend on messages
+  
+
+
+
+  useEffect(() => {
+    // Fetch current user ID
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get('/current-user');
+        setUserId(response.data.id); // Set the current user ID
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    };
+
+    fetchUser();
+
+    const storedToUserId = localStorage.getItem('toUserId');
+    if (storedToUserId) {
+      setToUserId(storedToUserId);
+    }
+  }, []); // Empty dependency array means this runs once on component mount
 
   useEffect(() => {
     if (!toUserId) {
@@ -31,7 +63,7 @@ const Chat = () => {
         if (Array.isArray(response.data.messages)) {
           const formattedMessages = response.data.messages.map((msg: IMessage) => ({
             ...msg,
-            isSender: msg.from_user_id.toString() === toUserId,
+            isSender: msg.from_user_id === userId, // Update isSender based on the current user's ID
           }));
           setMessages(formattedMessages);
         }
@@ -42,22 +74,48 @@ const Chat = () => {
 
     fetchMessages();
 
-    // Subscribe to Echo channel for real-time messages
-    if (echo) {
-      echo.private(`chat.${toUserId}`)
-        .listen('.NewChatMessage', (e: any) => {
-          setMessages((prevMessages) => [...prevMessages, { ...e.message, isSender: e.message.from_user_id.toString() === toUserId }]);
+    /* // Subscribe to Echo channel for real-time messages
+    if (echo && userId) {
+        const userChannelMessage = echo.private(`chat.${userId}`)
+        .listen('.NewChatMessage', (e: { message: Message }) => {
+          setMessages((prevMessages) => [...prevMessages, { ...e.message, isSender: e.message.from_user_id === userId }]);
+          console.log("here_1");
         });
 
       return () => {
-        echo.leave(`chat.${toUserId}`);
+        
+        console.log("here_2");
+        userChannelMessage.stopListening('NewChatMessage')
       };
+    } */
+  }, [toUserId, userId]); // Depend on userId to re-fetch messages when it changes
+
+
+
+  useEffect(() => {
+    if (echo && userId) {
+      const userChannel = echo.private(`chat.${userId}`)
+        .listen('.NewChatMessage', (e: { message: Message }) => {
+          const incomingMessage = e.message;
+          const isSender = incomingMessage.from_user_id === userId;
+          setMessages(prevMessages => [...prevMessages, { ...incomingMessage, isSender }]);
+        });
+
+        return () => {
+            /* echo.leave(`chat.${userId}`); */
+            console.log("here_2");
+            userChannel.stopListening('NewChatMessage')
+          };
     }
-  }, [echo, toUserId]); // Depend on toUserId to re-fetch messages when it changes
+  }, [echo, userId]);
+
+
+
+
 
   const handleSendMessage = (messageText: string) => {
-    if (!toUserId) {
-      console.error("No recipient selected.");
+    if (!toUserId || !userId) {
+      console.error("No recipient or sender identified.");
       return;
     }
 
@@ -76,17 +134,18 @@ const Chat = () => {
   const handleSelectUser = (userId: string) => {
     setToUserId(userId);
     setMessages([]); // Clear messages when switching users
+    localStorage.setItem('toUserId', userId); // Store the selected user ID in localStorage
   };
 
   return (
     <MainLayout title="Chat">
-      <div style={{ display: 'flex', height: '600px' }}> {/* 100vh */}
+      <div className='bg-slate-100 dark:bg-slate-700 py-12 rounded-lg opacity-90' style={{ display: 'flex', height: '600px' }}> {/* 100vh */}
         <div style={{ width: '20%', borderRight: '1px solid #ccc' }}>
-          <UserList onSelectUser={handleSelectUser} />
+        <UserList onSelectUser={handleSelectUser} selectedUserId={toUserId} />
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            <MessageList messages={messages} />
+          <MessageList messages={messages} endRef={messagesEndRef} />
           </div>
           <div>
             <SendMessageForm onSendMessage={handleSendMessage} />

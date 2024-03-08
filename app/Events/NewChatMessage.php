@@ -21,6 +21,21 @@ class NewChatMessage implements ShouldBroadcast
         $this->message = $message;
     }
 
+    public function broadcastWith()
+    {
+        return [
+            'message' => [
+                'id' => $this->message->id,
+                'from_user_id' => $this->message->from_user_id,
+                'to_user_id' => $this->message->to_user_id,
+                'body' => $this->message->message, // Assuming the column is named 'message'
+                'created_at' => $this->message->created_at,
+                // Add more fields as needed
+            ],
+        ];
+    }
+
+
     public function broadcastOn()
     {
         return [

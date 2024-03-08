@@ -6,6 +6,8 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+use App\Events\NewChatMessage;
+
 class ChatController extends Controller
 {
     public function sendMessage(Request $request)
@@ -21,7 +23,7 @@ class ChatController extends Controller
         'message' => $request->message,
     ]);
 
-    broadcast(new \App\Events\NewChatMessage($message));
+    broadcast(new NewChatMessage($message));
 
     return response()->json(['message' => 'Message sent successfully', 'data' => $message]);
 }
