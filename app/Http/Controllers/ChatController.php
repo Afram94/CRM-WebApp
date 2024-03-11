@@ -11,34 +11,34 @@ use App\Events\NewChatMessage;
 class ChatController extends Controller
 {
     public function sendMessage(Request $request)
-{
-    $request->validate([
-        'to_user_id' => 'required|integer', // Ensure validation for to_user_id
-        'message' => 'required|string', // Validate message as well
-    ]);
+    {
+        $request->validate([
+            'to_user_id' => 'required|integer', // Ensure validation for to_user_id
+            'message' => 'required|string', // Validate message as well
+        ]);
 
-    $message = Message::create([
-        'from_user_id' => auth()->id(),
-        'to_user_id' => $request->to_user_id, // Extracting to_user_id from the request
-        'message' => $request->message,
-    ]);
+        $message = Message::create([
+            'from_user_id' => auth()->id(),
+            'to_user_id' => $request->to_user_id, // Extracting to_user_id from the request
+            'message' => $request->message,
+        ]);
 
-    broadcast(new NewChatMessage($message));
+        broadcast(new NewChatMessage($message));
 
-    return response()->json(['message' => 'Message sent successfully', 'data' => $message]);
-}
+        return response()->json(['message' => 'Message sent successfully', 'data' => $message]);
+    }
 
-public function fetchMessages($userId)
-{
-    $user = auth()->user()->id;
-    $messages = Message::where(function($query) use ($user, $userId) {
-        $query->where('from_user_id', $user)->where('to_user_id', $userId);
-    })->orWhere(function($query) use ($user, $userId) {
-        $query->where('from_user_id', $userId)->where('to_user_id', $user);
-    })->get();
+    public function fetchMessages($userId)
+    {
+        $user = auth()->user()->id;
+        $messages = Message::where(function($query) use ($user, $userId) {
+            $query->where('from_user_id', $user)->where('to_user_id', $userId);
+        })->orWhere(function($query) use ($user, $userId) {
+            $query->where('from_user_id', $userId)->where('to_user_id', $user);
+        })->get();
 
-    return response()->json(['messages' => $messages]);
-}
+        return response()->json(['messages' => $messages]);
+    }
 
 
 

@@ -15,15 +15,16 @@ interface MessageListProps {
 
   const MessageList: React.FC<MessageListProps> = ({ messages, endRef }) => {
     return (
-      <ul className='mt-5' style={{ listStyleType: "none", padding: 0 }}>
-        {messages.map((message, index) => (
-          <li key={index} style={{ marginBottom: "10px", textAlign: message.isSender ? "right" : "left" }} ref={index === messages.length - 1 ? endRef : null}>
-            <div className='mx-4' style={{ display: "inline-block", maxWidth: "70%", padding: "5px 10px", borderRadius: "15px", backgroundColor: message.isSender ? "#dcf8c6" : "#fff" }}>
-              {message.message}
-            </div>
-          </li>
-        ))}
-      </ul>
+      <ul className='space-y-2'>
+  {messages.map((message, index) => (
+    <li key={index} className={`text-sm ${message.isSender ? "text-right" : "text-left"}`} ref={index === messages.length - 1 ? endRef : null}>
+      <div className={`inline-block max-w-2/3 px-4 py-2 rounded-xl m-4 ${message.isSender ? "bg-green-200" : "bg-white"}`}>
+        {message.message}
+      </div>
+    </li>
+  ))}
+</ul>
+
     );
   };
 
