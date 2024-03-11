@@ -65,5 +65,23 @@ class OrderController extends Controller
             return response()->json(['message' => 'Failed to create order. ' . $e->getMessage()], 500);
         }
     }
+
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,completed,canceled',
+        ]);
+
+        $order = Order::find($id);
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        $order->status = $request->status;
+        $order->save();
+
+        return response()->json(['message' => 'Order updated successfully', 'order' => $order]);
+    }
 }
 
