@@ -140,6 +140,14 @@ export interface OrderItem {
     price: number; // Assuming this is the price at the time of order
     product?: Product; // Add this line to include product details
 }
+
+export interface Message {
+    id: number;
+    from_user_id: number;
+    to_user_id: number;
+    message: string;
+    created_at: Date;
+  }
   
   
 
@@ -184,5 +192,9 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
 
 
         superadminusers: SuperAdminUsers[];
+
+
+        users: User[];
+        messages: PaginatedResponse<Message>;
     };
 };
