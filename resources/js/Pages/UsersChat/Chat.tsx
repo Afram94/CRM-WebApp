@@ -6,6 +6,7 @@ import UserList from './UserList'; // Your modified UserList component
 import MainLayout from '@/Layouts/MainLayout'; // Your MainLayout component
 import { useEcho } from '../../../providers/WebSocketContext'; // Your WebSocket context
 import { Message } from '@/types';
+import { format } from 'date-fns';
 
 interface IMessage {
   id: number;
@@ -13,6 +14,7 @@ interface IMessage {
   to_user_id: number;
   message: string;
   isSender?: boolean;
+  created_at?: any;
 }
 
 const Chat = () => {
@@ -63,7 +65,8 @@ const Chat = () => {
         if (Array.isArray(response.data.messages)) {
           const formattedMessages = response.data.messages.map((msg: IMessage) => ({
             ...msg,
-            isSender: msg.from_user_id === userId, // Update isSender based on the current user's ID
+            isSender: msg.from_user_id === userId,
+            createdAt: format(new Date(msg.created_at), 'p') // 'p' is for formatting as 'local time'
           }));
           setMessages(formattedMessages);
         }
@@ -217,7 +220,7 @@ const Chat = () => {
 
   return (
     <MainLayout title="Chat">
-      <div className='bg-slate-100 dark:bg-slate-700 py-12 rounded-lg opacity-90' style={{ display: 'flex', height: '600px' }}> {/* 100vh */}
+      <div className='bg-slate-100 dark:bg-slate-700 py-12 rounded-lg opacity-90' style={{ display: 'flex', height: '1000px' }}> {/* 100vh */}
         <div style={{ width: '20%', borderRight: '1px solid #ccc' }}>
         <UserList onSelectUser={handleSelectUser} selectedUserId={toUserId} />
         </div>

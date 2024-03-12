@@ -35,7 +35,10 @@ class ChatController extends Controller
             $query->where('from_user_id', $user)->where('to_user_id', $userId);
         })->orWhere(function($query) use ($user, $userId) {
             $query->where('from_user_id', $userId)->where('to_user_id', $user);
-        })->get();
+        })->orderBy('created_at', 'asc')
+        ->get(['id', 'from_user_id', 'to_user_id', 'message', 'created_at']); // Selecting the 'created_at' field
+
+
 
         return response()->json(['messages' => $messages]);
     }
@@ -68,20 +71,30 @@ class ChatController extends Controller
     }
 
     public function listUsers(Request $request)
-    {
-        $currentUser = auth()->user();
+{
+    $currentUser = auth()->user();
 
-        // Assuming 'user_id' represents the admin ID for non-admin users
-        // and 'id' for the admin itself. Adjust the logic if your database schema differs.
-        $parentUserId = $currentUser->user_id ? $currentUser->user_id : $currentUser->id;
+    $usersWithLastMessage = User::where(function ($query) use ($currentUser) {
+        $query->where('id', '!=', $currentUser->id); // Exclude the current user
+    })
+    ->with(['sentMessages' => function ($query) {
+        $query->latest()->first();
+    }, 'receivedMessages' => function ($query) {
+        $query->latest()->first();
+    }])
+    ->get(['id', 'name', 'email'])
+    ->map(function ($user) {
+        // Select the most recent message either sent or received
+        $lastMessage = $user->sentMessages->merge($user->receivedMessages)->sortDesc()->first();
+        $user->last_message = $lastMessage ? $lastMessage->message : null;
+        $user->last_message_date = $lastMessage ? $lastMessage->created_at : null;
+        unset($user->sentMessages, $user->receivedMessages); // Clean up
+        return $user;
+    });
 
-        $users = User::where('user_id', $parentUserId)
-                    ->orWhere('id', $parentUserId)
-                    ->where('id', '!=', $currentUser->id) // Exclude the current user
-                    ->get(['id', 'name', 'email']); // Fetch only necessary fields
+    return response()->json($usersWithLastMessage);
+}
 
-        return response()->json($users);
-    }
 
     // The rest of your methods...
 }
