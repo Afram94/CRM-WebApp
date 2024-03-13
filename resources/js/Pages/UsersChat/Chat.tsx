@@ -8,6 +8,8 @@ import { useEcho } from '../../../providers/WebSocketContext'; // Your WebSocket
 import { Message } from '@/types';
 import { format } from 'date-fns';
 
+import { MdDelete, MdSearch, MdVideoCall } from 'react-icons/md';
+
 interface IMessage {
   id: number;
   from_user_id: number;
@@ -21,6 +23,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [toUserId, setToUserId] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null); // State to hold the current user's ID
+  const [userName, setUserName] = useState<string | null>(null); // State to hold the current user's Name
   const echo = useEcho();
 
   const messagesEndRef = useRef<HTMLLIElement>(null);
@@ -40,6 +43,7 @@ const Chat = () => {
       try {
         const response = await axios.get('/current-user');
         setUserId(response.data.id); // Set the current user ID
+        setUserName(response.data.name); // Set the current user ID
       } catch (error) {
         console.error("Error fetching current user:", error);
       }
@@ -144,7 +148,7 @@ const Chat = () => {
           // Here, we check if the incoming message is not sent by the current user. 
           // This prevents showing the message twice since we're optimistically adding messages 
           // to the state when they're sent.
-          if (e.message.from_user_id !== userId) {
+          if (e.message.from_user_id !== userId && e.message.to_user_id === userId) {
             const incomingMessage = {
               ...e.message,
               isSender: false,
@@ -220,19 +224,39 @@ const Chat = () => {
 
   return (
     <MainLayout title="Chat">
-      <div className='bg-slate-100 dark:bg-slate-700 py-12 rounded-lg opacity-90' style={{ display: 'flex', height: '1000px' }}> {/* 100vh */}
-        <div style={{ width: '20%', borderRight: '1px solid #ccc' }}>
-        <UserList onSelectUser={handleSelectUser} selectedUserId={toUserId} />
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-          <MessageList messages={messages} endRef={messagesEndRef} />
+        <div>
+          
+          <div className='bg-slate-100 dark:bg-[#232332] rounded-lg opacity-90 flex' style={{ height: '100vh' }}> {/* 100vh */}
+
+            <div className='' style={{ width: '30%', height: '100%', overflowY: 'auto', borderRight: '1px solid #ccc' }}>
+              <UserList onSelectUser={handleSelectUser} selectedUserId={toUserId} />
+            </div>
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+                <div className='flex justify-between items-center dark:bg-[#2B2C3F] bg-indigo-500 dark:text-slate-300 text-indigo-100 py-2 px-3 font-bold'>
+                  <div>
+                    {userName} - <p className='text-sm dark:bg-slate-400 bg-white text-center rounded-lg py-1 px-3 w-fit text-indigo-500 dark:text-slate-700 mt-1'>Developer</p>
+                  </div>
+                <div className='flex dark:text-slate-300 text-indigo-100'>
+                  <MdSearch className=" hover:text-indigo-300 cursor-pointer mx-2" size="24" title="Search" />
+                  <MdVideoCall className=" hover:text-indigo-300 cursor-pointer mx-2" size="24" title="Start Video Call" />
+                  <MdDelete className=" hover:text-indigo-300 cursor-pointer mx-2" size="24" title="Delete Chat" />
+                </div>
+              
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                <MessageList messages={messages} endRef={messagesEndRef} />
+              </div>
+
+              <div className='py-3'>
+                <SendMessageForm onSendMessage={handleSendMessage} />
+              </div>
+            </div>
           </div>
-          <div>
-            <SendMessageForm onSendMessage={handleSendMessage} />
-          </div>
+
         </div>
-      </div>
+
     </MainLayout>
   );
 };

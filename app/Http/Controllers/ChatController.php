@@ -74,26 +74,35 @@ class ChatController extends Controller
 {
     $currentUser = auth()->user();
 
-    $usersWithLastMessage = User::where(function ($query) use ($currentUser) {
-        $query->where('id', '!=', $currentUser->id); // Exclude the current user
-    })
-    ->with(['sentMessages' => function ($query) {
-        $query->latest()->first();
-    }, 'receivedMessages' => function ($query) {
-        $query->latest()->first();
-    }])
-    ->get(['id', 'name', 'email'])
-    ->map(function ($user) {
-        // Select the most recent message either sent or received
-        $lastMessage = $user->sentMessages->merge($user->receivedMessages)->sortDesc()->first();
-        $user->last_message = $lastMessage ? $lastMessage->message : null;
-        $user->last_message_date = $lastMessage ? $lastMessage->created_at : null;
-        unset($user->sentMessages, $user->receivedMessages); // Clean up
-        return $user;
-    });
+    // Determine the parent user ID based on the admin-child relationship
+    $parentUserId = $currentUser->user_id ? $currentUser->user_id : $currentUser->id;
+
+    // Fetch users with their last sent and received messages
+    $usersWithLastMessage = User::where('user_id', $parentUserId)
+        ->orWhere(function($query) use ($parentUserId, $currentUser) {
+            $query->where('id', $parentUserId)
+                  ->where('id', '!=', $currentUser->id); // Exclude the current user
+        })
+        ->with(['sentMessages' => function ($query) {
+            // Fetch the latest sent message
+            $query->latest()->first();
+        }, 'receivedMessages' => function ($query) {
+            // Fetch the latest received message
+            $query->latest()->first();
+        }])
+        ->get(['id', 'name', 'email'])
+        ->map(function ($user) {
+            // Select the most recent message either sent or received
+            $lastMessage = $user->sentMessages->merge($user->receivedMessages)->sortDesc()->first();
+            $user->last_message = $lastMessage ? $lastMessage->message : null;
+            $user->last_message_date = $lastMessage ? $lastMessage->created_at : null;
+            unset($user->sentMessages, $user->receivedMessages); // Clean up
+            return $user;
+        });
 
     return response()->json($usersWithLastMessage);
 }
+
 
 
     // The rest of your methods...
