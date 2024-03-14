@@ -12,9 +12,11 @@ interface IMessage {
 interface MessageListProps {
     messages: IMessage[];
     endRef: React.RefObject<HTMLLIElement>; // Add this line
+    handleDeleteMessage: (messageId: number) => Promise<void>;
+
   }
 
-  const MessageList: React.FC<MessageListProps> = ({ messages, endRef }) => {
+  const MessageList: React.FC<MessageListProps> = ({ messages, endRef, handleDeleteMessage }) => {
     return (
       <ul className='space-y-2'>
   {messages.map((message, index) => (
@@ -23,8 +25,10 @@ interface MessageListProps {
       
 
         {message.message}
+        <button onClick={() => handleDeleteMessage(message.id)} className="ml-2 text-red-500">Delete</button>
+
       </div>
-        <div className="message-time text-[11px] dark:text-slate-100 text-slate-600 mx-5">{message.createdAt}</div>
+        <div className="message-time text-[11px] dark:text-slate-100 text-slate-00 mx-5">{message.createdAt}</div>
     </li>
   ))}
 </ul>

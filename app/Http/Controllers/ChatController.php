@@ -71,37 +71,74 @@ class ChatController extends Controller
     }
 
     public function listUsers(Request $request)
-{
-    $currentUser = auth()->user();
+    {
+        $currentUser = auth()->user();
 
-    // Determine the parent user ID based on the admin-child relationship
-    $parentUserId = $currentUser->user_id ? $currentUser->user_id : $currentUser->id;
+        // Determine the parent user ID based on the admin-child relationship
+        $parentUserId = $currentUser->user_id ? $currentUser->user_id : $currentUser->id;
 
-    // Fetch users with their last sent and received messages
-    $usersWithLastMessage = User::where('user_id', $parentUserId)
-        ->orWhere(function($query) use ($parentUserId, $currentUser) {
-            $query->where('id', $parentUserId)
-                  ->where('id', '!=', $currentUser->id); // Exclude the current user
-        })
-        ->with(['sentMessages' => function ($query) {
-            // Fetch the latest sent message
-            $query->latest()->first();
-        }, 'receivedMessages' => function ($query) {
-            // Fetch the latest received message
-            $query->latest()->first();
-        }])
-        ->get(['id', 'name', 'email'])
-        ->map(function ($user) {
-            // Select the most recent message either sent or received
-            $lastMessage = $user->sentMessages->merge($user->receivedMessages)->sortDesc()->first();
-            $user->last_message = $lastMessage ? $lastMessage->message : null;
-            $user->last_message_date = $lastMessage ? $lastMessage->created_at : null;
-            unset($user->sentMessages, $user->receivedMessages); // Clean up
-            return $user;
-        });
+        // Fetch users with their last sent and received messages
+        $usersWithLastMessage = User::where('user_id', $parentUserId)
+            ->orWhere(function($query) use ($parentUserId, $currentUser) {
+                $query->where('id', $parentUserId)
+                    ->where('id', '!=', $currentUser->id); // Exclude the current user
+            })
+            ->with(['sentMessages' => function ($query) {
+                // Fetch the latest sent message
+                $query->latest()->first();
+            }, 'receivedMessages' => function ($query) {
+                // Fetch the latest received message
+                $query->latest()->first();
+            }])
+            ->get(['id', 'name', 'email'])
+            ->map(function ($user) {
+                // Select the most recent message either sent or received
+                $lastMessage = $user->sentMessages->merge($user->receivedMessages)->sortDesc()->first();
+                $user->last_message = $lastMessage ? $lastMessage->message : null;
+                $user->last_message_date = $lastMessage ? $lastMessage->created_at : null;
+                unset($user->sentMessages, $user->receivedMessages); // Clean up
+                return $user;
+            });
 
-    return response()->json($usersWithLastMessage);
-}
+        return response()->json($usersWithLastMessage);
+    }
+
+    public function deleteMessage($messageId)
+    {
+        $user = auth()->user();
+
+        $message = Message::where('id', $messageId)
+            ->where(function($query) use ($user) {
+                $query->where('from_user_id', $user->id)
+                    ->orWhere('to_user_id', $user->id);
+            })->firstOrFail();
+
+        $message->delete();
+
+        return response()->json(['message' => 'Message deleted successfully']);
+    }
+
+    public function updateMessage(Request $request, $messageId)
+    {
+        $request->validate([
+            'message' => 'required|string',
+        ]);
+
+        $user = auth()->user();
+
+        $message = Message::where('id', $messageId)
+                        ->where('from_user_id', $user->id)
+                        ->firstOrFail();
+
+        $message->update([
+            'message' => $request->message,
+        ]);
+
+        broadcast(new NewChatMessage($message)); // Optionally broadcast this change
+
+        return response()->json(['message' => 'Message updated successfully', 'data' => $message]);
+    }
+
 
 
 

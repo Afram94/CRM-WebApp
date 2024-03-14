@@ -222,11 +222,21 @@ const Chat = () => {
     localStorage.setItem('toUserId', userId); // Store the selected user ID in localStorage
   };
 
+
+  const handleDeleteMessage = async (messageId : any) => {
+    try {
+      await axios.delete(`/chat/delete-message/${messageId}`);
+      setMessages(messages.filter(message => message.id !== messageId));
+    } catch (error) {
+      console.error("Deleting message failed: ", error);
+    }
+  };
+
   return (
     <MainLayout title="Chat">
         <div>
           
-          <div className='bg-slate-100 dark:bg-[#232332] rounded-lg opacity-90 flex' style={{ height: '100vh' }}> {/* 100vh */}
+          <div className='bg-slate-100 dark:bg-[#232332] rounded-lg opacity-90 flex h-[800px]' /* style={{ height: '100vh' }} */> {/* 100vh */}
 
             <div className='' style={{ width: '30%', height: '100%', overflowY: 'auto', borderRight: '1px solid #ccc' }}>
               <UserList onSelectUser={handleSelectUser} selectedUserId={toUserId} />
@@ -246,7 +256,8 @@ const Chat = () => {
               
               </div>
               <div style={{ flex: 1, overflowY: 'auto' }}>
-                <MessageList messages={messages} endRef={messagesEndRef} />
+              <MessageList messages={messages} endRef={messagesEndRef} handleDeleteMessage={handleDeleteMessage} />
+
               </div>
 
               <div className='py-3'>
