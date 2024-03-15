@@ -72,8 +72,8 @@ const UserList: React.FC<UserListProps> = ({ onSelectUser, selectedUserId }) => 
           key={user.id}
           onClick={() => onSelectUser(user.id.toString())}
         >
-          <div className={`font-bold`}>{user.name} - {user.email}</div>
-          <div className='truncate'>
+          <div className={`font-thin`}>{user.name} {/* - {user.email} */}</div>
+          <div className='truncate text-sm'>
             {user.last_message ? user.last_message : '....'}
             {/* {user.last_message_date && 
               <span> - {format(new Date(user.last_message_date), 'PPPpp')}</span>} */}
