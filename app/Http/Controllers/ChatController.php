@@ -35,7 +35,10 @@ class ChatController extends Controller
             $query->where('from_user_id', $user)->where('to_user_id', $userId);
         })->orWhere(function($query) use ($user, $userId) {
             $query->where('from_user_id', $userId)->where('to_user_id', $user);
-        })->get();
+        })->orderBy('created_at', 'asc')
+        ->get(['id', 'from_user_id', 'to_user_id', 'message', 'created_at']); // Selecting the 'created_at' field
+
+
 
         return response()->json(['messages' => $messages]);
     }
@@ -71,17 +74,73 @@ class ChatController extends Controller
     {
         $currentUser = auth()->user();
 
-        // Assuming 'user_id' represents the admin ID for non-admin users
-        // and 'id' for the admin itself. Adjust the logic if your database schema differs.
+        // Determine the parent user ID based on the admin-child relationship
         $parentUserId = $currentUser->user_id ? $currentUser->user_id : $currentUser->id;
 
-        $users = User::where('user_id', $parentUserId)
-                    ->orWhere('id', $parentUserId)
-                    ->where('id', '!=', $currentUser->id) // Exclude the current user
-                    ->get(['id', 'name', 'email']); // Fetch only necessary fields
+        // Fetch users with their last sent and received messages
+        $usersWithLastMessage = User::where('user_id', $parentUserId)
+            ->orWhere(function($query) use ($parentUserId, $currentUser) {
+                $query->where('id', $parentUserId)
+                    ->where('id', '!=', $currentUser->id); // Exclude the current user
+            })
+            ->with(['sentMessages' => function ($query) {
+                // Fetch the latest sent message
+                $query->latest()->first();
+            }, 'receivedMessages' => function ($query) {
+                // Fetch the latest received message
+                $query->latest()->first();
+            }])
+            ->get(['id', 'name', 'email'])
+            ->map(function ($user) {
+                // Select the most recent message either sent or received
+                $lastMessage = $user->sentMessages->merge($user->receivedMessages)->sortDesc()->first();
+                $user->last_message = $lastMessage ? $lastMessage->message : null;
+                $user->last_message_date = $lastMessage ? $lastMessage->created_at : null;
+                unset($user->sentMessages, $user->receivedMessages); // Clean up
+                return $user;
+            });
 
-        return response()->json($users);
+        return response()->json($usersWithLastMessage);
     }
+
+    public function deleteMessage($messageId)
+    {
+        $user = auth()->user();
+
+        $message = Message::where('id', $messageId)
+            ->where(function($query) use ($user) {
+                $query->where('from_user_id', $user->id)
+                    ->orWhere('to_user_id', $user->id);
+            })->firstOrFail();
+
+        $message->delete();
+
+        return response()->json(['message' => 'Message deleted successfully']);
+    }
+
+    public function updateMessage(Request $request, $messageId)
+    {
+        $request->validate([
+            'message' => 'required|string',
+        ]);
+
+        $user = auth()->user();
+
+        $message = Message::where('id', $messageId)
+                        ->where('from_user_id', $user->id)
+                        ->firstOrFail();
+
+        $message->update([
+            'message' => $request->message,
+        ]);
+
+        broadcast(new NewChatMessage($message)); // Optionally broadcast this change
+
+        return response()->json(['message' => 'Message updated successfully', 'data' => $message]);
+    }
+
+
+
 
     // The rest of your methods...
 }

@@ -64,6 +64,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/chat/fetch-messages/{userId}', [ChatController::class, 'fetchMessages'])->name('chat.fetchMessages');
     Route::get('/chat/list-users', [ChatController::class, 'listUsers'])->name('chat.listUsers');
 
+    Route::delete('/chat/delete-message/{messageId}', [ChatController::class, 'deleteMessage']);
+    Route::patch('/chat/update-message/{messageId}', [ChatController::class, 'updateMessage']);
+
 });
 
 
