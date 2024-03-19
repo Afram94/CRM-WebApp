@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
 
-import { FaHome, FaTags, FaCog, FaBars, FaUsers, FaUserTie, FaStickyNote, FaShoppingCart, FaThList, FaRegCalendarAlt } from 'react-icons/fa';
+import { FaHome, FaTags, FaCog, FaBars, FaUsers, FaUserTie, FaStickyNote, FaShoppingCart, FaThList, FaRegCalendarAlt, FaComments } from 'react-icons/fa';
 import { MdCategory, MdOutlineInventory2 } from 'react-icons/md';
 import axios from 'axios';
 
@@ -36,10 +36,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       { name: 'Products', path: '/products', icon: FaTags },
       { name: 'Inventory', path: '/inventories', icon: MdOutlineInventory2 },
       { name: 'Calendar', path: '/events', icon: FaRegCalendarAlt },
+      { name: 'Chat', path: '/chat', icon: FaComments }, // Ensure FaComments or your chosen icon is imported
       { name: 'Custom Fields', path: '/custom-fields', icon: FaThList },
       { name: 'Invite', path: '/generate-invite', icon: FaThList },
       // More items can be added here
     ];
+    
 
     // Conditionally append the "Users" item if the user is an admin
     if (Array.isArray(userRoles) && userRoles.includes('admin')) {

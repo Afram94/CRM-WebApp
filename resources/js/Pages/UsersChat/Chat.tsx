@@ -233,7 +233,7 @@ const Chat = () => {
   };
 
   return (
-    <MainLayout title="Chat">
+    <MainLayout title="Chat" css=''>
         <div>
           
           <div className='bg-slate-100 dark:bg-[#232332] rounded-lg opacity-90 flex h-[800px]' /* style={{ height: '100vh' }} */> {/* 100vh */}

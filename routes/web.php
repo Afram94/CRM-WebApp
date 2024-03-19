@@ -134,9 +134,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/orders/{order}', [OrderController::class, 'update']);
 
     //Chat
-    Route::post('/send-message', [ChatController::class, 'sendMessage']);
+    /* Route::post('/send-message', [ChatController::class, 'sendMessage']);
     Route::get('/fetch-messages/{userId}', [ChatController::class, 'fetchMessages']);
-    Route::get('/chat/list-users', [ChatController::class, 'listUsers'])->middleware('auth');
+    Route::get('/chat/list-users', [ChatController::class, 'listUsers'])->middleware('auth'); */
 
 
     Route::Resource('events', EventController::class);
