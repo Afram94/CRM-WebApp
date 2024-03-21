@@ -26,6 +26,8 @@ use App\Http\Controllers\EventController;
 
 use App\Http\Controllers\ChatController;
 
+use App\Http\Controllers\DashboardController;
+
 use App\Http\Controllers\SuperAdminController;
 
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
@@ -70,11 +72,13 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-Route::get('/dashboard', function () {
+/* Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard'); */
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+
     // Display a listing of the customers
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     
