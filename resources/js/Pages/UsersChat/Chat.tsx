@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import MessageList from './MessageList'; // Your existing MessageList component
-import SendMessageForm from './SendMessageForm'; // Your existing SendMessageForm component
-import UserList from './UserList'; // Your modified UserList component
-import MainLayout from '@/Layouts/MainLayout'; // Your MainLayout component
-import { useEcho } from '../../../providers/WebSocketContext'; // Your WebSocket context
+import MessageList from './MessageList';
+import SendMessageForm from './SendMessageForm';
+import UserList from './UserList';
+import MainLayout from '@/Layouts/MainLayout';
+import { useEcho } from '../../../providers/WebSocketContext';
 import { Message } from '@/types';
 import { format } from 'date-fns';
 
@@ -58,7 +58,32 @@ const Chat = () => {
   }, []); // Empty dependency array means this runs once on component mount
 
   useEffect(() => {
-    if (!toUserId) {
+    if (!toUserId || !userId) {
+      console.log('No user selected for chat, or current user ID not determined.');
+      return;
+    }
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(`/chat/fetch-messages/${toUserId}`);
+        if (Array.isArray(response.data.messages)) {
+          const formattedMessages = response.data.messages.map((msg: IMessage) => ({
+            ...msg,
+            isSender: msg.from_user_id === userId,
+            createdAt: format(new Date(msg.created_at), 'p'),
+          }));
+          setMessages(formattedMessages);
+        }
+      } catch (error) {
+        console.error("Fetching messages failed: ", error);
+      }
+    };
+    fetchMessages();
+
+
+
+
+
+    /* if (!toUserId) {
       console.log('No user selected for chat.');
       return;
     }
@@ -79,7 +104,10 @@ const Chat = () => {
       }
     };
 
-    fetchMessages();
+    fetchMessages(); */
+
+
+
 
     /* // Subscribe to Echo channel for real-time messages
     if (echo && userId) {
@@ -95,6 +123,9 @@ const Chat = () => {
         userChannelMessage.stopListening('NewChatMessage')
       };
     } */
+
+
+
   }, [toUserId, userId]); // Depend on userId to re-fetch messages when it changes
 
 
