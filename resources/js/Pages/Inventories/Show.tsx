@@ -9,6 +9,7 @@ import { FaTrashRestore } from 'react-icons/fa';
 import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
+import InventoryChannelsHandler from './InventoryChannelsHandler';
 
 const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
     const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories || []);
@@ -50,9 +51,46 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
         }
     };
 
+
+    /**
+         * This function is called when a new inventory is created.
+         * It updates the state to include the new inventory at the beginning of the list.
+         * Because the UI displays a maximum of 5 inventories per page (due to pagination),
+         * we need to ensure that adding a new inventory doesn't increase the count beyond 20.
+         * If it does, we slice the array to remove the last inventory,
+         * effectively maintaining the correct number of inventories on the current page.
+         * This approach resolves an issue where the list displayed 21 inventories after
+         * a new inventory was created until the page was refreshed.
+         *
+         * @param {Inventory} newInventory - The new inventory to be added to the list.
+         */
+        const handleNewInventory = (newInventory: Inventory) => {
+            setFilteredInventories(prevInventories => {
+                // Check if the new inventory already exists in the current state
+                const isExistingInventory = prevInventories.some(inventory => inventory.id === newInventory.id);
+
+                // Add the new inventory to the state only if it doesn't exist already
+                if (!isExistingInventory) {
+                    // Prepend the new inventory to the start of the inventory array
+                    const updatedInventories = [newInventory, ...prevInventories];
+
+                    // Maintain a maximum of 20 inventories for display, adjusting as needed
+                    return updatedInventories.slice(0, 20);
+                }
+
+                // Return the previous state if the inventory already exists
+                return prevInventories;
+            });
+        };
+
     return (
         <MainLayout title='Inventories'>
             <div className='bg-white dark:bg-gray-800 p-4 rounded-xl'>
+            <InventoryChannelsHandler
+              userId={auth.user?.id ?? null}
+              parentId={auth.user?.user_id ?? null}
+              onNewInventory={handleNewInventory}
+            />
                 <div className='w-full flex justify-between my-4'>
                     <div className="flex gap-2">
                         <TextInput
