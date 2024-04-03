@@ -6,39 +6,86 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use App\Events\UserPermissionsUpdated;
+use App\Events\UserUpdated;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+    /* public function index(Request $request)
     {
         $user = auth()->user();
 
         $parentUserId = $user->user_id ? $user->user_id : $user->id;
         $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
                                             ->orWhere('id', $parentUserId)
-                                            /* ->pluck('name')->toArray(); */
                                             ->get();
-
-        /* dd($allUserIdsUnderSameParent); */
 
         return inertia('Users/Show', [
             'auth' => [
                 'allUserIdsUnderSameParent' => $allUserIdsUnderSameParent,
-                /* 'customers' => $customers */
+                'user' => $user
+            ],
+        ]);
+    } */
+
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+        $search = $request->input('search');
+
+        // Check if the user is a child user
+        if ($user->user_id) {
+            // Redirect or return an error response
+            return redirect('dashboard')->with('error', 'Access denied');
+        }
+
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+
+        // Start the query to fetch all users under the same parent
+        $query = User::query()->where(function ($query) use ($parentUserId) {
+            $query->where('user_id', $parentUserId)
+                ->orWhere('id', $parentUserId);
+        });
+
+        // If there's a search term, apply filters
+        if ($search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('email', 'LIKE', '%' . $search . '%')
+                    // Add any other fields you'd like to search by
+                    ;
+            });
+        }
+
+        $allUserIdsUnderSameParent = $query->get();
+
+        // If the request is an AJAX call, return the customers as JSON.
+        if ($request->wantsJson()) {
+            return response()->json([
+                'auth' => [
+                    'allUserIdsUnderSameParent' => $allUserIdsUnderSameParent,
+                    'user' => $user
+                ]
+            ]);
+        }
+
+        return inertia('Users/Show', [
+            'auth' => [
+                'allUserIdsUnderSameParent' => $allUserIdsUnderSameParent,
+                'user' => $user
             ],
         ]);
     }
 
     public function getTheCurrentUser()
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    if (!$user) {
-        return response()->json(['error' => 'Unauthenticated'], 401);
+        if (!$user) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+
+        return response()->json($user, 200);
     }
-
-    return response()->json($user, 200);
-}
 
     public function getRoles()
     {
@@ -103,4 +150,39 @@ class UserController extends Controller
     
         return response()->json(['message' => 'Permission toggled']);
     }
+
+
+    public function toggleUserActive(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return response()->json(['message' => 'User status updated successfully!', 'isActive' => $user->is_active]);
+    }
+
+    // In App\Http\Controllers\UserController.php
+
+    public function updateUser(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
+
+        // Validate request data
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|max:255|unique:users,email,' . $userId,
+            'is_active' => 'sometimes|boolean',
+            // Add other fields as needed
+        ]);
+
+        // Update user details
+        $user->update($validated);
+
+        // Broadcast the update
+        broadcast(new UserUpdated($user));
+
+        return response()->json(['message' => 'User updated successfully!', 'user' => $user]);
+    }
+
+
 }

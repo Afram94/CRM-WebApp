@@ -33,9 +33,11 @@ class Customer extends Model
         return $this->hasMany(CustomerCustomFieldValue::class, 'customer_id', 'id');
     }
 
-        public function orders()
+    public function orders()
     {
-        return $this->hasMany(Order::class);
+        /* return $this->hasMany(Order::class); */
+
+        return $this->hasMany(Order::class)->orderBy('created_at', 'desc');
     }
 
     public function products()

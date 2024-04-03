@@ -60,6 +60,17 @@ class User extends Authenticatable
         return $this->hasMany(Category::class);
     }
 
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'from_user_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'to_user_id');
+    }
+
+
     /**
      * The attributes that are mass assignable.
      *
@@ -70,6 +81,7 @@ class User extends Authenticatable
         'email',
         'password',
         'user_id',
+        'is_active',
     ];
 
     /**

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Inventory;
 use App\Models\ProductCustomField;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
@@ -296,8 +297,7 @@ class ProductController extends Controller
         'price' => 'required|numeric',
         'sku' => 'nullable|unique:products,sku',
         'inventory_count' => 'nullable|integer',
-        'category_id' => 'nullable|exists:categories,id', // Ensure the category exists
-        // 'custom_fields' => 'sometimes|array' // Custom fields are optional
+        'category_id' => 'nullable|exists:categories,id',
     ]);
 
     // Start the transaction
@@ -312,7 +312,6 @@ class ProductController extends Controller
         // Process custom fields
         if ($request->has('custom_fields')) {
             $customFields = $request->input('custom_fields');
-            // Assume prepareValidationRules() method exists and is similar to that in CustomerController
             $validationRules = $this->prepareValidationRulesForProduct($customFields);
             $request->validate($validationRules);
 
@@ -324,6 +323,16 @@ class ProductController extends Controller
                 ]);
             }
         }
+
+        // Create an inventory record with the product name and default quantity (or use the 'inventory_count' from request)
+        $inventoryQuantity = $request->input('inventory_count', 0); // Default to 0 if not provided
+        Inventory::create([
+            'user_id' => auth()->id(),
+            'product_id' => $product->id,
+            'quantity' => $inventoryQuantity,
+            'stock_status' => $inventoryQuantity > 0 ? 'in_stock' : 'out_of_stock', // Example condition
+            // Other fields can be set to default values as defined in migration
+        ]);
 
         // Commit the transaction
         DB::commit();
@@ -339,6 +348,7 @@ class ProductController extends Controller
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
+
 
 
     public function update(Request $request, $id)

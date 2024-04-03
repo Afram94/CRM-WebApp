@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { PageProps, Product } from '@/types';
+import { Customer, PageProps, Product } from '@/types';
 import { Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateProductsModal from './Components/CreateProductsModal';
 import EditProductModal from './Components/EditProductModal';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { FaTrashRestore } from 'react-icons/fa';
+import { FaMinus, FaPlus, FaShoppingCart, FaTrashRestore } from 'react-icons/fa';
 import axios from 'axios';
 import ProductCustomFieldForm from './ProductCustomFieldForm';
 import ProductChannelsHandler from './ProductChannelsHandler';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
 import PaginationComponent from '@/Components/Pagination';
+import Modal from '@/Components/Modal';
+import { MdAttachMoney } from 'react-icons/md';
+import { IoCart } from 'react-icons/io5';
+
+import SelectCustomer from './Components/SelectCustomer';
 
 type GroupedProducts = {
     [category: string]: Product[];
@@ -22,6 +27,63 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(auth.products.data || []);
     const [groupedProducts, setGroupedProducts] = useState<GroupedProducts>({});
     const [openCategories, setOpenCategories] = useState<string[]>([]);
+
+
+    const [isCartModalOpen, setIsCartModalOpen] = useState(false);
+
+    /* const [cart, setCart] = useState(() => {
+        const savedCart = localStorage.getItem('cart');
+        return savedCart ? JSON.parse(savedCart) : {};
+    }); */
+
+    // Define the cart state with an explicit type
+    const [cart, setCart] = useState<Record<number, number>>(() => {
+        const savedCart = localStorage.getItem('cart');
+        return savedCart ? JSON.parse(savedCart) : {};
+    });
+  
+
+    // Handle adding to cart
+    const addToCart = (productId : number) => {
+        setCart((prevCart : any) => {
+            const newCart = { ...prevCart, [productId]: (prevCart[productId] || 0) + 1 };
+            localStorage.setItem('cart', JSON.stringify(newCart));
+            return newCart;
+        });
+    };
+
+    // Handle removing from cart
+    const removeFromCart = (productId : number) => {
+    setCart((prevCart : any) => {
+            const newCart = { ...prevCart };
+            if (!newCart[productId]) return prevCart;
+
+            if (newCart[productId] === 1) {
+                delete newCart[productId];
+            } else {
+                newCart[productId] -= 1;
+            }
+
+            localStorage.setItem('cart', JSON.stringify(newCart));
+            return newCart;
+        });
+    };
+
+    const toggleCartModal = () => {
+        setIsCartModalOpen(!isCartModalOpen);
+    };
+
+    // Function to completely remove a product from the cart
+    const deleteFromCart = (productId : number) => {
+        setCart((prevCart) => {
+            const newCart = { ...prevCart };
+            if (newCart[productId]) {
+                delete newCart[productId]; // Remove the item from the cart
+                localStorage.setItem('cart', JSON.stringify(newCart)); // Update local storage
+            }
+            return newCart;
+        });
+    };
 
     // Function to group products by category
    /*  const groupProducts = (products: Product[]) => {
@@ -178,96 +240,186 @@ const ProductsIndex: React.FC<PageProps> = ({ auth }) => {
         )
     ];
 
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [selectedCustomer, setSelectedCustomer] = useState('');
+    useEffect(() => {
+        axios.get('/get-customers') // Adjust the API endpoint as needed
+          .then(response => {
+            setCustomers(response.data);
+            /* setSelectedProduct(response.data[0]); // Default to the first product, adjust as needed */
+
+        })
+        .catch(error => console.error('Error fetching products:', error));
+    }, []);
+    console.log(customers);
+
+
+    const handleCheckout = async () => {
+        // Assuming selectedCustomer is a state that holds the currently selected customer ID
+        if (!selectedCustomer) {
+            alert("Please select a customer");
+            return;
+        }
+    
+        const productsArray = Object.keys(cart).map((productId : any) => ({
+            id: parseInt(productId, 10),
+            quantity: cart[productId],
+        }));
+    
+        try {
+            const response = await axios.post('/orders', { // Ensure the URL matches your API endpoint
+                customer_id: selectedCustomer,
+                products: productsArray,
+            });
+    
+            localStorage.removeItem('cart');
+            setCart({});
+            setIsCartModalOpen(false); // Close the cart modal
+            alert('Order created successfully');
+        } catch (error) {
+            console.error('Error creating order:', error);
+            alert('Failed to create the order');
+        }
+    };
+
     /* console.log(distinctCustomFieldNames);
     console.log(filteredProducts);
     console.log(auth.products); */
     
     return (
-        <MainLayout title='Products / All Products'>
-            <div className='bg-white dark:bg-gray-800 p-4 rounded-xl'>
-                <div className='w-full flex justify-between my-4'>
+        <MainLayout title="Products / All Products">
+            <div className="bg-white dark:bg-gray-800 bg-opacity-75 p-4 rounded-xl">
+                <div className="w-full flex justify-between my-4">
                     <div className="flex gap-2">
-                            <TextInput
-                                type="text" 
-                                value={searchTerm} 
-                                onChange={(e) => setSearchTerm(e.target.value)} 
-                                placeholder="Search..."
-                                className='flex gap-2'
-                            />
-                            <DangerButton onClick={handleReset}>Reset</DangerButton>
-                    </div>
-                        <CreateProductsModal />
-
-                        <ProductChannelsHandler
-                            userId={auth.user?.id ?? null}
-                            parentId={auth.user?.user_id ?? null}
-                            onNewProduct={handleNewProduct}
-                            onUpdateProduct={handleUpdatedProduct}
-                            onDeleteProduct={handleDeleteProduct}
+                        <TextInput
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search..."
+                            className="flex gap-2"
                         />
+                        <DangerButton onClick={handleReset}>Reset</DangerButton>
+                    </div>
+
+                    <div className="flex items-center gap-12">
+                        <button onClick={toggleCartModal} className="relative flex items-center justify-center p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg cursor-pointer">
+                            <FaShoppingCart className="w-6 h-6" />
+                            {Object.keys(cart).length > 0 && (
+                                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">{ (Object.values(cart) as number[]).reduce((acc: number, curr: number) => acc + curr, 0) }</span>
+                            )}
+                        </button>
+                        <CreateProductsModal />
+                    </div>
+
+                    <ProductChannelsHandler
+                        userId={auth.user?.id ?? null}
+                        parentId={auth.user?.user_id ?? null}
+                        onNewProduct={handleNewProduct}
+                        onUpdateProduct={handleUpdatedProduct}
+                        onDeleteProduct={handleDeleteProduct}
+                    />
                 </div>
-                        {/* <ProductCustomFieldForm /> */}
-                <div className='overflow-x-auto'>
-                    <table className="min-w-full table-auto">
-                    <thead>
-                        <tr className="text-gray-600 dark:text-gray-300 uppercase text-sm leading-normal border-y-2">
-                            <th className="py-2 px-6 text-left">Product</th>
-                            <th className="py-2 px-6 text-left">Category Name</th>
-                            <th className="hidden sm:table-cell py-2 px-6">Description</th>
-                            <th className="hidden sm:table-cell py-2 px-6">Price</th>
-                            <th className="hidden sm:table-cell py-2 px-6">SKU</th>
-                            {distinctCustomFieldNames.map(name => (
-                                <th className="hidden sm:table-cell py-2 px-6 whitespace-nowrap" key={name}>{name}</th>
-                            ))}
-                            <th className="hidden sm:table-cell py-2 px-6">Edit</th>
-                            <th className="hidden sm:table-cell py-2 px-6">Delete</th>
-                        </tr>
-                    </thead>
-                    <tbody className="text-gray-600 dark:text-gray-400 text-sm font-light">
-                        {filteredProducts.map((product) => (
-                            <tr key={product.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <td className="py-2 px-6">
-                                    <Link href={`/products/${product.id}`}>{product.name}</Link>
-                                </td>
-                                <td className="hidden sm:table-cell py-2 px-6">{product.category_name}</td>
-                                <td className="hidden sm:table-cell py-2 px-6">{product.description}</td>
-                                <td className="hidden sm:table-cell py-2 px-6">{product.price}</td>
-                                <td className="hidden sm:table-cell py-2 px-6">{product.sku}</td>
-                                    {Array.from({ length: maxFields }).map((_, index) => {
-                                        if (product.custom_fields_values && index < product.custom_fields_values.length) {
-                                            const customFieldValue = product.custom_fields_values[index];
-                                            let displayValue = customFieldValue.value;
-                                            if (customFieldValue.custom_field.field_type === 'boolean') {
-                                                displayValue = parseInt(displayValue) === 1 
-                                                    ? <div className='w-4 h-4 bg-green-400 rounded-full animate-pulse'></div>
-                                                    : <div className='w-4 h-4 bg-red-400 rounded-full animate-pulse'></div>;
-                                            }
-                                            return <td key={index} className="hidden sm:table-cell py-2 px-6">{displayValue}</td>;
-                                        } else {
-                                            return <td key={index} className="hidden sm:table-cell py-2 px-6"></td>;
-                                        }
-                                    })}
-                                    
-                                    {/* Edit and delete buttons */}
-                                    <td className="py-2 px-6">
-                                        <EditProductModal product={product} onClose={() => {/* Operations after closing modal */}}/>
-                                    </td>
-                                    <td className="py-2 px-6">
-                                        <PrimaryButton onClick={() => deleteProduct(product.id)}>
-                                            <FaTrashRestore />
-                                        </PrimaryButton>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProducts.map(product => (
+                        <div key={product.id} className="bg-slate-200 dark:bg-gray-700 rounded-lg shadow-lg p-4 flex flex-col justify-between">
+                            <div className='flex justify-between'>
+                                <div>
+                                    <h3 className="text-lg font-semibold dark:text-slate-300">{product.name}</h3>
+                                    <p className="dark:text-slate-400 text-sm my-2">{product.description}</p>
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                    <EditProductModal product={product} onClose={() => {/* Handle close */}} />
+                                    <PrimaryButton onClick={() => handleDeleteProduct(product.id)}>
+                                        <FaTrashRestore />
+                                    </PrimaryButton>
+                                </div>
+                            </div>
+
+                            {/* <div className='flex flex-row justify-between'>
+                                <p className="dark:text-slate-300 font-medium flex flex-col">Category: <span className="font-normal">{product.category_name || 'N/A'}</span></p>
+                                <p className="dark:text-slate-300 font-medium flex flex-col">Price: <span className="font-normal">${product.price}</span></p>
+                            </div> */}
+
+                            <div className='flex flex-col sm:flex-row justify-center sm:gap-10 text-gray-700 dark:text-gray-100 my-4'>
+                                <div className='flex items-center justify-center my-2'>
+                                    <IoCart className="w-10 h-10 text-indigo-500 bg-indigo-200 rounded-md p-2"/>
+                                    <div className='mx-2'>
+                                        <p className='font-semibold dark:text-slate-300'>Category:</p>
+                                        <p className='dark:text-slate-300'>{product.category_name || 'N/A'}</p>
+                                    </div>
+                                </div>
+
+                                <div className='flex items-center justify-center my-2'>
+                                    <MdAttachMoney className="w-10 h-10 text-indigo-500 bg-indigo-200 rounded-md p-2" />
+                                    <div className='mx-2'>
+                                    <p className='font-semibold dark:text-slate-300'>Price:</p>
+                                    <p className='dark:text-slate-300'>${product.price}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-4">
+                                <div className="flex items-center justify-between mb-4 mx-8">
+                                    <PrimaryButton className='border-2 border-slate-300 py-3 px-4 rounded-2xl dark:bg-gray-800 bg-slate-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors dark:text-slate-300' onClick={() => removeFromCart(product.id)}><FaMinus /></PrimaryButton>
+                                    <span className='dark:text-slate-300 text-xl'>{cart[product.id] || 0}</span>
+                                    <PrimaryButton className='border-2 border-slate-300 py-3 px-4 rounded-2xl dark:bg-gray-800 bg-slate-400 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors dark:text-slate-300' onClick={() => addToCart(product.id)}><FaPlus /></PrimaryButton>
+                                </div>
+
+                                {/* <div className="flex justify-between">
+                                    <EditProductModal product={product} onClose={() => {}} />
+                                    <PrimaryButton onClick={() => handleDeleteProduct(product.id)}>
+                                        <FaTrashRestore />
+                                    </PrimaryButton>
+                                </div> */}
+                            </div>
+                        </div>
+                    ))}
                 </div>
+
                 {auth.products.links && (
                         <div className="mt-4 flex justify-end">
                             <PaginationComponent links={auth.products.links} />
                         </div>
                     )}
             </div>
+            
+            <Modal show={isCartModalOpen} onClose={toggleCartModal}>
+                <div className="p-4 h-[700px] overflow-auto">
+                    <h2 className="font-bold text-lg mb-4">Cart Items</h2>
+                    <table className="min-w-full leading-normal">
+                        <thead>
+                            <tr>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product Name</th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Quantity</th>
+                                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.entries(cart).map(([productId, quantity]) => {
+                                const product = filteredProducts.find(p => p.id.toString() === productId);
+                                return (
+                                    <tr key={productId}>
+                                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                            {product ? product.name : 'Product not found'}
+                                        </td>
+                                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                            {quantity}
+                                        </td>
+                                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm flex justify-around">
+                                            <PrimaryButton className='...' onClick={() => removeFromCart(parseInt(productId))}>-</PrimaryButton>
+                                            <PrimaryButton className='...' onClick={() => addToCart(parseInt(productId))}>+</PrimaryButton>
+                                            <PrimaryButton className='...' onClick={() => deleteFromCart(parseInt(productId))}>Delete</PrimaryButton>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                    <SelectCustomer onCustomerSelect={(customerId) => setSelectedCustomer(customerId.toString())} />
+                    <PrimaryButton onClick={handleCheckout}>Checkout</PrimaryButton>
+                </div>
+            </Modal>
+
         </MainLayout>
     );
 };

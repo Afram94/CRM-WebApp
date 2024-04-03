@@ -37,7 +37,7 @@ class LoginRequest extends FormRequest
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function authenticate(): void
+    /* public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
@@ -50,7 +50,47 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    } */
+
+
+
+
+    public function authenticate(): void
+    {
+        $this->ensureIsNotRateLimited();
+
+        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => trans('auth.failed'),
+            ]);
+        }
+
+        // Check if the authenticated user is active.
+        $user = Auth::user();
+        if (! $user->is_active) {
+            Auth::logout(); // Log out the user immediately.
+
+            // Instead of throwing an exception, you might want to redirect
+            // This is where you'd typically add a session flash message or similar if needed.
+            // However, redirects or setting the session from here won't work as expected due to the request lifecycle.
+            // You'd handle the redirection to a specific page after a failed login in your controller or middleware.
+            
+            // For now, let's throw a validation exception with a custom message.
+            // This message can be caught and handled to redirect the user in your controller.
+            throw ValidationException::withMessages([
+                'email' => __('Your account is currently inactive. Please contact your administrator.'),
+            ]);
+        }
+
+        RateLimiter::clear($this->throttleKey());
     }
+
+
+
+
+
 
     /**
      * Ensure the login request is not rate limited.

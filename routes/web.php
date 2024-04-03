@@ -10,6 +10,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\InventoryController;
 
@@ -22,6 +23,10 @@ use App\Http\Controllers\ProductCustomFieldController;
 use App\Http\Controllers\CustomerProductController;
 
 use App\Http\Controllers\EventController;
+
+use App\Http\Controllers\ChatController;
+
+use App\Http\Controllers\DashboardController;
 
 use App\Http\Controllers\SuperAdminController;
 
@@ -55,12 +60,25 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
 });
 
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::post('/chat/send-message', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::get('/chat/fetch-messages/{userId}', [ChatController::class, 'fetchMessages'])->name('chat.fetchMessages');
+    Route::get('/chat/list-users', [ChatController::class, 'listUsers'])->name('chat.listUsers');
 
-Route::get('/dashboard', function () {
+    Route::delete('/chat/delete-message/{messageId}', [ChatController::class, 'deleteMessage']);
+    Route::patch('/chat/update-message/{messageId}', [ChatController::class, 'updateMessage']);
+
+});
+
+
+/* Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard'); */
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+
     // Display a listing of the customers
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     
@@ -86,6 +104,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/export-csv', [ExportController::class, 'exportCsv']);
     Route::get('/export-single-customer-csv/{customerId}', [ExportController::class, 'exportSingleCustomerCsv']);
+
+    Route::get('/get-customers', [CustomerController::class, 'getCustomers']);
 
     // Products
     /* Route::resource('products', ProductController::class); */
@@ -113,6 +133,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
 
+    //Orders
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::put('/orders/{order}', [OrderController::class, 'update']);
+
+    //Chat
+    /* Route::post('/send-message', [ChatController::class, 'sendMessage']);
+    Route::get('/fetch-messages/{userId}', [ChatController::class, 'fetchMessages']);
+    Route::get('/chat/list-users', [ChatController::class, 'listUsers'])->middleware('auth'); */
+
+
     Route::Resource('events', EventController::class);
     
 
@@ -125,6 +155,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/user-roles', [UserController::class, 'getRoles']);
     Route::get('users/{id}/permissions', [UserController::class, 'getPermissions']);
     Route::post('users/{id}/permissions/{permission}', [UserController::class, 'togglePermission']);
+    Route::post('/users/{userId}/toggle-active', [UserController::class, 'toggleUserActive'])->name('users.toggle-active');
+
+    Route::post('/users/{userId}/update-details', [UserController::class, 'updateUser']);
+
+
 
 
     //Customers Custom fields
@@ -140,6 +175,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
     Route::get('/get-customer-custom-fields', [CustomerCustomFieldController::class, 'getCustomerCustomFields']);
+
+    Route::post('/customers/{customerId}/addProduct', [CustomerProductController::class, 'addProductToCustomer']);
 
 
 
@@ -162,7 +199,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Customer-Product-Controller
-Route::post('/customers/{customerId}/addProduct', [CustomerProductController::class, 'addProductToCustomer']);
+
 
 
 
@@ -180,5 +217,21 @@ Route::middleware('auth')->group(function () {
     /* Route::get('/dashboard', [CustomerController::class, 'index'])->name('dashboard'); */
 
 });
+
+// Define all specific web routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+// Define other specific routes here...
+
+// SPA catch-all route
+Route::get('/{any}', function () {
+    return Inertia::render('NotFound404');
+})->where('any', '.*')->middleware('auth')->name('spa.catchall');
+
+/* 
+// Catch-all route for unmatched routes
+Route::get('/{any}', function () {
+    return Inertia::render('NotFound404');
+})->where('any', '.*')->middleware('auth'); */
 
 require __DIR__.'/auth.php';

@@ -11,7 +11,7 @@ type FormData = {
     description: string;
     price: string;
     sku: string;
-    inventoryCount: string;
+    inventoryCount?: string;
     category_id: string;
     [key: string]: string | boolean | undefined;
 };
@@ -22,9 +22,14 @@ type CustomField = {
     field_type: string;
 };
 
+/* type Category = {
+    id: string;
+    name: string;
+}; */
+
 type CreateProductProps = {
     closeModal: () => void;
-}
+};
 
 const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
     const [formData, setFormData] = useState<FormData>({
@@ -33,44 +38,35 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
         price: '',
         sku: '',
         inventoryCount: '',
-        category_id: ''
+        category_id: '',
     });
 
     const [customFields, setCustomFields] = useState<CustomField[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
-        const fetchCustomFields = async () => {
+        const fetchCustomFieldsAndCategories = async () => {
             try {
-                const response = await axios.get('/product-custom-fields');
-                setCustomFields(response.data);
+                const [customFieldsResponse, categoriesResponse] = await Promise.all([
+                    axios.get('/product-custom-fields'),
+                    axios.get('/get-categories'),
+                ]);
+
+                setCustomFields(customFieldsResponse.data);
+                setCategories(categoriesResponse.data);
+
                 // Initialize default values for custom fields
-                const defaultValues = response.data.reduce((acc: { [key: string]: string | boolean }, field: CustomField) => {
+                const defaultValues = customFieldsResponse.data.reduce((acc: { [key: string]: string | boolean }, field: CustomField) => {
                     acc[field.field_name] = field.field_type === 'boolean' ? false : '';
                     return acc;
                 }, {});
                 setFormData(formData => ({ ...formData, ...defaultValues }));
             } catch (error) {
-                console.error('Error fetching custom fields:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchCustomFields();
-    }, []);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await axios.get('/get-categories');
-                console.log(response.data); // Log to inspect the structure
-                setCategories(response.data);
-            } catch (error) {
-                console.error('Error fetching categories:', error);
-                // Handle error
-            }
-        };
-
-        fetchCategories();
+        fetchCustomFieldsAndCategories();
     }, []);
 
     const handleInputChange = (name: string, value: string | boolean) => {
@@ -78,26 +74,35 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
     };
 
     const addProduct = async () => {
-        try {
-            // Prepare custom fields data
-            const customFieldsData = customFields.reduce((acc: { [key: string]: string | boolean }, field: CustomField) => {
-                const fieldValue = formData[field.field_name];
-                acc[field.id] = fieldValue !== undefined ? fieldValue : (field.field_type === 'boolean' ? false : '');
-                return acc;
-            }, {});
-    
-            const response = await axios.post('/products', {
-                ...formData,
-                custom_fields: customFieldsData
-            });
-    
-            console.log('Product added:', response.data);
-            closeModal(); // Close modal on success
-            successToast('A new Product has been created successfully');
-        } catch (error) {
-            console.error('Failed to add product:', error);
-        }
-    };
+    try {
+        const customFieldsData = customFields.reduce<{[key: string]: string | boolean}>((acc, field) => {
+            // Ensure formData[field.field_name] is explicitly handled to never be undefined
+            const value = formData[field.field_name];
+            if (value !== undefined) { // Only assign if value is not undefined
+                acc[field.id] = value;
+            } else { // Handle undefined by assigning a default value based on field type
+                acc[field.id] = field.field_type === 'boolean' ? false : '';
+            }
+            return acc;
+        }, {});
+
+        // Adjust formData to match backend expected format
+        const payload = {
+            ...formData,
+            inventory_count: formData.inventoryCount, // Ensure this matches backend expectation
+            custom_fields: customFieldsData,
+        };
+        delete payload.inventoryCount; // Remove the camelCase version if not needed
+
+        await axios.post('/products', payload);
+
+        closeModal(); // Close modal on success
+        successToast('A new Product has been created successfully');
+    } catch (error) {
+        console.error('Failed to add product:', error);
+        // Handle error appropriately
+    }
+};
     
     
 
@@ -175,3 +180,4 @@ const CreateProduct: React.FC<CreateProductProps> = ({ closeModal }) => {
 };
 
 export default CreateProduct;
+

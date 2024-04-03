@@ -4,6 +4,19 @@ export interface User {
     name: string;
     email: string;
     email_verified_at: string | null;
+    is_active: boolean;
+}
+
+export interface SuperAdminUsers {
+    id: number;
+    user_id: number | null;
+    name: string;
+    email: string;
+    email_verified_at: string | null;
+    children?: User[];
+    customers_count?: number;
+    products_count?: number;
+    is_active: boolean;
 }
 
 export interface CustomerCustomFieldValue {
@@ -33,6 +46,8 @@ export interface Customer {
     custom_fields_values: CustomerCustomFieldValue[];
     notes: Note[];
     products: Product[]; // Add this line
+    orders: Order[];
+    created_at: Date;
 
     // ... any other fields for Customer
 }
@@ -106,6 +121,58 @@ interface CalendarEvent {
     end: Date | string;
     color?: string;
   }
+
+  export interface Order {
+    id: number;
+    user_id: number; // Assuming this is the ID of the user who creates the order
+    customer_id: number;
+    total: number;
+    status: string; // Could be an enum or string type depending on how you manage status
+    order_items?: OrderItem[]; // Optional for when creating and not yet populated
+    created_at?: Date;
+}
+
+export interface OrderItem {
+    id?: number; // Optional as it might not exist before creation
+    order_id: number;
+    product_id: number;
+    quantity: number;
+    price: number; // Assuming this is the price at the time of order
+    product?: Product; // Add this line to include product details
+}
+
+export interface Message {
+    id: number;
+    from_user_id: number;
+    to_user_id: number;
+    message: string;
+    created_at: Date;
+  }
+
+  export interface DashboardData {
+    customerCount: number;
+    orderCount: number;
+    productCount: number;
+    totalSales: number;
+    outOfStockCount: number;
+    ordersByStatus: { [key: string]: number }; // Adding orders by status
+    monthlySalesData: MonthlySalesData[]; // Define this based on the data structure
+    productCountsByCategory: ProductCountByCategory[]; // Define this based on the data structure
+}
+
+// Assuming the monthly sales data includes year, month, and total sales
+export interface MonthlySalesData {
+    year: number;
+    month: number;
+    totalSales: number;
+}
+
+// Assuming product counts by category includes the category name and product count
+export interface ProductCountByCategory {
+    name: string;
+    productCount: number;
+}
+
   
   
 
@@ -144,5 +211,18 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         customer_custom_fields: CustomerCustomField[];
         product_custom_fields: ProductCustomField[];
         calendar: CalendarEvent[];
+
+        orders: Order[];
+        order_items: OrderItem[];
+
+
+        superadminusers: SuperAdminUsers[];
+
+
+        users: User[];
+        messages: PaginatedResponse<Message>;
+
+        dashboardData?: DashboardData; // Optional since it might not be available on all pages
+
     };
 };

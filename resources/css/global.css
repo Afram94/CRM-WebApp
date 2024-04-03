@@ -131,3 +131,36 @@
   background-clip: text;
   color: transparent;
 }
+
+
+/* Not Found 404 page "Image" */
+.vh-full {
+  min-height: 100vh;
+  width: 100vw;
+  background-image: url('/images/404.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+
+/* Not Found 404 page "Video" */
+.vh-full {
+  position: relative;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  z-index: 0;
+}
