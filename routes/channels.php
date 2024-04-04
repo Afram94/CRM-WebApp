@@ -30,6 +30,10 @@ Broadcast::channel('products-for-user-{userId}', function ($user, $userId) {
     return $user->id == $userId || $user->user_id == $userId;
 });
 
+Broadcast::channel('inventories-for-user-{userId}', function ($user, $userId) {
+    return $user->id == $userId || $user->user_id == $userId;
+});
+
 Broadcast::channel('users-for-user-{userId}', function ($user, $userId) {
     return $user->id == $userId || $user->user_id == $userId;
 });
