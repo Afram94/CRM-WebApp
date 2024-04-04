@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Broadcast;
+use App\Events\InventoryCreated;
 
 class InventoryController extends Controller
 {
@@ -29,7 +31,7 @@ class InventoryController extends Controller
                                         ->pluck('id')->toArray();
 
         // Retrieve products only for users who share the same parent_user_id.
-        $productsQuery = Inventory::whereIn('user_id', $allUserIdsUnderSameParent);
+        $productsQuery = Inventory::whereIn('user_id', $allUserIdsUnderSameParent)->latest();
 
         if ($search) {
             $productsQuery->where(function($query) use ($search) {
@@ -90,6 +92,8 @@ class InventoryController extends Controller
 
         // Create the inventory record
         $inventory = Inventory::create($validator);
+
+        broadcast(new InventoryCreated($inventory))->toOthers(); // use NoteCreated for broadcasting
 
         // Return the newly created inventory
         return response()->json($inventory, Response::HTTP_CREATED);

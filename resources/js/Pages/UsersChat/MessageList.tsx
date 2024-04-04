@@ -18,14 +18,14 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ messages, endRef, handleDeleteMessage }) => {
   return (
-    <ul className="space-y-4 mx-3"> {/* Increased space-y from 2 to 4 for more space between messages */}
+    <ul className="space-y-4 m-3"> {/* Increased space-y from 2 to 4 for more space between messages */}
       {messages.map((message, index) => (
         <li
           key={index}
           className={`flex ${message.isSender ? 'justify-end' : 'justify-start'} items-center mx-3 `}
           ref={index === messages.length - 1 ? endRef : null}
         >
-          <div className={`flex items-center rounded-xl px-3 ${message.isSender ? 'bg-green-200 dark:bg-[#2B2C3F] dark:text-slate-200' : 'bg-[#e7e7e7] dark:bg-[#d0d0d0] dark:text-slate-800'}`}>
+          <div className={`flex items-center rounded-xl px-3 font-bold ${message.isSender ? 'bg-green-200 dark:bg-[#33367a] dark:text-slate-200' : 'bg-[#e7e7e7] dark:bg-[#d0d0d0] dark:text-slate-800'}`}>
             <p className="text-xs text-blue-500 px-2"> {/* Added px-2 for padding on the sides of the timestamp */}
               {message.createdAt}
             </p>

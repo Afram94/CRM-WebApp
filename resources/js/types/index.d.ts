@@ -148,6 +148,31 @@ export interface Message {
     message: string;
     created_at: Date;
   }
+
+  export interface DashboardData {
+    customerCount: number;
+    orderCount: number;
+    productCount: number;
+    totalSales: number;
+    outOfStockCount: number;
+    ordersByStatus: { [key: string]: number }; // Adding orders by status
+    monthlySalesData: MonthlySalesData[]; // Define this based on the data structure
+    productCountsByCategory: ProductCountByCategory[]; // Define this based on the data structure
+}
+
+// Assuming the monthly sales data includes year, month, and total sales
+export interface MonthlySalesData {
+    year: number;
+    month: number;
+    totalSales: number;
+}
+
+// Assuming product counts by category includes the category name and product count
+export interface ProductCountByCategory {
+    name: string;
+    productCount: number;
+}
+
   
   
 
@@ -196,5 +221,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
 
         users: User[];
         messages: PaginatedResponse<Message>;
+
+        dashboardData?: DashboardData; // Optional since it might not be available on all pages
+
     };
 };

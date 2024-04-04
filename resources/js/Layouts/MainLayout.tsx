@@ -11,9 +11,10 @@ import { useWidth } from '../../providers/WidthContext';
 type MainLayoutProps = {
   children: React.ReactNode;  // This represents any child components that will be wrapped by MainLayout
   title: string;
+  css?: string;
 };
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ children, title, css = '' }) => {
     const { isFullWidth } = useWidth();
     // Try to get the sidebar's state (open or closed) from localStorage
     const initialIsOpen = localStorage.getItem('sidebarIsOpen') === 'true';
@@ -45,7 +46,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
                 <h1 className='text-2xl text-white dark:text-gray-300'>{title}</h1>
 
                 {/* // This is where child components (passed to MainLayout) will be rendered */}
-                <main className="flex-1 overflow-x-hidden overflow-y-auto dark:bg-gray-800"> {/* bg-gray-200 */}
+                <main className={`flex-1 overflow-x-hidden overflow-y-auto ${css}`}> {/* dark:bg-gray-800 */}
                     {children}
                 </main>
             </div>
