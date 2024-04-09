@@ -11,7 +11,7 @@ import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
 import InventoryChannelsHandler from './InventoryChannelsHandler';
 
-const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
+const Show: React.FC<PageProps> = ({ auth }) => {
     const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories || []);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -64,24 +64,47 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
          *
          * @param {Inventory} newInventory - The new inventory to be added to the list.
          */
-        const handleNewInventory = (newInventory: Inventory) => {
-            setFilteredInventories(prevInventories => {
-                // Check if the new inventory already exists in the current state
-                const isExistingInventory = prevInventories.some(inventory => inventory.id === newInventory.id);
 
-                // Add the new inventory to the state only if it doesn't exist already
-                if (!isExistingInventory) {
-                    // Prepend the new inventory to the start of the inventory array
-                    const updatedInventories = [newInventory, ...prevInventories];
+            const handleNewInventory = (newInventory : Inventory) => {
+                console.log("New product event triggered");
+            
+                setFilteredInventories((prevInventories) => {
+                    // Check if the new product already exists in the current state
+                    const isExistingProduct = prevInventories.some(product => product.id === newInventory.id);
+            
+                    if (!isExistingProduct) {
+                        // Explicitly handle the product name for the new product
+                        // Assuming newInventory includes a product object with its name
+                        // If newInventory does not include this directly, adjust according to how you receive the product information
+                        let productToAdd = {
+                            ...newInventory,
+                            product_name: newInventory.product ? newInventory.product.name : 'Uncategorized', // Adjust if your data structure differs
+                        };
+            
+                        // Prepend the new product to the start of the product array
+                        const updatedProducts = [productToAdd, ...prevInventories];
+            
+                        // Maintain a maximum of 20 products for display, adjusting as needed
+                        return updatedProducts.slice(0, 20);
+                    }
+            
+                    // Return the previous state if the product already exists
+                    return prevInventories;
+                });
+            };
 
-                    // Maintain a maximum of 20 inventories for display, adjusting as needed
-                    return updatedInventories.slice(0, 20);
-                }
-
-                // Return the previous state if the inventory already exists
-                return prevInventories;
+        /* const handleNewInventory = (newInventory: Inventory) => {
+            console.log("handleNewNote Work!!")
+            setFilteredInventories((prevInventories) => {
+              if (newInventory?.id) {  // Ensure the new note has a user name
+                return [...prevInventories, newInventory];
+              } else {
+                // Handle this case, e.g., provide a default name or fetch additional data
+                console.error('New note does not have a user_name:', newInventory);
+                return prevInventories;  // For now, keep the old notes as they were
+              }
             });
-        };
+          }; */
 
     return (
         <MainLayout title='Inventories'>
@@ -142,4 +165,4 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
     );
 };
 
-export default InventoriesIndex;
+export default Show;

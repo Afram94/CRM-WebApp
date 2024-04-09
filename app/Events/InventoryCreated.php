@@ -46,27 +46,25 @@ class InventoryCreated implements ShouldBroadcast
 
     public function broadcastWith()
     {
-        // Assuming you have the product relationship loaded
-        // You might need to ensure the relationship is loaded or load it here explicitly if not always loaded
-        $product = $this->inventory->product;
+        $inventory = $this->inventory->load('product'); // Ensure the product relationship is loaded
 
-        return [
-            'id' => $this->inventory->id,
-            'user_id' => $this->inventory->user_id,
-            'product_id' => $this->inventory->product_id,
-            'product_name' => $product->name ?? 'N/A', // Assuming product has a 'name' attribute
-            'quantity' => $this->inventory->quantity,
-            'min_stock_level' => $this->inventory->min_stock_level,
-            'max_stock_level' => $this->inventory->max_stock_level,
-            'stock_status' => $this->inventory->stock_status,
-            'restock_date' => $this->inventory->restock_date,
-            'product' => [
-                // Add the necessary attributes from your Product model
-                'id' => $product->id,
-                'name' => $product->name,
-                // Continue with other Product attributes as needed
-            ],
+        return[
+            'inventory' => $this->inventory,
+            'product_name' => $inventory->product->name,
         ];
+        /* return [
+            'id' => $inventory->id,
+            'user_id' => $inventory->user_id,
+            'quantity' => $inventory->quantity,
+            'stock_status' => $inventory->stock_status,
+            'restock_date' => $inventory->restock_date,
+            'product_name' => $inventory->product->name, // Include the product name
+        ]; */
+        /* 'product_id' => $inventory->product_id, */
+        /* 'min_stock_level' => $inventory->min_stock_level,
+        'max_stock_level' => $inventory->max_stock_level, */
     }
+
+
 
 }
