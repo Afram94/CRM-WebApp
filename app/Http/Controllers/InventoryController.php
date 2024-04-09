@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Broadcast;
+use App\Events\InventoryCreated;
 
 class InventoryController extends Controller
 {
@@ -29,7 +31,7 @@ class InventoryController extends Controller
                                         ->pluck('id')->toArray();
 
         // Retrieve products only for users who share the same parent_user_id.
-        $productsQuery = Inventory::whereIn('user_id', $allUserIdsUnderSameParent);
+        $productsQuery = Inventory::whereIn('user_id', $allUserIdsUnderSameParent)->latest();
 
         if ($search) {
             $productsQuery->where(function($query) use ($search) {
@@ -43,9 +45,11 @@ class InventoryController extends Controller
         }
 
         $inventories = $productsQuery->get()->transform(function ($inventory) {
+            /* dd($inventory->id); */
             return [
                 'id' => $inventory->id,
                 /* 'product_id' => $inventory->product_id, */
+                'user_id' => $inventory->user_id,
                 'product_name' => $inventory->product->name,
                 'quantity' => $inventory->quantity,
                 'stock_status' => $inventory->stock_status,
@@ -58,6 +62,7 @@ class InventoryController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'auth' => [
+                    'user' => $user,
                     'inventories' => $inventories
                 ]
             ]);
@@ -65,6 +70,7 @@ class InventoryController extends Controller
 
         return inertia('Inventories/Show', [
             'auth' => [
+                'user' => $user,
                 'inventories' => $inventories
             ]
         ]);
@@ -90,6 +96,8 @@ class InventoryController extends Controller
 
         // Create the inventory record
         $inventory = Inventory::create($validator);
+
+        broadcast(new InventoryCreated($inventory))->toOthers(); // use NoteCreated for broadcasting
 
         // Return the newly created inventory
         return response()->json($inventory, Response::HTTP_CREATED);
