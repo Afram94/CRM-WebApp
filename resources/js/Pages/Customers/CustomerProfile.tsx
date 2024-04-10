@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import { Order, PageProps } from '@/types';
 import { TabComponent } from '@/Components/TabComponent';
-import { FaUser } from 'react-icons/fa';
+import { FaBoxOpen, FaUser } from 'react-icons/fa';
 import { IoCart, IoListSharp } from 'react-icons/io5';
-import { MdAttachMoney } from 'react-icons/md';
+import { MdAttachMoney, MdNote } from 'react-icons/md';
 import axios from 'axios';
 import ReusableListbox from '@/Components/DropdownSelect';
+
+import { IconType } from 'react-icons';
 
 const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
   /* const [selectedTab, setSelectedTab] = useState('Overview'); */
@@ -19,7 +21,7 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
 
   const tabCategories = [
     { name: 'Overview', Icon: FaUser },
-    { name: 'Products', Icon: FaUser },
+    /* { name: 'Products', Icon: FaUser }, */
     { name: 'Orders', Icon: IoListSharp },
     { name: 'Address & Billing', Icon: FaUser },
     { name: 'Notifications', Icon: FaUser },
@@ -95,6 +97,45 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
   // if you're sure there will always be one in the auth object, otherwise, you might want to handle potential undefined values.
   const customer = auth.customer_profile[0];
 
+  console.log(customer);
+
+  /* // Calculate the total product quantity across all orders   // DELETE ___________________________ THIS ______________
+  const totalProductsQuantity = customer?.orders?.reduce((total, order) => {
+    return total + order.order_items.reduce((sum, item) => sum + item.quantity, 0);
+  }, 0) ?? 0;
+ */
+  // Calculate the total product quantity across all orders
+  const totalProductsQuantity = customer?.orders?.reduce((total, order) => {
+    // Provide an empty array as a fallback if order_items is undefined
+    return total + (order.order_items || []).reduce((sum, item) => sum + item.quantity, 0);
+  }, 0) ?? 0;
+
+
+  
+  interface CountCircleProps {
+    bgColor: string;
+    textColor: string;
+    icon: IconType;
+    count: number | string;
+    label: string;
+  }
+  
+  // Define a reusable component for the Count Circle
+  const CountCircle: React.FC<CountCircleProps> = ({ bgColor, textColor, icon: Icon, count, label }) => (
+    <div className="flex flex-col items-center">
+      <div className={`relative bg-${bgColor}-200 rounded-full w-52 h-52 flex items-center justify-center shadow-lg`}>
+        {/* Icon as background with low opacity */}
+        <Icon className={`absolute text-${textColor}-500 text-9xl opacity-20`} />
+        {/* Content container to ensure text appears above the icon */}
+        <div className="z-10 text-center">
+          <p className={`text-4xl font-bold text-${textColor}-800`}>{count}</p>
+          <p className={`text-${textColor}-800 font-semibold text-xl`}>{label}</p>
+        </div>
+      </div>
+    </div>
+  );
+  
+
   return (
     <MainLayout title="">
       <div className='m-5 bg-white p-2 rounded-lg dark:bg-gray-800'> {/* dark:bg-opacity-75 bg-opacity-75 */} {/* xl:h-screen */}
@@ -106,9 +147,9 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
       <div className='text-gray-500 dark:text-gray-100 text-sm sm:text-md md:text-lg mb-5'>
         {new Date(customer?.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
       </div>
-      <div className='grid grid-cols-1 xl:grid-cols-3'>
+      <div className='grid grid-cols-1 xl:grid-cols-3 h-screen'>
 
-        <div className='flex flex-col gap-y-1 mt-24 mx-5 p-4 shadow-md rounded-lg bg-slate-200 dark:bg-gray-700 h-1/3'> {/*   */}
+        <div className='flex flex-col gap-y-1 mt-24 mx-5 p-4 shadow-md rounded-lg bg-slate-100 dark:bg-gray-700 h-[500px]'> {/*   */}
           <div className='flex justify-center mb-4'>
             <FaUser className='bg-indigo-200 text-indigo-500 rounded-full p-3 h-16 w-16 sm:h-20 sm:w-20 md:h-28 md:w-28 mt-4 animate-pulse' />
           </div>
@@ -171,73 +212,74 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
               selectedTab={selectedTab}
               onSelect={(tab) => setSelectedTab(tab)}
             />
-            {selectedTab === 'Overview' && (
-                <div> 
-                
-                    <div  className="mb-2">
-                        {/* {profile.notes && profile.notes.length > 0 ?
-                        profile.notes.map((note)=>( */}
-                            <div className='grid grid-cols-2 gap-2'>
-
-                                <div className='w-full p-3 h-44 shadow-md bg-white rounded-lg dark:bg-gray-700'>
-                                    <div className='mb-2 flex flex-col gap-3'>
-                                        <MdAttachMoney className="w-9 h-9 text-indigo-500 bg-indigo-200 rounded-md p-1" />
-                                        <p className='text-xl text-gray-700 dark:text-gray-100'>Account Balance</p>
-                                    </div>
-
-                                    <div className='flex gap-1 mb-2'>
-                                        <p className='text-indigo-600 dark:text-indigo-300 text-xl font-semibold'>$2345</p>
-                                        <p className='text-[14px] my-1 text-gray-500 dark:text-gray-100 font-semibold'>Credit Left</p>
-                                    </div>
-                                    <p className='text-gray-500 dark:text-gray-100'>Account balance for next purchase</p>
-                                </div>
-
-
-                                {auth.customer_profile.map((profile) => (
-                                  <div key={profile.id} className="mb-6">
-
-                                    <div className='w-full p-3 shadow-md bg-white rounded-lg dark:bg-gray-700'>
-                                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Notes</h3>
-                                      {profile.notes && profile.notes.length > 0 ? (
-                                        profile.notes.map((note) => (
-                                          <div key={note.id} className='mb-4'>
-                                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{note.title}</p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-100">{note.content}</p>
-                                          </div>
-                                        ))
-                                      ) : (
-                                        <p className="text-xl text-gray-500">No notes available</p>
-                                      )}
-
-                                    </div>
-                                  </div>
-                                ))}
-
-                                {auth.customer_profile.map((profile) => (
-                                <div key={profile.id} className="mb-6">
-                                  {profile.products && profile.products.length > 0 ? (
-                                    <div className="w-full p-3 shadow-md bg-white rounded-lg dark:bg-gray-700">
-                                      <h3 className="text-lg font-semibold text-gray-800 mb-3 dark:text-gray-100">Products</h3>
-                                      {profile.products.map((product) => (
-                                        <div key={product.id} className="mb-2">
-                                          {/* Render product details */}
-                                          <p className="text-sm text-gray-600 dark:text-gray-100">{product.name}</p>
-                                          {/* More product details */}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="w-full p-3 h-44 shadow-md items-center flex justify-center bg-white rounded-lg">
-                                      <p className="text-xl text-gray-500">No products available</p>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-
-                            </div>
-                    </div>
-                </div>
-            )}
+          {selectedTab === 'Overview' && (
+            <div className="flex flex-wrap justify-center gap-4 mt-8 bg-slate-50 dark:bg-slate-700 p-12 rounded-lg">
+              <CountCircle 
+                bgColor="purple" 
+                textColor="purple" 
+                icon={MdNote} 
+                count={customer?.notes?.length ?? 0} 
+                label="Notes" 
+              />
+              <CountCircle 
+                bgColor="blue" 
+                textColor="blue" 
+                icon={IoCart} 
+                count={orders.length} 
+                label="Orders" 
+              />
+              <CountCircle 
+                bgColor="green" 
+                textColor="green" 
+                icon={FaBoxOpen} 
+                count={totalProductsQuantity} 
+                label="Products" 
+              />
+              <CountCircle 
+                bgColor="purple" 
+                textColor="purple" 
+                icon={MdNote} 
+                count={customer?.notes?.length ?? 0} 
+                label="Notes" 
+              />
+              <CountCircle 
+                bgColor="blue" 
+                textColor="blue" 
+                icon={IoCart} 
+                count={orders.length} 
+                label="Orders" 
+              />
+              <CountCircle 
+                bgColor="green" 
+                textColor="green" 
+                icon={FaBoxOpen} 
+                count={totalProductsQuantity} 
+                label="Products" 
+              />
+              <CountCircle 
+                bgColor="purple" 
+                textColor="purple" 
+                icon={MdNote} 
+                count={customer?.notes?.length ?? 0} 
+                label="Notes" 
+              />
+              <CountCircle 
+                bgColor="blue" 
+                textColor="blue" 
+                icon={IoCart} 
+                count={orders.length} 
+                label="Orders" 
+              />
+              <CountCircle 
+                bgColor="green" 
+                textColor="green" 
+                icon={FaBoxOpen} 
+                count={totalProductsQuantity} 
+                label="Products" 
+              />
+              
+            </div>
+          )}
             {selectedTab === 'Products' && (
             <div className="p-4">
               <div className="overflow-x-auto rounded-xl">
@@ -272,7 +314,7 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
           )}
 
 {selectedTab === 'Orders' && (
-  <div className="p-4">
+  <div className="p-4 mt-8 bg-slate-50 dark:bg-slate-700 rounded-lg">
     {orders.map((order) => (
       <div key={order.id} className={`mb-4 p-5 rounded-lg shadow-xl border border-gray-300 relative ${order.status === 'pending' ? 'bg-yellow-100' : order.status === 'completed' ? 'bg-green-100' : 'bg-red-100'}`}>
         
