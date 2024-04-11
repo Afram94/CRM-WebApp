@@ -147,7 +147,7 @@ const CustomerProfiles: React.FC<PageProps> = ({ auth }) => {
       <div className='text-gray-500 dark:text-gray-100 text-sm sm:text-md md:text-lg mb-5'>
         {new Date(customer?.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
       </div>
-      <div className='grid grid-cols-1 xl:grid-cols-3 h-screen'>
+      <div className='grid grid-cols-1 xl:grid-cols-3'> {/* h-screen */}
 
         <div className='flex flex-col gap-y-1 mt-24 mx-5 p-4 shadow-md rounded-lg bg-slate-100 dark:bg-gray-700 h-[500px]'> {/*   */}
           <div className='flex justify-center mb-4'>
