@@ -10,16 +10,17 @@ import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
 import InventoryChannelsHandler from './InventoryChannelsHandler';
+import PaginationComponent from '@/Components/Pagination';
 
 const Show: React.FC<PageProps> = ({ auth }) => {
-    const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories || []);
+    const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories.data || []);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const fetchFilteredInventories = async () => {
+    /* const fetchFilteredInventories = async () => {
         try {
             const response = await axios.get(`/inventories?search=${searchTerm}`);
             if (response.data && response.data.auth && response.data.auth.inventories) {
-                setFilteredInventories(response.data.auth.inventories);
+                setFilteredInventories(response.data.auth.inventories.data);
             }
         } catch (error) {
             console.error('Failed to fetch filtered inventories:', error);
@@ -30,17 +31,44 @@ const Show: React.FC<PageProps> = ({ auth }) => {
         if (searchTerm.length >= 3 || searchTerm === '') {
             fetchFilteredInventories();
         }
-    }, [searchTerm]);
+    }, [searchTerm]); */
+
+    useEffect(() => {
+        if (searchTerm === '') {
+            setFilteredInventories(auth.inventories.data);
+            return;
+        }
+
+    if (searchTerm.length >= 3) {
+
+        // Fetch filtered inventories based on search term
+        const fetchFilteredInventories = async () => {
+            try {
+                const response = await axios.get(`/inventories?search=${searchTerm}`);
+                if (response.data && response.data.auth && response.data.auth.inventories) {
+                    setFilteredInventories(response.data.auth.inventories.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch filtered inventories:', error);
+            }
+        };
+
+        fetchFilteredInventories();
+
+    } else {
+        setFilteredInventories(auth.inventories.data);
+    }
+    }, [searchTerm, auth.inventories.data]);
 
     const handleReset = () => {
         setSearchTerm('');
     };
 
-    useEffect(() => {
+    /* useEffect(() => {
         if (auth.inventories) {
-            setFilteredInventories(auth.inventories);
+            setFilteredInventories(auth.inventories.data);
         }
-    }, [auth.inventories]);
+    }, [auth.inventories]); */
 
     const deleteInventory = async (inventoryId: number) => {
         try {
@@ -161,6 +189,11 @@ const Show: React.FC<PageProps> = ({ auth }) => {
                     </table>
                 </div>
             </div>
+            {auth.inventories.links && (
+                        <div className="mt-4 flex justify-end">
+                            <PaginationComponent links={auth.inventories.links} />
+                        </div>
+                    )}
         </MainLayout>
     );
 };

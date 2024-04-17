@@ -44,7 +44,8 @@ class InventoryController extends Controller
             
         }
 
-        $inventories = $productsQuery->get()->transform(function ($inventory) {
+        // Execute the query and paginate results
+        $inventories = $productsQuery->paginate(10)->through(function ($inventory) {
             /* dd($inventory->id); */
             return [
                 'id' => $inventory->id,

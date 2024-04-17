@@ -77,7 +77,9 @@ Route::middleware(['auth'])->group(function () {
 })->middleware(['auth', 'verified'])->name('dashboard'); */
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    /* Route::get('/dashboard', [DashboardController::class, 'index']); */
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 
     // Display a listing of the customers
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
