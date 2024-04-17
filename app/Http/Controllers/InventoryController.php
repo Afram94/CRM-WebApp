@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Broadcast;
 use App\Events\InventoryCreated;
+use App\Events\InventoryUpdated;
 
 class InventoryController extends Controller
 {
@@ -117,7 +118,7 @@ class InventoryController extends Controller
 
         $validateData = $request->validate([
             'quantity' => 'required|max:255',
-            'stock_Status' => 'sometimes|max:255',
+            'stock_status' => 'sometimes|max:255',
             'min_stock_level' => 'required|max:255',
             'max_stock_level' => 'required|max:255',
             'restock_date' => 'sometimes|max:255',
@@ -127,10 +128,12 @@ class InventoryController extends Controller
 
         DB::beginTransaction();
 
+        
         try {
             $inventory->update($validateData);
-
+            
             DB::commit();
+            broadcast(new InventoryUpdated($inventory));
             return response()->json($inventory, Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();
