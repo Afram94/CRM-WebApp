@@ -48,14 +48,14 @@ const Edit: React.FC<EditProps> = ({ inventory, closeModal }) => {
                 value={stockStatus} 
                 onChange={e => setStockStatus(e.target.value)} 
             />
-            <TextInput 
+            {/* <TextInput 
                 value={minStockLevel.toString()} 
                 onChange={e => setMinStockLevel(Number(e.target.value))} 
-            />
-            <TextInput 
+            /> */}
+            {/* <TextInput 
                 value={maxStockLevel.toString()} 
                 onChange={e => setMaxStockLevel(Number(e.target.value))} 
-            />
+            /> */}
             <TextInput 
                 value={restockDate || ''} 
                 onChange={e => setRestockDate(e.target.value)} 

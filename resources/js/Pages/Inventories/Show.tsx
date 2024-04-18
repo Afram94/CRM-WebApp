@@ -134,6 +134,29 @@ const Show: React.FC<PageProps> = ({ auth }) => {
             });
           }; */
 
+
+          const handleUpdateInventory = (updatedInventory: Inventory) => {
+            console.log("Updated product event triggered");
+        
+            setFilteredInventories((prevInventories) => {
+                return prevInventories.map(inventory => {
+                    if (inventory.id === updatedInventory.id) {
+                        // If the updated inventory item is found, merge the updates
+                        // Assuming updatedInventory includes a product object with its name
+                        // If updatedInventory does not include this directly, adjust according to how you receive the product information
+                        const updatedProduct = {
+                            ...inventory,
+                            ...updatedInventory,
+                            product_name: updatedInventory.product ? updatedInventory.product.name : inventory.product_name || 'Uncategorized', // Fallback to previous or 'Uncategorized'
+                        };
+                        return updatedProduct;
+                    }
+                    return inventory; // Return unmodified for other items
+                });
+            });
+        };
+        
+
     return (
         <MainLayout title='Inventories'>
             <div className='bg-white dark:bg-gray-800 p-4 rounded-xl'>
@@ -141,6 +164,7 @@ const Show: React.FC<PageProps> = ({ auth }) => {
               userId={auth.user?.id ?? null}
               parentId={auth.user?.user_id ?? null}
               onNewInventory={handleNewInventory}
+              onUpdateInventory={handleUpdateInventory}
             />
                 <div className='w-full flex justify-between my-4'>
                     <div className="flex gap-2">
