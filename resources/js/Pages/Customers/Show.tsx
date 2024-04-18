@@ -239,6 +239,14 @@ const Show = ({ auth }: PageProps) => {
     };
     
 
+    const handleNewNotification = (notification : any) => {
+        console.log('Notification received:', notification);
+        // Here, you might update a notification list in your state, show a toast message, etc.
+        alert(`New Notification: ${notification.title} - ${notification.message}`);
+    };
+    
+    
+
 
       const maxFields = Math.max(...filteredCustomers.map(c => c.custom_fields_values?.length || 0));
 
@@ -276,6 +284,8 @@ const Show = ({ auth }: PageProps) => {
               onNewCustomer={handleNewCustomer}
               onUpdateCustomer={handleUpdatedCustomer}
               onDeleteCustomer={handleDeleteCustomer}
+              onNewNotification={handleNewNotification}
+
             />
     
                     {/* <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3> */}

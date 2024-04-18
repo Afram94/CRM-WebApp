@@ -8,10 +8,11 @@ interface CustomerChannelsHandlerProps {
     onNewCustomer: (customer: Customer) => void;
     onUpdateCustomer: (customer: Customer) => void;
     onDeleteCustomer: (customer: number) => void;
+    onNewNotification: (notification: { id: number, title: string, message: string, seen: boolean }) => void;
 }
 
 const CustomerChannelsHandler: React.FC<CustomerChannelsHandlerProps> = ({
-    userId, parentId, onNewCustomer, onUpdateCustomer, onDeleteCustomer
+    userId, parentId, onNewCustomer, onUpdateCustomer, onDeleteCustomer, onNewNotification
 }) => {
     const echo = useEcho();
 
@@ -27,6 +28,12 @@ const CustomerChannelsHandler: React.FC<CustomerChannelsHandlerProps> = ({
             })
             .listen('CustomerDeleted', (e: { customerId: number }) => {
                 onDeleteCustomer(e.customerId);
+            });
+
+        const notificationChannel = echo.private(`notifications-for-user-${userId}`)
+            .listen('NotificationCreated', (notification: { id: number, title: string, message: string, seen: boolean }) => {
+                onNewNotification(notification);
+                console.log("here");
             });
 
         let parentChannel: any;
@@ -48,13 +55,15 @@ const CustomerChannelsHandler: React.FC<CustomerChannelsHandlerProps> = ({
                 .stopListening('CustomerUpdated')
                 .stopListening('CustomerDeleted');
             
+            notificationChannel.stopListening('NotificationCreated');
+
             if (parentChannel) {
                 parentChannel.stopListening('CustomerCreated')
                     .stopListening('CustomerUpdated')
                     .stopListening('CustomerDeleted');
             }
         };
-    }, [echo, userId, parentId, onNewCustomer, onUpdateCustomer, onDeleteCustomer]);
+    }, [echo, userId, parentId, onNewCustomer, onUpdateCustomer, onDeleteCustomer, onNewNotification]);
 
     return null; // This component does not render anything
 };

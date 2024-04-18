@@ -6,10 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\User;
 use App\Models\CustomerCustomField;
+use App\Models\Notification;
 use Inertia\Inertia;
 use App\Events\CustomerCreated;
 use App\Events\CustomerUpdated;
 use App\Events\CustomerDeleted;
+use App\Events\NotificationCreated;
 use App\Jobs\ProcessNewCustomer;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -138,6 +140,15 @@ class CustomerController extends Controller
             /* dd($customer->load('customFieldsValues')); */
             // Broadcast the event after the data has been persisted
             broadcast(new CustomerCreated($customer->load('customFieldsValues.customField')));
+
+            // Create and broadcast the notification
+        $notification = Notification::create([
+            'title' => 'New Customer Created',
+            'message' => "A new customer {$customer->name} has been added.",
+            'user_id' => $customer->user_id,
+            'seen' => false
+        ]);
+        broadcast(new NotificationCreated($notification));
 
             return response()->json($customer);
 
