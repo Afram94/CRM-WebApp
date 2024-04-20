@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Inertia } from '@inertiajs/inertia';
 import { FaTrash, FaPlus, FaDownload, FaUser, FaEllipsisV } from 'react-icons/fa';
 
-import { Customer, PageProps } from '@/types';
+import { Customer, Notification, PageProps } from '@/types';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateModal from '@/Pages/Customers/Components/CreateModal';
 import EditModal from './Components/EditModal';
@@ -25,6 +25,9 @@ import CustomerCustomFieldForm from '../CustomFields/CustomersCustomFields/Creat
 import CustomerChannelsHandler from './CustomerChannelsHandler';
 import Modal from '@/Components/Modal';
 import AddProductModal from './Components/AddProductModal';
+
+import { useNotifications } from '../../../providers/NotificationContext';
+
 
 interface Permission {
     name: string;
@@ -239,10 +242,17 @@ const Show = ({ auth }: PageProps) => {
     };
     
 
-    const handleNewNotification = (notification : any) => {
+    /* const handleNewNotification = (notification : any) => {
         console.log('Notification received:', notification);
         // Here, you might update a notification list in your state, show a toast message, etc.
         alert(`New Notification: ${notification.title} - ${notification.message}`);
+    }; */
+
+
+    const handleNewNotification = (notification : Notification) => {
+        const { addNotification } = useNotifications();
+        addNotification(notification);
+        console.log('Notification received:', notification);
     };
     
     

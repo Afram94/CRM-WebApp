@@ -47,8 +47,10 @@ Broadcast::channel('chat.{userId}', function ($user, $userId) {
 });
 
 Broadcast::channel('notifications-for-user-{userId}', function ($user, $userId) {
-    return $user->id == $userId;
+    return (int) $user->id === (int) $userId || (int) $user->user_id === (int) $userId;
 });
+
+
 
 
 /* Broadcast::channel('all-users-updates', function ($user) {

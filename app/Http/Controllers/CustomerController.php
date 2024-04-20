@@ -148,6 +148,7 @@ class CustomerController extends Controller
             'user_id' => $customer->user_id,
             'seen' => false
         ]);
+        /* \Log::info('Broadcasting Notification', ['notification' => $notification->toArray()]); */
         broadcast(new NotificationCreated($notification));
 
             return response()->json($customer);

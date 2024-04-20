@@ -173,6 +173,13 @@ export interface ProductCountByCategory {
     productCount: number;
 }
 
+export interface Notification {
+    id: number;
+    title: string;
+    message: string;
+    seen: boolean;
+}
+
   
   
 
