@@ -4,6 +4,7 @@ import WidthToggle from './WidthToggle';
 import ColorPicker from './ColorPicker';
 import TextInput from './TextInput';
 import UserDropdown from './UserDropdown';
+import { useNotifications } from '../../providers/NotificationContext';
 import NotificationDropdown from './NotificationDropdown';
 
 const Header = ({ user }: any) => {

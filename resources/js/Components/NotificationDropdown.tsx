@@ -1,22 +1,40 @@
-// src/components/NotificationDropdown.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useNotifications } from '../../providers/NotificationContext';
 
-const NotificationDropdown = () => {
-    const { notifications } = useNotifications();
+const NotificationDropdown: React.FC = () => {
+    const { notifications, markAsRead } = useNotifications();
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Toggle dropdown
+    const toggleDropdown = () => setIsOpen(!isOpen);
+
+    // Handle mark as read
+    const handleMarkAsRead = (id: number) => {
+        markAsRead(id);
+        toggleDropdown(); // Optionally close the dropdown
+    }
+
+    if (!Array.isArray(notifications)) {
+        return <div>Loading or no notifications...</div>;
+    }
 
     return (
-        <div className="relative">
-            <button className="bg-gray-200 p-2 rounded-full">
+        <div className="notification-dropdown">
+            <button onClick={toggleDropdown} className="dropdown-toggle">
                 Notifications ({notifications.length})
             </button>
-            {notifications.length > 0 && (
-                <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl">
-                    {notifications.map((notification, index) => (
-                        <div key={index} className="px-4 py-2 hover:bg-gray-100">
-                            {notification.title}: {notification.message}
+            {isOpen && (
+                <div className="dropdown-menu">
+                    {notifications.length > 0 ? notifications.map(notification => (
+                        <div key={notification.id} className="notification-item">
+                            <p>{notification.title}</p>
+                            <button onClick={() => handleMarkAsRead(notification.id)} className="mark-read">
+                                Mark as Read
+                            </button>
                         </div>
-                    ))}
+                    )) : (
+                        <div className="notification-item">No notifications</div>
+                    )}
                 </div>
             )}
         </div>

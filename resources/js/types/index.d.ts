@@ -223,6 +223,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         orders: Order[];
         order_items: OrderItem[];
 
+        notifications: Notification[];
+
 
         superadminusers: SuperAdminUsers[];
 

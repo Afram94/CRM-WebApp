@@ -249,11 +249,11 @@ const Show = ({ auth }: PageProps) => {
     }; */
 
 
-    const handleNewNotification = (notification : Notification) => {
+    /* const handleNewNotification = (notification : Notification) => {
         const { addNotification } = useNotifications();
         addNotification(notification);
         console.log('Notification received:', notification);
-    };
+    }; */
     
     
 
@@ -269,7 +269,7 @@ const Show = ({ auth }: PageProps) => {
         )
     ];
 
-    console.log(filteredCustomers);
+    /* console.log(filteredCustomers); */
 
 
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -280,7 +280,7 @@ const Show = ({ auth }: PageProps) => {
         setIsModalOpen(true);
         };
 
-        console.log(selectedCustomer);
+        /* console.log(selectedCustomer); */
 
     return (
         <MainLayout title="Customers / All Customers">
@@ -294,7 +294,7 @@ const Show = ({ auth }: PageProps) => {
               onNewCustomer={handleNewCustomer}
               onUpdateCustomer={handleUpdatedCustomer}
               onDeleteCustomer={handleDeleteCustomer}
-              onNewNotification={handleNewNotification}
+              /* onNewNotification={handleNewNotification} */
 
             />
     
