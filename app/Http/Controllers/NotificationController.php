@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
+
 
 class NotificationController extends Controller
 {
@@ -39,12 +41,10 @@ class NotificationController extends Controller
         ]);
     } */
 
-    public function index(Request $request)
+    /* public function index(Request $request)
     {
-        /* Log::info('Entered Notification index method'); */
         $user = Auth::user(); // Using Auth facade for clarity
         if (!$user) {
-            /* Log::info('No authenticated user.'); */
             return response()->json(['message' => 'User not authenticated'], 401);
         }
     
@@ -53,7 +53,39 @@ class NotificationController extends Controller
         Log::info('Notifications: ' . $notifications->toJson()); // This will log the fetched notifications
     
         return response()->json($notifications);
+    } */
+
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            Log::error('No authenticated user.');
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        // Determine the parent user ID
+        $parentUserId = $user->user_id ? $user->user_id : $user->id;
+        Log::info('Parent User ID: ' . $parentUserId);
+
+        // Fetch all user IDs under the same parent
+        $allUserIdsUnderSameParent = User::where('user_id', $parentUserId)
+                                        ->orWhere('id', $parentUserId)
+                                        ->pluck('id')->toArray();
+        Log::info('All User IDs under same parent: ' . json_encode($allUserIdsUnderSameParent));
+
+        // Fetch notifications for all users within the same group
+        $notifications = Notification::whereIn('user_id', $allUserIdsUnderSameParent)
+                                    ->where('seen', false)
+                                    ->get();
+
+        if ($notifications->isEmpty()) {
+            Log::info('No notifications found for user group.');
+        }
+
+        return response()->json($notifications);
     }
+
+
     
     
 
