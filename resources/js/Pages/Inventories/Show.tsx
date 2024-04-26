@@ -10,16 +10,17 @@ import axios from 'axios';
 import TextInput from '@/Components/TextInput';
 import DangerButton from '@/Components/DangerButton';
 import InventoryChannelsHandler from './InventoryChannelsHandler';
+import PaginationComponent from '@/Components/Pagination';
 
-const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
-    const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories || []);
+const Show: React.FC<PageProps> = ({ auth }) => {
+    const [filteredInventories, setFilteredInventories] = useState<Inventory[]>(auth.inventories.data || []);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const fetchFilteredInventories = async () => {
+    /* const fetchFilteredInventories = async () => {
         try {
             const response = await axios.get(`/inventories?search=${searchTerm}`);
             if (response.data && response.data.auth && response.data.auth.inventories) {
-                setFilteredInventories(response.data.auth.inventories);
+                setFilteredInventories(response.data.auth.inventories.data);
             }
         } catch (error) {
             console.error('Failed to fetch filtered inventories:', error);
@@ -30,17 +31,44 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
         if (searchTerm.length >= 3 || searchTerm === '') {
             fetchFilteredInventories();
         }
-    }, [searchTerm]);
+    }, [searchTerm]); */
+
+    useEffect(() => {
+        if (searchTerm === '') {
+            setFilteredInventories(auth.inventories.data);
+            return;
+        }
+
+    if (searchTerm.length >= 3) {
+
+        // Fetch filtered inventories based on search term
+        const fetchFilteredInventories = async () => {
+            try {
+                const response = await axios.get(`/inventories?search=${searchTerm}`);
+                if (response.data && response.data.auth && response.data.auth.inventories) {
+                    setFilteredInventories(response.data.auth.inventories.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch filtered inventories:', error);
+            }
+        };
+
+        fetchFilteredInventories();
+
+    } else {
+        setFilteredInventories(auth.inventories.data);
+    }
+    }, [searchTerm, auth.inventories.data]);
 
     const handleReset = () => {
         setSearchTerm('');
     };
 
-    useEffect(() => {
+    /* useEffect(() => {
         if (auth.inventories) {
-            setFilteredInventories(auth.inventories);
+            setFilteredInventories(auth.inventories.data);
         }
-    }, [auth.inventories]);
+    }, [auth.inventories]); */
 
     const deleteInventory = async (inventoryId: number) => {
         try {
@@ -64,24 +92,70 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
          *
          * @param {Inventory} newInventory - The new inventory to be added to the list.
          */
-        const handleNewInventory = (newInventory: Inventory) => {
-            setFilteredInventories(prevInventories => {
-                // Check if the new inventory already exists in the current state
-                const isExistingInventory = prevInventories.some(inventory => inventory.id === newInventory.id);
 
-                // Add the new inventory to the state only if it doesn't exist already
-                if (!isExistingInventory) {
-                    // Prepend the new inventory to the start of the inventory array
-                    const updatedInventories = [newInventory, ...prevInventories];
+            const handleNewInventory = (newInventory : Inventory) => {
+                console.log("New product event triggered");
+            
+                setFilteredInventories((prevInventories) => {
+                    // Check if the new product already exists in the current state
+                    const isExistingProduct = prevInventories.some(product => product.id === newInventory.id);
+            
+                    if (!isExistingProduct) {
+                        // Explicitly handle the product name for the new product
+                        // Assuming newInventory includes a product object with its name
+                        // If newInventory does not include this directly, adjust according to how you receive the product information
+                        let productToAdd = {
+                            ...newInventory,
+                            product_name: newInventory.product ? newInventory.product.name : 'Uncategorized', // Adjust if your data structure differs
+                        };
+            
+                        // Prepend the new product to the start of the product array
+                        const updatedProducts = [productToAdd, ...prevInventories];
+            
+                        // Maintain a maximum of 20 products for display, adjusting as needed
+                        return updatedProducts.slice(0, 20);
+                    }
+            
+                    // Return the previous state if the product already exists
+                    return prevInventories;
+                });
+            };
 
-                    // Maintain a maximum of 20 inventories for display, adjusting as needed
-                    return updatedInventories.slice(0, 20);
-                }
+        /* const handleNewInventory = (newInventory: Inventory) => {
+            console.log("handleNewNote Work!!")
+            setFilteredInventories((prevInventories) => {
+              if (newInventory?.id) {  // Ensure the new note has a user name
+                return [...prevInventories, newInventory];
+              } else {
+                // Handle this case, e.g., provide a default name or fetch additional data
+                console.error('New note does not have a user_name:', newInventory);
+                return prevInventories;  // For now, keep the old notes as they were
+              }
+            });
+          }; */
 
-                // Return the previous state if the inventory already exists
-                return prevInventories;
+
+          const handleUpdateInventory = (updatedInventory: Inventory) => {
+            console.log("Updated product event triggered");
+        
+            setFilteredInventories((prevInventories) => {
+                return prevInventories.map(inventory => {
+                    if (inventory.id === updatedInventory.id) {
+                        // If the updated inventory item is found, merge the updates
+                        // Assuming updatedInventory includes a product object with its name
+                        // If updatedInventory does not include this directly, adjust according to how you receive the product information
+                        const updatedProduct = {
+                            ...inventory,
+                            ...updatedInventory,
+                            product_name: updatedInventory.product ? updatedInventory.product.name : inventory.product_name || 'Uncategorized', // Fallback to previous or 'Uncategorized'
+                        };
+                        return updatedProduct;
+                    }
+                    return inventory; // Return unmodified for other items
+                });
             });
         };
+        
 
     return (
         <MainLayout title='Inventories'>
@@ -90,6 +164,7 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
               userId={auth.user?.id ?? null}
               parentId={auth.user?.user_id ?? null}
               onNewInventory={handleNewInventory}
+              onUpdateInventory={handleUpdateInventory}
             />
                 <div className='w-full flex justify-between my-4'>
                     <div className="flex gap-2">
@@ -138,8 +213,13 @@ const InventoriesIndex: React.FC<PageProps> = ({ auth }) => {
                     </table>
                 </div>
             </div>
+            {auth.inventories.links && (
+                        <div className="mt-4 flex justify-end">
+                            <PaginationComponent links={auth.inventories.links} />
+                        </div>
+                    )}
         </MainLayout>
     );
 };
 
-export default InventoriesIndex;
+export default Show;

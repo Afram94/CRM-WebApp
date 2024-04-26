@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Broadcast;
 use App\Events\InventoryCreated;
+use App\Events\InventoryUpdated;
 
 class InventoryController extends Controller
 {
@@ -44,10 +45,13 @@ class InventoryController extends Controller
             
         }
 
-        $inventories = $productsQuery->get()->transform(function ($inventory) {
+        // Execute the query and paginate results
+        $inventories = $productsQuery->paginate(10)->through(function ($inventory) {
+            /* dd($inventory->id); */
             return [
                 'id' => $inventory->id,
                 /* 'product_id' => $inventory->product_id, */
+                'user_id' => $inventory->user_id,
                 'product_name' => $inventory->product->name,
                 'quantity' => $inventory->quantity,
                 'stock_status' => $inventory->stock_status,
@@ -60,6 +64,7 @@ class InventoryController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'auth' => [
+                    'user' => $user,
                     'inventories' => $inventories
                 ]
             ]);
@@ -67,6 +72,7 @@ class InventoryController extends Controller
 
         return inertia('Inventories/Show', [
             'auth' => [
+                'user' => $user,
                 'inventories' => $inventories
             ]
         ]);
@@ -112,7 +118,7 @@ class InventoryController extends Controller
 
         $validateData = $request->validate([
             'quantity' => 'required|max:255',
-            'stock_Status' => 'sometimes|max:255',
+            'stock_status' => 'sometimes|max:255',
             'min_stock_level' => 'required|max:255',
             'max_stock_level' => 'required|max:255',
             'restock_date' => 'sometimes|max:255',
@@ -122,10 +128,12 @@ class InventoryController extends Controller
 
         DB::beginTransaction();
 
+        
         try {
             $inventory->update($validateData);
-
+            
             DB::commit();
+            broadcast(new InventoryUpdated($inventory));
             return response()->json($inventory, Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack();

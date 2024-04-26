@@ -30,6 +30,8 @@ use App\Http\Controllers\DashboardController;
 
 use App\Http\Controllers\SuperAdminController;
 
+use App\Http\Controllers\NotificationController;
+
 use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
 
@@ -77,7 +79,9 @@ Route::middleware(['auth'])->group(function () {
 })->middleware(['auth', 'verified'])->name('dashboard'); */
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    /* Route::get('/dashboard', [DashboardController::class, 'index']); */
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 
     // Display a listing of the customers
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
@@ -136,6 +140,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Orders
     Route::post('/orders', [OrderController::class, 'store']);
     Route::put('/orders/{order}', [OrderController::class, 'update']);
+
+
+    //Notifications
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy']);
 
     //Chat
     /* Route::post('/send-message', [ChatController::class, 'sendMessage']);

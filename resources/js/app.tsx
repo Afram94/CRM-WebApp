@@ -13,6 +13,9 @@ import { EchoProvider } from '../providers/WebSocketContext';
 import { WidthProvider } from '../providers/WidthContext';
 import { ButtonColorProvider } from '../providers/ButtonColorContext';
 
+import { NotificationProvider } from '../providers/NotificationContext';
+
+
 
 declare global {
   interface Window {
@@ -36,9 +39,11 @@ createInertiaApp({
           <EchoProvider>
             <PermissionsProvider>
               <WidthProvider>
+                <NotificationProvider>
                 <ButtonColorProvider>
                   <App {...props} />
                 </ButtonColorProvider>
+                </NotificationProvider>
               </WidthProvider>
             </PermissionsProvider>
           </EchoProvider>
