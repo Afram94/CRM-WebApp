@@ -70,6 +70,11 @@ class User extends Authenticatable
         return $this->hasMany(Message::class, 'to_user_id');
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
 
     /**
      * The attributes that are mass assignable.

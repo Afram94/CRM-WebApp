@@ -173,6 +173,13 @@ export interface ProductCountByCategory {
     productCount: number;
 }
 
+export interface Notification {
+    id: number;
+    title: string;
+    message: string;
+    seen: boolean;
+}
+
   
   
 
@@ -202,18 +209,21 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         user: User;
         customers: PaginatedResponse<Customer>;
         products: PaginatedResponse<Product>;
+        inventories: PaginatedResponse<Inventory>;
         notes: Note[];
         customer_notes:Note[];
         customer_profile:Customer[];
         /* products:Product[]; */
         categories:Category[];
-        inventories:Inventory[];
+        /* inventories:Inventory[]; */
         customer_custom_fields: CustomerCustomField[];
         product_custom_fields: ProductCustomField[];
         calendar: CalendarEvent[];
 
         orders: Order[];
         order_items: OrderItem[];
+
+        notifications: Notification[];
 
 
         superadminusers: SuperAdminUsers[];

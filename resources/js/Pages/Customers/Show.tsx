@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Inertia } from '@inertiajs/inertia';
 import { FaTrash, FaPlus, FaDownload, FaUser, FaEllipsisV } from 'react-icons/fa';
 
-import { Customer, PageProps } from '@/types';
+import { Customer, Notification, PageProps } from '@/types';
 import MainLayout from '@/Layouts/MainLayout';
 import CreateModal from '@/Pages/Customers/Components/CreateModal';
 import EditModal from './Components/EditModal';
@@ -25,6 +25,9 @@ import CustomerCustomFieldForm from '../CustomFields/CustomersCustomFields/Creat
 import CustomerChannelsHandler from './CustomerChannelsHandler';
 import Modal from '@/Components/Modal';
 import AddProductModal from './Components/AddProductModal';
+
+import { useNotifications } from '../../../providers/NotificationContext';
+
 
 interface Permission {
     name: string;
@@ -239,6 +242,21 @@ const Show = ({ auth }: PageProps) => {
     };
     
 
+    /* const handleNewNotification = (notification : any) => {
+        console.log('Notification received:', notification);
+        // Here, you might update a notification list in your state, show a toast message, etc.
+        alert(`New Notification: ${notification.title} - ${notification.message}`);
+    }; */
+
+
+    /* const handleNewNotification = (notification : Notification) => {
+        const { addNotification } = useNotifications();
+        addNotification(notification);
+        console.log('Notification received:', notification);
+    }; */
+    
+    
+
 
       const maxFields = Math.max(...filteredCustomers.map(c => c.custom_fields_values?.length || 0));
 
@@ -251,7 +269,7 @@ const Show = ({ auth }: PageProps) => {
         )
     ];
 
-    console.log(filteredCustomers);
+    /* console.log(filteredCustomers); */
 
 
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -262,7 +280,7 @@ const Show = ({ auth }: PageProps) => {
         setIsModalOpen(true);
         };
 
-        console.log(selectedCustomer);
+        /* console.log(selectedCustomer); */
 
     return (
         <MainLayout title="Customers / All Customers">
@@ -276,6 +294,8 @@ const Show = ({ auth }: PageProps) => {
               onNewCustomer={handleNewCustomer}
               onUpdateCustomer={handleUpdatedCustomer}
               onDeleteCustomer={handleDeleteCustomer}
+              /* onNewNotification={handleNewNotification} */
+
             />
     
                     {/* <h3 className="text-xl font-semibold mb-4 flex justify-center">Your Customers:</h3> */}

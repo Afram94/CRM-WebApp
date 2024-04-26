@@ -3,21 +3,39 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Inventory;
+use App\Models\User;
 
-class InventoryCreated implements ShouldBroadcast
+class InventoryUpdated implements ShouldBroadcast
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $inventory;
 
+    /**
+     * Create a new event instance.
+     *
+     * @param  Inventory  $inventory  The updated inventory information.
+     * @param  Inventory  $originalInventory  The original inventory information before update.
+     */
     public function __construct(Inventory $inventory)
     {
         $this->inventory = $inventory;
+    }
+
+    public function broadcastWith()
+    {
+        $inventory = $this->inventory->load('product'); // Ensure the product relationship is loaded
+
+        return[
+            'inventory' => $this->inventory,
+            'product_name' => $inventory->product->name,
+        ];
     }
 
     public function broadcastOn()
@@ -43,28 +61,4 @@ class InventoryCreated implements ShouldBroadcast
 
         return $channels;
     }
-
-    public function broadcastWith()
-    {
-        $inventory = $this->inventory->load('product'); // Ensure the product relationship is loaded
-
-        return[
-            'inventory' => $this->inventory,
-            'product_name' => $inventory->product->name,
-        ];
-        /* return [
-            'id' => $inventory->id,
-            'user_id' => $inventory->user_id,
-            'quantity' => $inventory->quantity,
-            'stock_status' => $inventory->stock_status,
-            'restock_date' => $inventory->restock_date,
-            'product_name' => $inventory->product->name, // Include the product name
-        ]; */
-        /* 'product_id' => $inventory->product_id, */
-        /* 'min_stock_level' => $inventory->min_stock_level,
-        'max_stock_level' => $inventory->max_stock_level, */
-    }
-
-
-
 }

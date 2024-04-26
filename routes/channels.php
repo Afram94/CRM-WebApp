@@ -46,6 +46,12 @@ Broadcast::channel('chat.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
 
+Broadcast::channel('notifications-for-user-{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId || (int) $user->user_id === (int) $userId;
+});
+
+
+
 
 /* Broadcast::channel('all-users-updates', function ($user) {
     // Check if the user has the 'superadmin' role

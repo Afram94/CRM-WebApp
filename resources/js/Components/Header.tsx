@@ -4,6 +4,8 @@ import WidthToggle from './WidthToggle';
 import ColorPicker from './ColorPicker';
 import TextInput from './TextInput';
 import UserDropdown from './UserDropdown';
+import { useNotifications } from '../../providers/NotificationContext';
+import NotificationDropdown from './NotificationDropdown';
 
 const Header = ({ user }: any) => {
   return (
@@ -23,6 +25,7 @@ const Header = ({ user }: any) => {
         <div className="flex flex-col items-center gap-1">
           <ThemeToggle />
           <WidthToggle />
+          <NotificationDropdown />
         </div>
 
         {/* User Dropdown */}
